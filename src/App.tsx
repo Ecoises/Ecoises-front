@@ -12,6 +12,7 @@ import Species from "./pages/Species";
 import Sightings from "./pages/Sightings";
 import NewSighting from "./pages/NewSighting";
 import NotFound from "./pages/NotFound";
+import Layout from "./components/Layout";
 
 const queryClient = new QueryClient();
 
@@ -21,16 +22,18 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/explorer" element={<Explorer />} />
-          <Route path="/species" element={<Species />} />
-          <Route path="/species/:id" element={<SpeciesDetail />} />
-          <Route path="/map" element={<Map />} />
-          <Route path="/sightings" element={<Sightings />} />
-          <Route path="/sightings/new" element={<NewSighting />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/explorer" element={<Explorer />} />
+            <Route path="/species" element={<Species />} />
+            <Route path="/species/:id" element={<SpeciesDetail />} />
+            <Route path="/map" element={<Map />} />
+            <Route path="/sightings" element={<Sightings />} />
+            <Route path="/sightings/new" element={<NewSighting />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Layout>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
