@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -346,40 +347,41 @@ const NewSighting = () => {
                           />
                         </label>
                       </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-forest-800 text-sm mb-1">Notes (optional)</label>
-                  <Textarea
-                    placeholder="Add any observations or notes about the bird..."
-                    className="bg-white border-lime-200 min-h-24"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                  />
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              <div className="flex justify-between">
-                <Button 
-                  variant="outline" 
-                  className="border-lime-200"
-                  onClick={handlePrevStep}
-                >
-                  Previous
-                </Button>
-                <Button 
-                  className="bg-lime-500 hover:bg-lime-600 text-white"
-                  onClick={handleNextStep}
-                >
-                  Complete
-                </Button>
+                
+              <div>
+                <label className="block text-forest-800 text-sm mb-1">Notes (optional)</label>
+                <Textarea
+                  placeholder="Add any observations or notes about the bird..."
+                  className="bg-white border-lime-200 min-h-24"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
               </div>
             </div>
-          )}
-        </Card>
-      </div>
+            
+            <div className="flex justify-between">
+              <Button 
+                variant="outline" 
+                className="border-lime-200"
+                onClick={handlePrevStep}
+              >
+                Previous
+              </Button>
+              <Button 
+                className="bg-lime-500 hover:bg-lime-600 text-white"
+                onClick={handleNextStep}
+              >
+                Complete
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
+    </div>
   );
 };
 
