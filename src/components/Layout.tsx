@@ -45,14 +45,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   
   return (
-    <div className="min-h-screen flex bg-background">
-      {/* Sidebar */}
+    <div className="flex bg-background min-h-screen">
+      {/* Sidebar - ahora con position fixed */}
       <aside 
         className={cn(
-          "bg-secondary fixed md:relative z-50 h-screen transition-all duration-300 shadow-lg md:shadow-none",
+          "bg-secondary fixed z-50 h-screen transition-all duration-300 shadow-lg md:shadow-none overflow-auto",
           isMobile 
             ? sidebarOpen ? "left-0 w-64" : "-left-64 w-64"
-            : "w-64"
+            : "w-64 left-0"
         )}
       >
         <div className="p-4 flex flex-col h-full">
@@ -84,10 +84,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </aside>
       
-      {/* Main content */}
+      {/* Main content - con padding-left para compensar el sidebar fijo */}
       <main className={cn(
-        "flex-1 transition-all duration-300 relative",
-        isMobile && sidebarOpen ? "ml-64" : "ml-0"
+        "flex-1 transition-all duration-300 min-h-screen",
+        isMobile 
+          ? sidebarOpen ? "ml-64" : "ml-0" 
+          : "ml-64" // Siempre deja espacio para el sidebar en desktop
       )}>
         {isMobile && (
           <button 
