@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
 import { PlusCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 
-const Layout = ({ children }: { children: React.ReactNode }) => {
+const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -39,7 +39,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         )}
 
         <div className="container p-6 max-w-6xl mx-auto">
-          {children}
+          <Outlet />
         </div>
         
         {/* Mobile Navigation Bar */}

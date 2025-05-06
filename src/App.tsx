@@ -13,6 +13,7 @@ import Sightings from "./pages/Sightings";
 import NewSighting from "./pages/NewSighting";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -22,8 +23,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Layout>
-          <Routes>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
             <Route path="/explorer" element={<Explorer />} />
             <Route path="/species" element={<Species />} />
@@ -32,8 +34,8 @@ const App = () => (
             <Route path="/sightings" element={<Sightings />} />
             <Route path="/sightings/new" element={<NewSighting />} />
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+          </Route>
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
