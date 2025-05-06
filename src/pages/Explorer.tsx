@@ -1,6 +1,4 @@
-
 import { useState } from "react";
-import Layout from "@/components/Layout";
 import { Search, Filter, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -122,123 +120,121 @@ const Explorer = () => {
   const toggleFilters = () => setFiltersVisible(!filtersVisible);
   
   return (
-    <Layout>
-      <div className="space-y-6 animate-fade-in">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2">Bird Explorer</h1>
-          <p className="text-forest-700">Discover and learn about various bird species</p>
-        </div>
-        
-        {/* Search and filters */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-forest-500 h-4 w-4" />
-            <Input
-              type="text"
-              placeholder="Search by name or scientific name..."
-              className="pl-10 bg-white rounded-xl border-lime-200"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button 
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => setSearchTerm("")}
-              >
-                <X className="h-4 w-4 text-forest-500" />
-              </button>
-            )}
-          </div>
-          
-          <Button 
-            variant="outline" 
-            className="md:w-auto border-lime-200 gap-2 rounded-xl"
-            onClick={toggleFilters}
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
-        </div>
-        
-        {/* Filters panel */}
-        {filtersVisible && (
-          <Card className="p-4 border-lime-200 animate-fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-medium text-forest-900 mb-2">Bird Category</h3>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map(category => (
-                    <button
-                      key={category}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        selectedCategory === category
-                          ? "bg-lime-500 text-white"
-                          : "bg-lime-50 text-forest-700 hover:bg-lime-100"
-                      }`}
-                      onClick={() => setSelectedCategory(category)}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="font-medium text-forest-900 mb-2">Habitat</h3>
-                <div className="flex flex-wrap gap-2">
-                  {habitats.map(habitat => (
-                    <button
-                      key={habitat}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        selectedHabitat === habitat
-                          ? "bg-lime-500 text-white"
-                          : "bg-lime-50 text-forest-700 hover:bg-lime-100"
-                      }`}
-                      onClick={() => setSelectedHabitat(habitat)}
-                    >
-                      {habitat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
-        
-        {/* Results */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-heading font-bold text-forest-900">
-              {filteredBirds.length} {filteredBirds.length === 1 ? "Bird" : "Birds"} Found
-            </h2>
-          </div>
-          
-          {filteredBirds.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredBirds.map(bird => (
-                <BirdCard key={bird.id} bird={bird} />
-              ))}
-            </div>
-          ) : (
-            <Card className="p-8 text-center border-lime-200">
-              <h3 className="text-forest-900 font-medium mb-2">No birds found</h3>
-              <p className="text-forest-700 mb-4">Try adjusting your search or filters</p>
-              <Button 
-                variant="outline" 
-                className="border-lime-200"
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedCategory("All");
-                  setSelectedHabitat("All");
-                }}
-              >
-                Clear All Filters
-              </Button>
-            </Card>
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2">Bird Explorer</h1>
+        <p className="text-forest-700">Discover and learn about various bird species</p>
+      </div>
+      
+      {/* Search and filters */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-forest-500 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Search by name or scientific name..."
+            className="pl-10 bg-white rounded-xl border-lime-200"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button 
+              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              onClick={() => setSearchTerm("")}
+            >
+              <X className="h-4 w-4 text-forest-500" />
+            </button>
           )}
         </div>
+        
+        <Button 
+          variant="outline" 
+          className="md:w-auto border-lime-200 gap-2 rounded-xl"
+          onClick={toggleFilters}
+        >
+          <Filter className="h-4 w-4" />
+          Filters
+        </Button>
       </div>
-    </Layout>
+      
+      {/* Filters panel */}
+      {filtersVisible && (
+        <Card className="p-4 border-lime-200 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-medium text-forest-900 mb-2">Bird Category</h3>
+              <div className="flex flex-wrap gap-2">
+                {categories.map(category => (
+                  <button
+                    key={category}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      selectedCategory === category
+                        ? "bg-lime-500 text-white"
+                        : "bg-lime-50 text-forest-700 hover:bg-lime-100"
+                    }`}
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="font-medium text-forest-900 mb-2">Habitat</h3>
+              <div className="flex flex-wrap gap-2">
+                {habitats.map(habitat => (
+                  <button
+                    key={habitat}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      selectedHabitat === habitat
+                        ? "bg-lime-500 text-white"
+                        : "bg-lime-50 text-forest-700 hover:bg-lime-100"
+                    }`}
+                    onClick={() => setSelectedHabitat(habitat)}
+                  >
+                    {habitat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+      
+      {/* Results */}
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-heading font-bold text-forest-900">
+            {filteredBirds.length} {filteredBirds.length === 1 ? "Bird" : "Birds"} Found
+          </h2>
+        </div>
+        
+        {filteredBirds.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredBirds.map(bird => (
+              <BirdCard key={bird.id} bird={bird} />
+            ))}
+          </div>
+        ) : (
+          <Card className="p-8 text-center border-lime-200">
+            <h3 className="text-forest-900 font-medium mb-2">No birds found</h3>
+            <p className="text-forest-700 mb-4">Try adjusting your search or filters</p>
+            <Button 
+              variant="outline" 
+              className="border-lime-200"
+              onClick={() => {
+                setSearchTerm("");
+                setSelectedCategory("All");
+                setSelectedHabitat("All");
+              }}
+            >
+              Clear All Filters
+            </Button>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 };
 

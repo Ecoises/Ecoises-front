@@ -1,8 +1,4 @@
-
 import { useState, useEffect } from "react";
-import Layout from "@/components/Layout";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { 
   MapPin, 
   Filter, 
@@ -12,6 +8,8 @@ import {
   X,
   Layers
 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 // Sample sighting data
 const sightings = [
@@ -169,133 +167,131 @@ const Map = () => {
   const toggleFilters = () => setFiltersVisible(!filtersVisible);
   
   return (
-    <Layout>
-      <div className="space-y-6 animate-fade-in">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2">Sightings Map</h1>
-          <p className="text-forest-700">Explore bird sightings and hotspots on the map</p>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column: Map */}
-          <div className="lg:col-span-2">
-            <Card className="border-lime-200 overflow-hidden">
-              <div className="p-3 bg-lime-50 border-b border-lime-200 flex justify-between">
-                <div className="flex items-center space-x-4">
-                  <button 
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      activeTab === "sightings" 
-                        ? "bg-lime-500 text-white" 
-                        : "bg-white text-forest-700"
-                    }`}
-                    onClick={() => setActiveTab("sightings")}
-                  >
-                    Sightings
-                  </button>
-                  <button 
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      activeTab === "hotspots" 
-                        ? "bg-lime-500 text-white" 
-                        : "bg-white text-forest-700"
-                    }`}
-                    onClick={() => setActiveTab("hotspots")}
-                  >
-                    Hotspots
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2">Sightings Map</h1>
+        <p className="text-forest-700">Explore bird sightings and hotspots on the map</p>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column: Map */}
+        <div className="lg:col-span-2">
+          <Card className="border-lime-200 overflow-hidden">
+            <div className="p-3 bg-lime-50 border-b border-lime-200 flex justify-between">
+              <div className="flex items-center space-x-4">
+                <button 
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    activeTab === "sightings" 
+                      ? "bg-lime-500 text-white" 
+                      : "bg-white text-forest-700"
+                  }`}
+                  onClick={() => setActiveTab("sightings")}
+                >
+                  Sightings
+                </button>
+                <button 
+                  className={`px-3 py-1 rounded-full text-sm ${
+                    activeTab === "hotspots" 
+                      ? "bg-lime-500 text-white" 
+                      : "bg-white text-forest-700"
+                  }`}
+                  onClick={() => setActiveTab("hotspots")}
+                >
+                  Hotspots
+                </button>
+              </div>
+              
+              <div className="flex space-x-2">
+                <button 
+                  className="bg-white p-2 rounded-lg border border-lime-200"
+                  onClick={toggleFilters}
+                >
+                  <Filter className="h-4 w-4 text-forest-700" />
+                </button>
+                <button className="bg-white p-2 rounded-lg border border-lime-200">
+                  <Layers className="h-4 w-4 text-forest-700" />
+                </button>
+              </div>
+            </div>
+            
+            {filtersVisible && (
+              <div className="bg-white p-3 border-b border-lime-200 animate-fade-in">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium text-forest-900">Filters</h3>
+                  <button onClick={toggleFilters}>
+                    <X className="h-4 w-4 text-forest-700" />
                   </button>
                 </div>
                 
-                <div className="flex space-x-2">
-                  <button 
-                    className="bg-white p-2 rounded-lg border border-lime-200"
-                    onClick={toggleFilters}
-                  >
-                    <Filter className="h-4 w-4 text-forest-700" />
-                  </button>
-                  <button className="bg-white p-2 rounded-lg border border-lime-200">
-                    <Layers className="h-4 w-4 text-forest-700" />
-                  </button>
-                </div>
-              </div>
-              
-              {filtersVisible && (
-                <div className="bg-white p-3 border-b border-lime-200 animate-fade-in">
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-forest-900">Filters</h3>
-                    <button onClick={toggleFilters}>
-                      <X className="h-4 w-4 text-forest-700" />
-                    </button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs text-forest-700">Date Range</label>
+                    <select className="w-full mt-1 rounded-lg border-lime-200 text-sm">
+                      <option>Last 7 days</option>
+                      <option>Last 30 days</option>
+                      <option>Last 90 days</option>
+                      <option>Last year</option>
+                      <option>All time</option>
+                    </select>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="text-xs text-forest-700">Date Range</label>
-                      <select className="w-full mt-1 rounded-lg border-lime-200 text-sm">
-                        <option>Last 7 days</option>
-                        <option>Last 30 days</option>
-                        <option>Last 90 days</option>
-                        <option>Last year</option>
-                        <option>All time</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs text-forest-700">Bird Category</label>
-                      <select className="w-full mt-1 rounded-lg border-lime-200 text-sm">
-                        <option>All Categories</option>
-                        <option>Thrush</option>
-                        <option>Cardinal</option>
-                        <option>Jay</option>
-                        <option>Finch</option>
-                        <option>Hawk</option>
-                      </select>
-                    </div>
-                    
-                    <div>
-                      <label className="text-xs text-forest-700">Observer</label>
-                      <select className="w-full mt-1 rounded-lg border-lime-200 text-sm">
-                        <option>All Observers</option>
-                        <option>Your Sightings</option>
-                        <option>Community Sightings</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label className="text-xs text-forest-700">Bird Category</label>
+                    <select className="w-full mt-1 rounded-lg border-lime-200 text-sm">
+                      <option>All Categories</option>
+                      <option>Thrush</option>
+                      <option>Cardinal</option>
+                      <option>Jay</option>
+                      <option>Finch</option>
+                      <option>Hawk</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-forest-700">Observer</label>
+                    <select className="w-full mt-1 rounded-lg border-lime-200 text-sm">
+                      <option>All Observers</option>
+                      <option>Your Sightings</option>
+                      <option>Community Sightings</option>
+                    </select>
                   </div>
                 </div>
-              )}
-              
-              <div>
-                <MapPlaceholder />
               </div>
-            </Card>
-          </div>
-          
-          {/* Right column: List */}
-          <div className="lg:col-span-1">
-            <Card className="border-lime-200 h-full">
-              <div className="p-3 bg-lime-50 border-b border-lime-200">
-                <h2 className="font-medium text-forest-900">
-                  {activeTab === "sightings" ? "Recent Sightings" : "Popular Hotspots"}
-                </h2>
+            )}
+            
+            <div>
+              <MapPlaceholder />
+            </div>
+          </Card>
+        </div>
+        
+        {/* Right column: List */}
+        <div className="lg:col-span-1">
+          <Card className="border-lime-200 h-full">
+            <div className="p-3 bg-lime-50 border-b border-lime-200">
+              <h2 className="font-medium text-forest-900">
+                {activeTab === "sightings" ? "Recent Sightings" : "Popular Hotspots"}
+              </h2>
+            </div>
+            
+            <div className="p-2 max-h-[500px] overflow-y-auto">
+              <div className="divide-y divide-lime-100">
+                {activeTab === "sightings" ? (
+                  sightings.map(sighting => (
+                    <SightingCard key={sighting.id} sighting={sighting} />
+                  ))
+                ) : (
+                  hotspots.map(hotspot => (
+                    <HotspotCard key={hotspot.id} hotspot={hotspot} />
+                  ))
+                )}
               </div>
-              
-              <div className="p-2 max-h-[500px] overflow-y-auto">
-                <div className="divide-y divide-lime-100">
-                  {activeTab === "sightings" ? (
-                    sightings.map(sighting => (
-                      <SightingCard key={sighting.id} sighting={sighting} />
-                    ))
-                  ) : (
-                    hotspots.map(hotspot => (
-                      <HotspotCard key={hotspot.id} hotspot={hotspot} />
-                    ))
-                  )}
-                </div>
-              </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
