@@ -6,10 +6,13 @@ import { navItems } from "./Sidebar";
 const MobileNavbar = () => {
   const location = useLocation();
   
+  // Filter out the "/sightings/new" route as it will be handled by the floating action button
+  const filteredNavItems = navItems.filter(item => item.to !== "/sightings/new");
+  
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
       <div className="flex justify-around">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const Icon = item.icon;
           const active = location.pathname === item.to;
           
