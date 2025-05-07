@@ -1,9 +1,17 @@
-
 import { Link } from "react-router-dom";
-import { Calendar, Search, Eye, MapPin, BookOpen, Plus } from "lucide-react";
+import { Calendar, Search, Eye, MapPin, BookOpen, Plus, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const StatCard = ({ 
   icon: Icon, 
@@ -78,6 +86,15 @@ const FeatureCard = ({
   </Link>
 );
 
+// Datos de ejemplo para el leaderboard
+const leaderboardData = [
+  { position: 1, name: "Carlos Méndez", sightings: 245, species: 78, avatar: "https://i.pravatar.cc/150?img=11" },
+  { position: 2, name: "Elena García", sightings: 187, species: 65, avatar: "https://i.pravatar.cc/150?img=5" },
+  { position: 3, name: "Juan Pérez", sightings: 152, species: 59, avatar: "https://i.pravatar.cc/150?img=12" },
+  { position: 4, name: "Sofía Martínez", sightings: 134, species: 47, avatar: "https://i.pravatar.cc/150?img=9" },
+  { position: 5, name: "Miguel Rodríguez", sightings: 98, species: 34, avatar: "https://i.pravatar.cc/150?img=22" },
+];
+
 const Index = () => {
   return (
     <div className="space-y-8 animate-fade-in">
@@ -103,36 +120,87 @@ const Index = () => {
         <StatCard icon={MapPin} label="Locations Visited" value="18" color="bg-forest-700" />
       </div>
       
-      {/* Recent Sightings */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-heading font-bold text-forest-900">Recent Sightings</h2>
-          <Link to="/sightings" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
-            View All
-          </Link>
-        </div>
-        <Card className="p-4">
-          <div className="divide-y divide-lime-100">
-            <RecentSighting 
-              bird="American Robin" 
-              location="Central Park" 
-              date="Today, 10:23 AM"
-              image="https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=300&h=300"
-            />
-            <RecentSighting 
-              bird="Northern Cardinal" 
-              location="Riverside Trail" 
-              date="Yesterday"
-              image="https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=300&h=300"
-            />
-            <RecentSighting 
-              bird="Blue Jay" 
-              location="Oakwood Park" 
-              date="May 3, 2023"
-              image="https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=300&h=300"
-            />
+      {/* Main content grid with recent sightings and leaderboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Sightings */}
+        <div className="lg:col-span-1">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-heading font-bold text-forest-900">Recent Sightings</h2>
+            <Link to="/sightings" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
+              View All
+            </Link>
           </div>
-        </Card>
+          <Card className="p-4">
+            <div className="divide-y divide-lime-100">
+              <RecentSighting 
+                bird="American Robin" 
+                location="Central Park" 
+                date="Today, 10:23 AM"
+                image="https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=300&h=300"
+              />
+              <RecentSighting 
+                bird="Northern Cardinal" 
+                location="Riverside Trail" 
+                date="Yesterday"
+                image="https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=300&h=300"
+              />
+              <RecentSighting 
+                bird="Blue Jay" 
+                location="Oakwood Park" 
+                date="May 3, 2023"
+                image="https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=300&h=300"
+              />
+            </div>
+          </Card>
+        </div>
+        
+        {/* Leaderboard */}
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-lime-600" />
+              <h2 className="text-xl font-heading font-bold text-forest-900">Top Bird Watchers</h2>
+            </div>
+            <Link to="/leaderboard" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
+              View Complete Ranking
+            </Link>
+          </div>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">Rank</TableHead>
+                  <TableHead>Observer</TableHead>
+                  <TableHead className="text-center">Sightings</TableHead>
+                  <TableHead className="text-center">Species</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {leaderboardData.map((entry) => (
+                  <TableRow key={entry.position} className="hover:bg-lime-50">
+                    <TableCell className="font-medium">
+                      <div className="flex justify-center items-center w-8 h-8 rounded-full bg-lime-100 text-forest-800">
+                        {entry.position}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={entry.avatar} 
+                          alt={entry.name}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                        <span className="font-medium">{entry.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">{entry.sightings}</TableCell>
+                    <TableCell className="text-center">{entry.species}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
       </div>
       
       {/* Features */}
