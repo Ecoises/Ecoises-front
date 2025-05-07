@@ -13,6 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const StatCard = ({ 
   icon: Icon, 
@@ -231,6 +240,111 @@ const SpeciesRecommendation = () => {
   );
 };
 
+const birdGallery = [
+  {
+    id: 1,
+    name: "Flamingo",
+    image: "https://images.unsplash.com/photo-1497206365907-f5e630693df0?auto=format&fit=crop&w=500&h=500",
+    funFact: "Flamingos get their pink coloration from the beta-carotene in their diet of brine shrimp and blue-green algae."
+  },
+  {
+    id: 2,
+    name: "Barn Owl",
+    image: "https://images.unsplash.com/photo-1548430075-47e8ecb8c55b?auto=format&fit=crop&w=500&h=500",
+    funFact: "Barn Owls can detect and capture prey in complete darkness using only their hearing, which is so precise they can locate mice under snow or vegetation."
+  },
+  {
+    id: 3,
+    name: "Peacock",
+    image: "https://images.unsplash.com/photo-1602170284347-f9c28856c744?auto=format&fit=crop&w=500&h=500",
+    funFact: "A peacock's tail feathers (known as a train) make up about 60% of its body length and contain a complex pattern of eyespots that help attract mates."
+  },
+  {
+    id: 4,
+    name: "Toucan",
+    image: "https://images.unsplash.com/photo-1551085254-e96b210db58a?auto=format&fit=crop&w=500&h=500",
+    funFact: "Despite its large size, a toucan's beak is lightweight and made of keratin with a hollow honeycomb structure inside, which helps regulate body temperature."
+  },
+  {
+    id: 5,
+    name: "Hummingbird",
+    image: "https://images.unsplash.com/photo-1590143640485-b927afbc3d42?auto=format&fit=crop&w=500&h=500",
+    funFact: "Hummingbirds are the only birds that can fly backwards and hover in mid-air. Their wings beat about 70 times per second!"
+  }
+];
+
+const SpeciesGallery = () => {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Bird className="h-5 w-5 text-lime-600" />
+          <h2 className="text-xl font-heading font-bold text-forest-900">Fascinating Species</h2>
+        </div>
+        <Link to="/species" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
+          Discover More Birds
+        </Link>
+      </div>
+      
+      {/* Mobile view - carousel */}
+      <div className="block md:hidden">
+        <Carousel className="w-full">
+          <CarouselContent>
+            {birdGallery.map((bird) => (
+              <CarouselItem key={bird.id}>
+                <FlipCard bird={bird} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="-left-4" />
+          <CarouselNext className="-right-4" />
+        </Carousel>
+      </div>
+      
+      {/* Desktop view - grid */}
+      <div className="hidden md:grid md:grid-cols-5 gap-4">
+        {birdGallery.map((bird) => (
+          <FlipCard key={bird.id} bird={bird} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const FlipCard = ({ bird }) => {
+  return (
+    <HoverCard openDelay={0} closeDelay={100}>
+      <HoverCardTrigger asChild>
+        <div className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+          <AspectRatio ratio={1}>
+            <img 
+              src={bird.image} 
+              alt={bird.name}
+              className="object-cover w-full h-full transition-transform duration-300"
+            />
+          </AspectRatio>
+          <div className="p-2 text-center bg-white">
+            <h3 className="font-medium text-forest-900">{bird.name}</h3>
+          </div>
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80 bg-white border-lime-200 p-0 overflow-hidden">
+        <div className="p-4 bg-lime-50 space-y-3">
+          <h4 className="font-heading font-semibold text-forest-900">Fun Fact</h4>
+          <p className="text-forest-800 text-sm">{bird.funFact}</p>
+        </div>
+        <div className="p-3 bg-white flex justify-end">
+          <Link to={`/species/${bird.id}`}>
+            <Button variant="link" className="text-lime-600 p-0 h-auto">
+              Learn more
+            </Button>
+          </Link>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
+  );
+};
+
 const Index = () => {
   // Get top 3 for the podium
   const topThree = leaderboardData.slice(0, 3);
@@ -263,6 +377,9 @@ const Index = () => {
       
       {/* Species Recommendation */}
       <SpeciesRecommendation />
+      
+      {/* Species Gallery with flip cards */}
+      <SpeciesGallery />
       
       {/* Main content grid with recent sightings and leaderboard */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
