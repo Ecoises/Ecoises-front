@@ -356,7 +356,7 @@ const Index = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2">Welcome to Avian Voyager</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2">Welcome to Logo Here</h1>
           <p className="text-forest-700">Track, explore, and discover the fascinating world of birds</p>
         </div>
         <Link to="/sightings/new">

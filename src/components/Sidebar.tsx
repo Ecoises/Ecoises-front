@@ -68,7 +68,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
           <div className="bg-lime-400 h-8 w-8 rounded-lg flex items-center justify-center">
             <span className="text-forest-900 font-bold text-lg">A</span>
           </div>
-          <h1 className="text-forest-900 font-bold text-xl">Avian Voyager</h1>
+          <h1 className="text-forest-900 font-bold text-xl">Logo Here</h1>
         </div>
         
         <nav className="flex-1 space-y-1">

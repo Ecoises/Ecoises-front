@@ -1,31 +1,71 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import axios from "axios";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
-  
-  const toggleForm = () => setIsLogin(!isLogin);
-  
+  const [imageUrl, setImageUrl] = useState("");
+  const toggleForm = () => setIsLogin(!isLogin); 
+  const [speciesName, setSpeciesName] = useState("");
+  const [photoAuthor, setPhotoAuthor] = useState("");
+
+  const fetchSpeciesImage = async () => {
+    try {
+      const res = await axios.get("https://api.inaturalist.org/v1/observations", {
+        params: {
+          order_by: "observed_on",
+          photos: true,
+          identified: true,
+          quality_grade: "research",
+          per_page: 1,
+          page: Math.floor(Math.random() * 1000) + 1, // para obtener especies aleatorias
+          locale: "es",
+          // place_id: 6793
+        },
+      });
+
+      const result = res.data.results[0];
+      if (result && result.photos && result.photos[0]) {
+        setImageUrl(result.photos[0].url.replace("square", "large"));
+        setSpeciesName(result.taxon?.preferred_common_name || "Especie desconocida");
+        setPhotoAuthor(result.user?.name || result.user?.login || "Autor desconocido");
+      }
+    } catch (err) {
+      console.error("Error al obtener datos de iNaturalist", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSpeciesImage();
+  }, []);
+
   return (
     <div className="flex h-screen">
       {/* Imagen decorativa (lado izquierdo) */}
       <div className="hidden lg:flex lg:w-1/2 bg-lime-50 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-lime-400/30 to-forest-500/20" />
-        <img 
-          src="https://images.unsplash.com/photo-1470813740244-df37b8c1edcb" 
-          alt="Decorative nature" 
-          className="object-cover w-full h-full mix-blend-overlay"
-        />
-        <div className="absolute bottom-10 left-10 bg-white/80 backdrop-blur-sm p-6 rounded-lg max-w-md shadow-lg">
-          <h2 className="text-2xl font-heading font-bold text-forest-900 mb-2">Avian Voyager</h2>
-          <p className="text-forest-800">Descubre, rastrea y comparte avistamientos de aves en tu aventura ornitológica.</p>
-        </div>
+        {imageUrl && (
+          <>
+            <img 
+              src={imageUrl} 
+              alt={speciesName} 
+              className="object-cover w-full h-full"
+            />
+            <div className="absolute bottom-8 left-8 bg-white/80 backdrop-blur-sm p-3 rounded-lg max-w-xs shadow-lg">
+              <h2 className="text-lg font-heading font-bold text-forest-900 mb-0.5">{speciesName}</h2>
+              <p className="text-sm text-forest-800">Foto por: {photoAuthor}</p>
+            </div>
+            {/* <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
+                <h2 className="text-xl font-bold">{speciesName}</h2>
+                <p className="text-sm ">Foto por: {photoAuthor}</p>
+              </div> */}
+          </>
+        )}
       </div>
+
       
       {/* Formulario de inicio de sesión (lado derecho) */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
@@ -35,7 +75,7 @@ const Login = () => {
               <div className="bg-lime-400 h-10 w-10 rounded-lg flex items-center justify-center">
                 <span className="text-forest-900 font-bold text-xl">A</span>
               </div>
-              <h1 className="text-forest-900 font-bold text-2xl">Avian Voyager</h1>
+              <h1 className="text-forest-900 font-bold text-2xl">Logo Here</h1>
             </div>
             <p className="text-forest-700">
               {isLogin 
