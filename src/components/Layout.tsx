@@ -30,9 +30,9 @@ const Layout = () => {
             <div className="flex justify-center items-center h-14">
               <div className="flex items-center gap-2">
                 <div className="bg-lime-400 h-8 w-8 rounded-lg flex items-center justify-center">
-                  <span className="text-forest-900 font-bold text-lg">A</span>
+                  <span className="text-forest-900 font-bold text-lg">B</span>
                 </div>
-                <h1 className="text-forest-900 font-bold text-xl">Logo Here</h1>
+                <h1 className="text-forest-900 font-bold text-xl">BirdWatch</h1>
               </div>
             </div>
           </div>

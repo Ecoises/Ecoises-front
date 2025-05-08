@@ -273,6 +273,35 @@ const birdGallery = [
   }
 ];
 
+const ImageCard = ({ bird, isFeature = false }) => {
+  return (
+    <div className="relative rounded-xl overflow-hidden h-full">
+      <AspectRatio ratio={1}>
+        <img 
+          src={bird.image} 
+          alt={bird.name}
+          className="object-cover w-full h-full"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+          <div className="text-white">
+            <h3 className="font-heading font-bold text-lg md:text-xl">{bird.name}</h3>
+            {isFeature && <p className="text-sm text-white/80 line-clamp-2 mt-1">{bird.funFact}</p>}
+          </div>
+        </div>
+      </AspectRatio>
+    </div>
+  );
+};
+
+const TextCard = ({ title, description }) => {
+  return (
+    <div className="bg-lime-500 text-white h-full rounded-xl p-6 flex flex-col justify-center">
+      <h3 className="font-heading font-bold text-xl md:text-2xl mb-2">{title}</h3>
+      <p>{description}</p>
+    </div>
+  );
+};
+
 const SpeciesGallery = () => {
   return (
     <div className="space-y-6">
@@ -290,11 +319,23 @@ const SpeciesGallery = () => {
       <div className="block md:hidden">
         <Carousel className="w-full">
           <CarouselContent>
+            <CarouselItem>
+              <TextCard 
+                title="Fascinating Birds" 
+                description="Discover the beautiful diversity of bird species from around the world" 
+              />
+            </CarouselItem>
             {birdGallery.map((bird) => (
               <CarouselItem key={bird.id}>
-                <FlipCard bird={bird} />
+                <ImageCard bird={bird} isFeature={true} />
               </CarouselItem>
             ))}
+            <CarouselItem>
+              <TextCard 
+                title="Bird Conservation" 
+                description="Learn how you can help protect these amazing creatures" 
+              />
+            </CarouselItem>
           </CarouselContent>
           <CarouselPrevious className="-left-4" />
           <CarouselNext className="-right-4" />
@@ -302,46 +343,29 @@ const SpeciesGallery = () => {
       </div>
       
       {/* Desktop view - grid */}
-      <div className="hidden md:grid md:grid-cols-5 gap-4">
-        {birdGallery.map((bird) => (
-          <FlipCard key={bird.id} bird={bird} />
-        ))}
+      <div className="hidden md:grid grid-cols-3 lg:grid-cols-3 gap-4">
+        <TextCard 
+          title="Fascinating Birds" 
+          description="Discover the beautiful diversity of bird species from around the world" 
+        />
+        <div className="col-span-1">
+          <ImageCard bird={birdGallery[0]} />
+        </div>
+        <div className="col-span-1">
+          <ImageCard bird={birdGallery[1]} />
+        </div>
+        <div className="col-span-1">
+          <ImageCard bird={birdGallery[2]} isFeature={true} />
+        </div>
+        <div className="col-span-1">
+          <ImageCard bird={birdGallery[3]} />
+        </div>
+        <TextCard 
+          title="Bird Conservation" 
+          description="Learn how you can help protect these amazing creatures" 
+        />
       </div>
     </div>
-  );
-};
-
-const FlipCard = ({ bird }) => {
-  return (
-    <HoverCard openDelay={0} closeDelay={100}>
-      <HoverCardTrigger asChild>
-        <div className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer">
-          <AspectRatio ratio={1}>
-            <img 
-              src={bird.image} 
-              alt={bird.name}
-              className="object-cover w-full h-full transition-transform duration-300"
-            />
-          </AspectRatio>
-          <div className="p-2 text-center bg-white">
-            <h3 className="font-medium text-forest-900">{bird.name}</h3>
-          </div>
-        </div>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-80 bg-white border-lime-200 p-0 overflow-hidden">
-        <div className="p-4 bg-lime-50 space-y-3">
-          <h4 className="font-heading font-semibold text-forest-900">Fun Fact</h4>
-          <p className="text-forest-800 text-sm">{bird.funFact}</p>
-        </div>
-        <div className="p-3 bg-white flex justify-end">
-          <Link to={`/species/${bird.id}`}>
-            <Button variant="link" className="text-lime-600 p-0 h-auto">
-              Learn more
-            </Button>
-          </Link>
-        </div>
-      </HoverCardContent>
-    </HoverCard>
   );
 };
 
@@ -378,7 +402,7 @@ const Index = () => {
       {/* Species Recommendation */}
       <SpeciesRecommendation />
       
-      {/* Species Gallery with flip cards */}
+      {/* Species Gallery with image cards and text overlays */}
       <SpeciesGallery />
       
       {/* Main content grid with recent sightings and leaderboard */}
