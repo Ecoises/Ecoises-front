@@ -6,9 +6,11 @@ import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
 import { PlusCircle } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
+import ActionDialog from "./ActionDialog";
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [actionDialogOpen, setActionDialogOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -42,18 +44,25 @@ const Layout = () => {
           <Outlet />
         </div>
         
+        {/* Floating action button */}
+        <button
+          onClick={() => setActionDialogOpen(true)}
+          className="fixed bottom-24 right-6 z-50 bg-gradient-to-r from-lime-500 to-green-600 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          aria-label="Quick Actions"
+        >
+          <PlusCircle className="h-6 w-6" />
+        </button>
+        
         {/* Mobile Navigation Bar */}
         {isMobile && (
-          <>
-            <Link 
-              to="/sightings/new" 
-              className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-lime-500 text-white rounded-full p-4 shadow-lg hover:bg-lime-600 transition-colors"
-            >
-              <PlusCircle className="h-6 w-6" />
-            </Link>
-            <MobileNavbar />
-          </>
+          <MobileNavbar />
         )}
+        
+        {/* Action Dialog */}
+        <ActionDialog 
+          open={actionDialogOpen} 
+          onOpenChange={setActionDialogOpen} 
+        />
       </main>
     </div>
   );
