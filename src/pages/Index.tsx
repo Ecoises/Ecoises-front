@@ -45,33 +45,47 @@ const StatCard = ({
   </Card>
 );
 
-const RecentSighting = ({ 
+const RecentSightingCard = ({ 
   bird, 
   location, 
   date, 
-  image 
+  image, 
+  observer,
+  observerAvatar
 }: { 
   bird: string; 
   location: string; 
   date: string;
   image: string;
+  observer: string;
+  observerAvatar: string;
 }) => (
-  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-lime-50 transition-colors">
-    <img 
-      src={image} 
-      alt={bird} 
-      className="h-12 w-12 rounded-lg object-cover"
-    />
-    <div>
-      <h3 className="font-medium text-forest-900">{bird}</h3>
-      <div className="flex items-center text-xs text-forest-700">
+  <Card className="overflow-hidden hover:shadow-md transition-shadow">
+    <div className="relative">
+      <img 
+        src={image} 
+        alt={bird} 
+        className="h-44 w-full object-cover"
+      />
+    </div>
+    <div className="p-4">
+      <h3 className="font-medium text-forest-900 text-lg">{bird}</h3>
+      <div className="flex items-center text-sm text-forest-700 mt-1">
         <MapPin className="h-3 w-3 mr-1" /> 
         <span>{location}</span>
-        <span className="mx-2">•</span>
+      </div>
+      <div className="text-sm text-forest-700 mt-1">
         <span>{date}</span>
       </div>
+      <div className="mt-3 pt-3 border-t border-lime-100 flex items-center gap-2">
+        <Avatar className="h-6 w-6">
+          <AvatarImage src={observerAvatar} />
+          <AvatarFallback>{observer.substring(0, 2)}</AvatarFallback>
+        </Avatar>
+        <span className="text-xs text-forest-700">Observed by <span className="font-medium text-forest-800">{observer}</span></span>
+      </div>
     </div>
-  </div>
+  </Card>
 );
 
 const FeatureCard = ({ 
@@ -176,6 +190,46 @@ const recommendedBirds = [
     difficulty: "Moderate",
     bestTime: "Spring, Summer",
     habitat: "Deciduous forests, suburban areas"
+  }
+];
+
+// Recent sightings data
+const recentSightingsData = [
+  {
+    id: 1,
+    bird: "American Robin",
+    location: "Central Park",
+    date: "Today, 10:23 AM",
+    image: "https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=300&h=300",
+    observer: "María López",
+    observerAvatar: "https://i.pravatar.cc/150?img=5"
+  },
+  {
+    id: 2,
+    bird: "Northern Cardinal",
+    location: "Riverside Trail",
+    date: "Yesterday",
+    image: "https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=300&h=300",
+    observer: "Carlos Méndez",
+    observerAvatar: "https://i.pravatar.cc/150?img=11"
+  },
+  {
+    id: 3,
+    bird: "Blue Jay",
+    location: "Oakwood Park",
+    date: "May 3, 2023",
+    image: "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=300&h=300",
+    observer: "Juan Pérez",
+    observerAvatar: "https://i.pravatar.cc/150?img=12"
+  },
+  {
+    id: 4,
+    bird: "Barn Owl",
+    location: "Hillside Reserve",
+    date: "May 1, 2023",
+    image: "https://images.unsplash.com/photo-1548430075-47e8ecb8c55b?auto=format&fit=crop&w=300&h=300",
+    observer: "Elena García",
+    observerAvatar: "https://i.pravatar.cc/150?img=9"
   }
 ];
 
@@ -405,108 +459,100 @@ const Index = () => {
       {/* Species Gallery with image cards and text overlays */}
       <SpeciesGallery />
       
-      {/* Main content grid with recent sightings and leaderboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Sightings */}
-        <div className="lg:col-span-1">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-heading font-bold text-forest-900">Recent Sightings</h2>
-            <Link to="/sightings" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
-              View All
-            </Link>
+      {/* Leaderboard Section */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-lime-600" />
+            <h2 className="text-xl font-heading font-bold text-forest-900">Top Bird Watchers</h2>
           </div>
-          <Card className="p-4">
-            <div className="divide-y divide-lime-100">
-              <RecentSighting 
-                bird="American Robin" 
-                location="Central Park" 
-                date="Today, 10:23 AM"
-                image="https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=300&h=300"
-              />
-              <RecentSighting 
-                bird="Northern Cardinal" 
-                location="Riverside Trail" 
-                date="Yesterday"
-                image="https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=300&h=300"
-              />
-              <RecentSighting 
-                bird="Blue Jay" 
-                location="Oakwood Park" 
-                date="May 3, 2023"
-                image="https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=300&h=300"
-              />
-            </div>
-          </Card>
+          <Link to="/leaderboard" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
+            View Complete Ranking
+          </Link>
         </div>
         
-        {/* Leaderboard */}
-        <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-lime-600" />
-              <h2 className="text-xl font-heading font-bold text-forest-900">Top Bird Watchers</h2>
+        {/* Top 3 Podium */}
+        <div className="mb-6">
+          <div className="grid grid-cols-3 gap-4">
+            {/* Second place */}
+            <div className="self-end">
+              <TopWinnerCard {...topThree[1]} />
             </div>
-            <Link to="/leaderboard" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
-              View Complete Ranking
-            </Link>
-          </div>
-          
-          {/* Top 3 Podium */}
-          <div className="mb-6">
-            <div className="grid grid-cols-3 gap-4">
-              {/* Second place */}
-              <div className="self-end">
-                <TopWinnerCard {...topThree[1]} />
-              </div>
-              
-              {/* First place - center, larger */}
-              <div className="transform -translate-y-4">
-                <TopWinnerCard {...topThree[0]} isFirst={true} />
-              </div>
-              
-              {/* Third place */}
-              <div className="self-end">
-                <TopWinnerCard {...topThree[2]} />
-              </div>
+            
+            {/* First place - center, larger */}
+            <div className="transform -translate-y-4">
+              <TopWinnerCard {...topThree[0]} isFirst={true} />
+            </div>
+            
+            {/* Third place */}
+            <div className="self-end">
+              <TopWinnerCard {...topThree[2]} />
             </div>
           </div>
-          
-          {/* Rest of Leaderboard */}
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px]">Rank</TableHead>
-                  <TableHead>Observer</TableHead>
-                  <TableHead className="text-center">Sightings</TableHead>
-                  <TableHead className="text-center">Species</TableHead>
+        </div>
+        
+        {/* Rest of Leaderboard */}
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[80px]">Rank</TableHead>
+                <TableHead>Observer</TableHead>
+                <TableHead className="text-center">Sightings</TableHead>
+                <TableHead className="text-center">Species</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {restOfLeaderboard.map((entry) => (
+                <TableRow key={entry.position} className="hover:bg-lime-50">
+                  <TableCell className="font-medium">
+                    <div className="flex justify-center items-center w-8 h-8 rounded-full bg-lime-100 text-forest-800">
+                      {entry.position}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={entry.avatar} 
+                        alt={entry.name}
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                      <span className="font-medium">{entry.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">{entry.sightings}</TableCell>
+                  <TableCell className="text-center">{entry.species}</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {restOfLeaderboard.map((entry) => (
-                  <TableRow key={entry.position} className="hover:bg-lime-50">
-                    <TableCell className="font-medium">
-                      <div className="flex justify-center items-center w-8 h-8 rounded-full bg-lime-100 text-forest-800">
-                        {entry.position}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={entry.avatar} 
-                          alt={entry.name}
-                          className="h-8 w-8 rounded-full object-cover"
-                        />
-                        <span className="font-medium">{entry.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">{entry.sightings}</TableCell>
-                    <TableCell className="text-center">{entry.species}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
+      
+      {/* Recent Sightings Section - Now as a separate section with cards */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-lime-600" />
+            <h2 className="text-xl font-heading font-bold text-forest-900">Recent Sightings</h2>
+          </div>
+          <Link to="/sightings" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
+            View All
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {recentSightingsData.map(sighting => (
+            <RecentSightingCard
+              key={sighting.id}
+              bird={sighting.bird}
+              location={sighting.location}
+              date={sighting.date}
+              image={sighting.image}
+              observer={sighting.observer}
+              observerAvatar={sighting.observerAvatar}
+            />
+          ))}
         </div>
       </div>
       
