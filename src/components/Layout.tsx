@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
-import { PlusCircle } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { Outlet } from "react-router-dom";
 import ActionDialog from "./ActionDialog";
 
 const Layout = () => {
@@ -24,7 +23,7 @@ const Layout = () => {
       <main className={cn(
         "flex-1 transition-all duration-300 min-h-screen",
         isMobile 
-          ? "pb-20" // Add padding at the bottom for the mobile navbar
+          ? "pb-24" // Add padding at the bottom for the mobile navbar
           : "ml-64" // Always leave space for the sidebar on desktop
       )}>
         {isMobile && (
@@ -44,18 +43,15 @@ const Layout = () => {
           <Outlet />
         </div>
         
-        {/* Floating action button - Now square and positioned lower */}
-        <button
-          onClick={() => setActionDialogOpen(true)}
-          className="fixed bottom-28 right-6 z-50 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-lime-500 to-green-600"
-          aria-label="Quick Actions"
-        >
-          <PlusCircle className="h-6 w-6 text-white" />
-        </button>
-        
-        {/* Mobile Navigation Bar */}
-        {isMobile && (
-          <MobileNavbar />
+        {/* Floating action button - visible only on desktop */}
+        {!isMobile && (
+          <button
+            onClick={() => setActionDialogOpen(true)}
+            className="fixed bottom-4 right-6 z-50 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-lime-500"
+            aria-label="Quick Actions"
+          >
+            <Plus className="h-6 w-6 text-white" />
+          </button>
         )}
         
         {/* Action Dialog */}
@@ -64,6 +60,9 @@ const Layout = () => {
           onOpenChange={setActionDialogOpen} 
         />
       </main>
+      
+      {/* Mobile Navigation Bar */}
+      {isMobile && <MobileNavbar />}
     </div>
   );
 };

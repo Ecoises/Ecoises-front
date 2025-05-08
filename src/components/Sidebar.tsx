@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Map, Search, BookOpen, Calendar, User, Settings, LogOut, ChevronDown } from "lucide-react";
+import { Home, Map, Search, BookOpen, Calendar, User, Settings, LogOut, ChevronDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,12 +36,22 @@ const NavItem = ({ icon: Icon, label, to, active }: NavItemProps) => {
   );
 };
 
-const navItems = [
+// Elementos para la navegación web
+export const navItems = [
   { icon: Home, label: "Dashboard", to: "/" },
   { icon: Search, label: "Bird Explorer", to: "/explorer" },
   { icon: Map, label: "Sightings Map", to: "/map" },
   { icon: BookOpen, label: "Species Guide", to: "/species" },
   { icon: Calendar, label: "My Sightings", to: "/sightings" },
+];
+
+// Elementos para la navegación móvil - diferentes que los de la web
+export const mobileNavItems = [
+  { icon: Home, label: "Home", to: "/" },
+  { icon: Search, label: "Search", to: "/explorer" },
+  { icon: Plus, label: "Add Sighting", to: "/sightings/new" }, // Botón central en móvil
+  { icon: Map, label: "Map", to: "/map" },
+  { icon: User, label: "Profile", to: "/profile" },
 ];
 
 interface SidebarProps {
@@ -121,4 +130,3 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
 };
 
 export default Sidebar;
-export { navItems };
