@@ -44,13 +44,13 @@ const Layout = () => {
           <Outlet />
         </div>
         
-        {/* Floating action button */}
+        {/* Floating action button - Now square and positioned lower */}
         <button
           onClick={() => setActionDialogOpen(true)}
-          className="fixed bottom-24 right-6 z-50 bg-gradient-to-r from-lime-500 to-green-600 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          className="fixed bottom-28 right-6 z-50 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-gradient-to-r from-lime-500 to-green-600"
           aria-label="Quick Actions"
         >
-          <PlusCircle className="h-6 w-6" />
+          <PlusCircle className="h-6 w-6 text-white" />
         </button>
         
         {/* Mobile Navigation Bar */}
