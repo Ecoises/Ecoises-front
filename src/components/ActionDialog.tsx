@@ -32,13 +32,13 @@ const ActionDialog = ({ open, onOpenChange }: ActionDialogProps) => {
             </div>
             <div>
               <h3 className="text-xl font-bold text-green-700">Registrar Avistamiento</h3>
-              <p className="text-sm text-gray-500">subtítulo</p>
+              <p className="text-sm text-gray-500">Añadir una nueva observación</p>
             </div>
           </Link>
 
           {/* Identificar Especie */}
           <Link 
-            to="/explorer"
+            to="/identify"
             className="p-8 bg-lime-50 hover:bg-lime-100 transition-colors flex flex-col items-center justify-center gap-4 text-center min-h-[230px]"
             onClick={() => onOpenChange(false)}
           >
@@ -47,7 +47,7 @@ const ActionDialog = ({ open, onOpenChange }: ActionDialogProps) => {
             </div>
             <div>
               <h3 className="text-xl font-bold text-green-700">Identificar Especie</h3>
-              <p className="text-sm text-gray-500">subtítulo</p>
+              <p className="text-sm text-gray-500">Herramienta de identificación de aves</p>
             </div>
           </Link>
         </div>
