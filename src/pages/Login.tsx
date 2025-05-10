@@ -9,33 +9,41 @@ import axios from "axios";
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [imageUrl, setImageUrl] = useState("");
-  const toggleForm = () => setIsLogin(!isLogin); 
   const [speciesName, setSpeciesName] = useState("");
   const [photoAuthor, setPhotoAuthor] = useState("");
+  const toggleForm = () => setIsLogin(!isLogin);
 
   const fetchSpeciesImage = async () => {
     try {
-      const res = await axios.get("https://api.inaturalist.org/v1/observations", {
+      // Genera una página aleatoria para obtener un taxón aleatorio
+      const randomPage = Math.floor(Math.random() * 1000) + 1;
+
+      const res = await axios.get("https://api.inaturalist.org/v1/taxa", {
         params: {
-          order_by: "observed_on",
-          photos: true,
-          identified: true,
-          quality_grade: "research",
           per_page: 1,
-          page: Math.floor(Math.random() * 1000) + 1, // para obtener especies aleatorias
-          locale: "es",
-          // place_id: 6793
+          rank: "species", // Solo un resultado
+          page: randomPage, // Página aleatoria para simular aleatoriedad
+          locale: "es", // Idioma español
+          has_photos: true, // Filtra taxones con fotos (opcional, depende de la API)
+          place_id: 6793
         },
       });
 
       const result = res.data.results[0];
-      if (result && result.photos && result.photos[0]) {
-        setImageUrl(result.photos[0].url.replace("square", "large"));
-        setSpeciesName(result.taxon?.preferred_common_name || "Especie desconocida");
-        setPhotoAuthor(result.user?.name || result.user?.login || "Autor desconocido");
+      if (result && result.default_photo) {
+        setImageUrl(result.default_photo.url.replace("square", "large"));
+        setSpeciesName(result.preferred_common_name || result.name || "Especie desconocida");
+        setPhotoAuthor(result.default_photo.attribution || "Autor desconocido");
+      } else {
+        // Si no hay imagen, reintenta con otra solicitud
+        console.warn("No se encontró una imagen para la especie, reintentando...");
+        fetchSpeciesImage(); // Reintenta hasta encontrar un taxón con imagen
       }
     } catch (err) {
       console.error("Error al obtener datos de iNaturalist", err);
+      setImageUrl("");
+      setSpeciesName("Error al cargar especie");
+      setPhotoAuthor("Autor desconocido");
     }
   };
 
@@ -54,14 +62,18 @@ const Login = () => {
               alt={speciesName} 
               className="object-cover w-full h-full"
             />
-            <div className="absolute bottom-8 left-8 bg-white/80 backdrop-blur-sm p-3 rounded-lg max-w-xs shadow-lg">
+            {/* <div className="absolute bottom-8 left-8 bg-white/80 backdrop-blur-sm p-3 rounded-lg max-w-xs shadow-lg">
               <h2 className="text-lg font-heading font-bold text-forest-900 mb-0.5">{speciesName}</h2>
-              <p className="text-sm text-forest-800">Foto por: {photoAuthor}</p>
-            </div>
+              <p className="text-xs text-forest-800">Foto por: {photoAuthor}</p>
+            </div> */}
             {/* <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 text-white">
                 <h2 className="text-xl font-bold">{speciesName}</h2>
-                <p className="text-sm ">Foto por: {photoAuthor}</p>
+                <p className="text-xs ">Foto por: {photoAuthor}</p>
               </div> */}
+            <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white p-3 rounded-lg max-w-xs">
+              <p className="text-sm font-heading font-bold text mb-0.5 ">{speciesName}</p>
+              <p className="text-xs text-gray-200">Foto por: {photoAuthor}</p>
+            </div>
           </>
         )}
       </div>
