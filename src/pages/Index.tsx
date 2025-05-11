@@ -387,7 +387,7 @@ const SpeciesGallery = () => {
             <CarouselItem>
               <TextCard 
                 title="Bird Conservation" 
-                description="Learn how you can help protect these amazing creatures" 
+                description="Discover the beautiful diversity of bird species from around the world" 
               />
             </CarouselItem>
           </CarouselContent>
@@ -431,9 +431,9 @@ const Index = () => {
   
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Hero Section */}
-      <div className="relative -mx-6 -mt-6 mb-12">
-        <div className="bg-lime-100 rounded-lg overflow-hidden">
+      {/* Hero Section - FIXED SPACING */}
+      <div className="relative rounded-lg overflow-hidden mx-auto my-6">
+        <div className="bg-lime-100 rounded-lg">
           <div className="container max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-8 md:mb-0">
               <h1 className="text-4xl md:text-5xl font-bold text-forest-950 mb-4">Bienvenido a Avoga</h1>
