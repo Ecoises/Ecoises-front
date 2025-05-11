@@ -389,8 +389,7 @@ const SpeciesGallery = () => {
                 title="Bird Conservation" 
                 description="Learn how you can help protect these amazing creatures" 
               />
-            </CarouselItem>
-          </CarouselContent>
+            </CarouselContent>
           <CarouselPrevious className="-left-4" />
           <CarouselNext className="-right-4" />
         </Carousel>
@@ -431,6 +430,37 @@ const Index = () => {
   
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Hero Section */}
+      <div className="relative -mx-6 -mt-6 mb-12">
+        <div className="bg-lime-100 rounded-lg overflow-hidden">
+          <div className="container max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between">
+            <div className="md:w-1/2 mb-8 md:mb-0">
+              <h1 className="text-4xl md:text-5xl font-bold text-forest-950 mb-4">Bienvenido a Avoga</h1>
+              <p className="text-forest-700 text-lg mb-6">Track, explore, and discover the fascinating world of birds</p>
+              <div className="flex gap-4">
+                <Link to="/explorer">
+                  <Button className="bg-lime-500 hover:bg-lime-600 text-white rounded-full">
+                    Explorar Aves
+                  </Button>
+                </Link>
+                <Link to="/sightings/new">
+                  <Button variant="outline" className="border-lime-400 text-forest-800 rounded-full">
+                    Registrar Avistamiento
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <div className="md:w-1/2 flex justify-center md:justify-end">
+              <img 
+                src="/images/ilustracion.png"
+                alt="Bird illustration" 
+                className="max-h-72 md:max-h-80 object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
