@@ -389,7 +389,8 @@ const SpeciesGallery = () => {
                 title="Bird Conservation" 
                 description="Learn how you can help protect these amazing creatures" 
               />
-            </CarouselContent>
+            </CarouselItem>
+          </CarouselContent>
           <CarouselPrevious className="-left-4" />
           <CarouselNext className="-right-4" />
         </Carousel>
