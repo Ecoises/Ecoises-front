@@ -16,7 +16,7 @@ const Login = () => {
   const fetchSpeciesImage = async () => {
     try {
       // Genera una página aleatoria para obtener un taxón aleatorio
-      const randomPage = Math.floor(Math.random() * 1000) + 1;
+      const randomPage = Math.floor(Math.random() * 10000) + 1;
 
       const res = await axios.get("https://api.inaturalist.org/v1/taxa", {
         params: {
@@ -25,7 +25,7 @@ const Login = () => {
           page: randomPage, // Página aleatoria para simular aleatoriedad
           locale: "es", // Idioma español
           has_photos: true, // Filtra taxones con fotos (opcional, depende de la API)
-          place_id: 6793
+          place_id: 7196, // ID de un lugar específico (opcional)
         },
       });
 
