@@ -43,7 +43,7 @@ const birdsData = [
     id: 2,
     name: "Northern Cardinal",
     scientificName: "Cardinalis cardinalis",
-    image: "https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=800&h=500",
+    image: "https://inaturalist-open-data.s3.amazonaws.com/photos/452211470/original.jpg",
     description:
       "The Northern Cardinal is a bird in the genus Cardinalis. It is also known colloquially as the redbird, common cardinal, red cardinal, or just cardinal. It can be found in southeastern Canada, through the eastern United States, and south to Mexico.",
     habitat: "Woodlands, Gardens, Shrublands, Swamps",
@@ -57,11 +57,11 @@ const birdsData = [
     category: "Cardinal",
     audio: "https://example.com/cardinal-call.mp3",
     gallery: [
-      "https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=800&h=500",
+      "https://inaturalist-open-data.s3.amazonaws.com/photos/189434971/large.jpg",
       "https://images.unsplash.com/photo-1520808663317-647b476a81b9?auto=format&fit=crop&w=800&h=500",
       "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&h=500",
-      "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&h=500",
-      "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&h=500",
+      
+      
     ],
     sightings: [
       { location: "Backyard Feeder", date: "May 6, 2023", time: "8:13 AM" },
@@ -121,42 +121,48 @@ const SpeciesDetail = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column: Images */}
-        <div className="lg:col-span-1 space-y-4">
-          <Card className="overflow-hidden border-lime-200">
-            <img src={activeImage || "/placeholder.svg"} alt={bird.name} className="w-full aspect-[4/3] object-cover" />
-          </Card>
+       <div className="lg:col-span-1 space-y-4">
+        <Card className="relative overflow-hidden border  rounded-xl shadow-md">
+          <img
+            src={activeImage || "/placeholder.svg"}
+            alt={bird.name}
+            className="w-full aspect-[4/4] object-cover"
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+              <p className="text-xs text-white font-medium">
+                Foto por:
+              </p>
+            </div>
+        </Card>
 
-          {/* <div className="grid grid-cols-3 gap-2">
-            {bird.gallery.map((img, index) => (
-              <button
-                key={index}
-                className="overflow-hidden rounded-lg border border-lime-200"
-                onClick={() => setActiveImage(img)}
-              >
-                <img
-                  src={img || "/placeholder.svg"}
-                  alt={`${bird.name} ${index + 1}`}
-                  className="w-full h-28 object-cover"
-                />
-              </button>
-            ))}
-          </div> */}
+        {/* <div className="flex space-x-2 justify-center">
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full border-lime-200 gap-1 shadow-sm"
+          >
+            <Star className="h-4 w-4" />
+            Favorite
+          </Button>
+          <Button
+            size="sm"
+            className="rounded-lg bg-lime-500 hover:bg-lime-600 gap-1 shadow-sm"
+          >
+            <Eye className="h-4 w-4" />
+            Agregar avistamiento
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full border-lime-200 gap-1 shadow-sm"
+          >
+            <Share className="h-4 w-4" />
+            Share
+          </Button>
+        </div> */}
 
-          <div className="flex space-x-2 justify-center">
-            <Button size="sm" variant="outline" className="rounded-full border-lime-200 gap-1">
-              <Star className="h-4 w-4" />
-              Favorite
-            </Button>
-            <Button size="sm" variant="outline" className="rounded-full border-lime-200 gap-1">
-              <Eye className="h-4 w-4" />
-              Log Sighting
-            </Button>
-            <Button size="sm" variant="outline" className="rounded-full border-lime-200 gap-1">
-              <Share className="h-4 w-4" />
-              Share
-            </Button>
-          </div>
-        </div>
+       </div>
+
 
         {/* Right Column: Details */}
         <div className="lg:col-span-1 space-y-6">
@@ -289,6 +295,7 @@ const SpeciesDetail = () => {
           </Tabs>
         </div>
       </div>
+      
     </div>
   )
 }
