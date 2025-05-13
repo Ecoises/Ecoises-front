@@ -119,7 +119,7 @@ const birdsData = [
     observations: [
       {
         id: 201,
-        image: "https://images.unsplash.com/photo-1590318892850-c7376373f239?auto=format&fit=crop&w=800&h=600",
+        image: "https://inaturalist-open-data.s3.amazonaws.com/photos/452211470/original.jpg",
         location: "Backyard Feeder, Atlanta",
         date: "May 6, 2023",
         time: "8:13 AM",
@@ -133,7 +133,7 @@ const birdsData = [
       },
       {
         id: 202,
-        image: "https://images.unsplash.com/photo-1603270238276-3732e4d3f7f3?auto=format&fit=crop&w=800&h=600",
+        image: "https://inaturalist-open-data.s3.amazonaws.com/photos/452211470/original.jpg",
         location: "Forest Park, Cincinnati",
         date: "May 1, 2023", 
         time: "7:45 AM",
@@ -147,7 +147,21 @@ const birdsData = [
       },
       {
         id: 203,
-        image: "https://images.unsplash.com/photo-1565023894734-654b25ebf1a9?auto=format&fit=crop&w=800&h=600",
+        image: "https://inaturalist-open-data.s3.amazonaws.com/photos/452211470/original.jpg",
+        location: "River Trail, Louisville",
+        date: "April 22, 2023",
+        time: "10:20 AM",
+        user: {
+          name: "David Chen",
+          avatar: "https://randomuser.me/api/portraits/men/77.jpg",
+        },
+        description: "Female Northern Cardinal collecting grass and small twigs. Very cautious and would fly away when anyone approached.",
+        weather: "Partly cloudy, breezy",
+        notes: "Seemed to be in the early stages of nest building based on the materials being gathered.",
+      },
+      {
+        id: 203,
+        image: "https://inaturalist-open-data.s3.amazonaws.com/photos/452211470/original.jpg",
         location: "River Trail, Louisville",
         date: "April 22, 2023",
         time: "10:20 AM",
@@ -381,13 +395,13 @@ const SpeciesDetail = () => {
         <h2 className="text-2xl font-bold text-forest-950 mb-6">Recent Observations</h2>
         
         {bird.observations && bird.observations.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {bird.observations.map((observation) => (
               <Dialog key={observation.id}>
                 <DialogTrigger asChild>
                   <Card className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
                     <div className="relative">
-                      <AspectRatio ratio={16/9}>
+                      <AspectRatio ratio={4/4}>
                         <img 
                           src={observation.image} 
                           alt={`Observation of ${bird.name}`}
@@ -398,7 +412,7 @@ const SpeciesDetail = () => {
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8 border border-lime-200">
+                          <Avatar className="h-8 w-8 border !rounded">
                             <AvatarImage src={observation.user.avatar} alt={observation.user.name} />
                             <AvatarFallback>{observation.user.name.charAt(0)}</AvatarFallback>
                           </Avatar>
@@ -412,12 +426,12 @@ const SpeciesDetail = () => {
                         <MapPin className="h-3 w-3 text-lime-600" />
                         <span>{observation.location}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-forest-600">
+                      {/* <div className="flex items-center gap-2 text-xs text-forest-600">
                         <Calendar className="h-3 w-3" />
                         <span>{observation.date}</span>
                         <Clock className="h-3 w-3 ml-1" />
                         <span>{observation.time}</span>
-                      </div>
+                      </div> */}
                     </CardContent>
                   </Card>
                 </DialogTrigger>

@@ -433,34 +433,34 @@ const Index = () => {
     <div className="space-y-8 animate-fade-in">
       {/* Hero Section - FIXED SPACING */}
       <div className="relative rounded-lg overflow-hidden mx-auto my-6">
-  <div className="bg-lime-100 rounded-lg">
-    <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col md:flex-row items-center justify-between">
-      <div className="md:w-1/2 mb-6 md:mb-0">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-forest-950 mb-4">
-          Bienvenido a Avoga
-        </h1>
-        <p className="text-forest-700 text-base sm:text-lg mb-6">
-          Track, explore, and discover the fascinating world of birds
-        </p>
-        {/* <div className="flex gap-4">
-          <Link to="/explorer">
-            <Button className="bg-lime-500 hover:bg-lime-600 text-whitemeans you can uncomment this when ready */}
-        {/*   <Button variant="outline" className="border-lime-400 text-forest-800 rounded-full">
-            Registrar Avistamiento
-          </Button>
-        </Link>
-      </div> */}
+        <div className="bg-lime-100 rounded-lg">
+          <div className="container max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col md:flex-row items-center justify-between">
+            <div className="md:w-1/2 mb-6 md:mb-0">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-forest-950 mb-4">
+                Bienvenido a Avoga
+              </h1>
+              <p className="text-forest-700 text-base sm:text-lg mb-6">
+                Track, explore, and discover the fascinating world of birds
+              </p>
+              {/* <div className="flex gap-4">
+                <Link to="/explorer">
+                  <Button className="bg-lime-500 hover:bg-lime-600 text-whitemeans you can uncomment this when ready */}
+              {/*   <Button variant="outline" className="border-lime-400 text-forest-800 rounded-full">
+                  Registrar Avistamiento
+                </Button>
+              </Link>
+            </div> */}
+            </div>
+            <div className=" md:w-1/2 flex justify-center md:justify-end hidden md:flex">
+              <img
+                src="/images/ilustracion.svg"
+                alt="Bird illustration"
+                className="max-h-72 md:max-h-80 object-contain w-[340px]"
+              />
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="md:w-1/2 flex justify-center md:justify-end hidden md:flex">
-        <img
-          src="/images/ilustracion.svg"
-          alt="Bird illustration"
-          className="max-h-72 md:max-h-80 object-contain w-[300px]"
-        />
-      </div>
-    </div>
-  </div>
-</div>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
