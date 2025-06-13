@@ -14,7 +14,7 @@ const birdGallery = [
   {
     id: 1,
     name: "Flamingo",
-    image: "https://images.unsplash.com/photo-1497206365907-f5e630693df0?auto=format&fit=crop&w=500&h=500",
+    image: "https://inaturalist-open-data.s3.amazonaws.com/photos/123574818/large.jpg",
     funFact: "Flamingos get their pink coloration from the beta-carotene in their diet of brine shrimp and blue-green algae.",
     habitat: "Salt lakes, lagoons",
     lifespan: "20-30 years",
@@ -23,7 +23,7 @@ const birdGallery = [
   {
     id: 2,
     name: "Barn Owl",
-    image: "https://images.unsplash.com/photo-1548430075-47e8ecb8c55b?auto=format&fit=crop&w=500&h=500",
+    image: "https://inaturalist-open-data.s3.amazonaws.com/photos/48987498/medium.jpeg",
     funFact: "Barn Owls can detect and capture prey in complete darkness using only their hearing, which is so precise they can locate mice under snow or vegetation.",
     habitat: "Open grasslands, farms",
     lifespan: "4-10 years",
@@ -66,7 +66,7 @@ const FlippingCard = ({ bird, isIntro = false }) => {
           <div className="relative w-full h-full transition-transform duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
             {/* Front side */}
             <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-lime-500 text-white rounded-xl p-6 flex flex-col justify-center">
-              <h3 className="font-heading font-bold text-xl md:text-2xl mb-2">Fascinating Birds</h3>
+              <h3 className="font-heading font-bold text-xl md:text-2xl mb-2">Especies fascinantes</h3>
               <p>Discover the beautiful diversity of bird species from around the world</p>
             </div>
             
@@ -95,7 +95,7 @@ const FlippingCard = ({ bird, isIntro = false }) => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
                 <div className="text-white">
-                  <h3 className="font-heading font-bold text-lg md:text-xl">{bird.name}</h3>
+                  <h3 className="font-heading font-bold text-lg md:text-xl mb-3">{bird.name}</h3>
                 </div>
               </div>
             </AspectRatio>
@@ -103,8 +103,8 @@ const FlippingCard = ({ bird, isIntro = false }) => {
           
           {/* Back side - Information */}
           <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-white border border-lime-200 rounded-xl p-6 flex flex-col justify-center">
-            <h3 className="font-heading font-bold text-lg text-forest-900 mb-3">{bird.name}</h3>
-            <p className="text-sm text-forest-700 mb-4 line-clamp-3">{bird.funFact}</p>
+            <h3 className="font-heading font-bold text-xl text-forest-900 mb-3">{bird.name}</h3>
+            <p className="">{bird.funFact}</p>
             <div className="space-y-2 text-xs text-forest-600">
               <div><span className="font-medium">Habitat:</span> {bird.habitat}</div>
               <div><span className="font-medium">Lifespan:</span> {bird.lifespan}</div>
