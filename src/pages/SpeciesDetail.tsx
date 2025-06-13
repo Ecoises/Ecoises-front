@@ -248,7 +248,7 @@ const SpeciesDetail = () => {
           <img
             src={activeImage || "/placeholder.svg"}
             alt={bird.name}
-            className="w-full aspect-[4/4] object-cover"
+            className="w-full aspect-[4/3] md:aspect-[4/4] object-cover"
           />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
               <p className="text-xs text-white font-medium">
