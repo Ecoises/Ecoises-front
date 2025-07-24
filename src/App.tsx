@@ -15,6 +15,7 @@ import NewSighting from "./pages/NewSighting";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
+import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/map" element={<Map />} />
             <Route path="/sightings" element={<Sightings />} />
             <Route path="/sightings/new" element={<NewSighting />} />
+            <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
