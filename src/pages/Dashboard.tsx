@@ -14,7 +14,7 @@ import FeaturesSection from "@/components/home/FeaturesSection";
 const Index = () => {
   return (
     <div>
-      <DashboardNavbar />
+  
       <div className="space-y-8 animate-fade-in p-6">
         {/* Hero Section */}
         <HeroSection />
