@@ -38,20 +38,20 @@ const NavItem = ({ icon: Icon, label, to, active }: NavItemProps) => {
 
 // Elementos para la navegación web
 export const navItems = [
-  { icon: Home, label: "Dashboard", to: "/" },
-  { icon: Search, label: "Bird Explorer", to: "/explorer" },
-  { icon: Map, label: "Sightings Map", to: "/map" },
-  { icon: BookOpen, label: "Species Guide", to: "/species" },
-  { icon: Calendar, label: "My Sightings", to: "/sightings" },
+  { icon: Home, label: "Dashboard", to: "/app" },
+  { icon: Search, label: "Bird Explorer", to: "/app/explorer" },
+  { icon: Map, label: "Sightings Map", to: "/app/map" },
+  { icon: BookOpen, label: "Species Guide", to: "/app/species" },
+  { icon: Calendar, label: "My Sightings", to: "/app/sightings" },
 ];
 
 // Elementos para la navegación móvil - diferentes que los de la web
 export const mobileNavItems = [
-  { icon: Home, label: "Home", to: "/" },
-  { icon: Search, label: "Search", to: "/explorer" },
-  { icon: Plus, label: "Add Sighting", to: "/sightings/new" }, // Botón central en móvil
-  { icon: Map, label: "Map", to: "/map" },
-  { icon: User, label: "Profile", to: "/profile" },
+  { icon: Home, label: "Home", to: "/app" },
+  { icon: Search, label: "Search", to: "/app/explorer" },
+  { icon: Plus, label: "Add Sighting", to: "/app/sightings/new" }, // Botón central en móvil
+  { icon: Map, label: "Map", to: "/app/map" },
+  { icon: User, label: "Profile", to: "/app/profile" },
 ];
 
 interface SidebarProps {
@@ -73,12 +73,7 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
       )}
     >
       <div className="p-4 flex flex-col h-full">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="bg-lime-400 h-8 w-8 rounded-lg flex items-center justify-center">
-            <span className="text-forest-900 font-bold text-lg">B</span>
-          </div>
-          <h1 className="text-forest-900 font-bold text-xl">BirdWatch</h1>
-        </div>
+        {/* Logo removed - now in navbar */}
         
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => (
