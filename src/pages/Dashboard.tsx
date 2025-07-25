@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DashboardNavbar from "@/components/DashboardNavbar";
 import HeroSection from "@/components/home/HeroSection";
 import StatsSection from "@/components/home/StatsSection";
 import SpeciesRecommendation from "@/components/home/SpeciesRecommendation";
@@ -12,9 +13,11 @@ import FeaturesSection from "@/components/home/FeaturesSection";
 
 const Index = () => {
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Hero Section */}
-      <HeroSection />
+    <div>
+      <DashboardNavbar />
+      <div className="space-y-8 animate-fade-in p-6">
+        {/* Hero Section */}
+        <HeroSection />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -45,8 +48,9 @@ const Index = () => {
       {/* Recent Sightings Section */}
       <RecentSightingsSection />
       
-      {/* Features */}
-      <FeaturesSection />
+        {/* Features */}
+        <FeaturesSection />
+      </div>
     </div>
   );
 };
