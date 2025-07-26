@@ -67,14 +67,14 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
   return (
     <aside
       className={cn(
-        "bg-secondary fixed z-50 transition-all duration-300 shadow-lg md:shadow-none",
+        "fixed z-40 transition-all duration-300 md:shadow-none top-16",
         isMobile
           ? sidebarOpen ? "left-0 w-64" : "-left-64 w-64"
           : "w-64 left-0"
       )}
     >
-      {/* CORREGIDO: h-screen y overflow-auto están aquí */}
-      <div className="h-screen overflow-auto p-4 flex flex-col">
+      {/* Ajustado: calcula la altura restante después del navbar superior */}
+      <div className="h-[calc(100vh-4rem)] overflow-auto p-4 flex flex-col">
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => (
             <NavItem
