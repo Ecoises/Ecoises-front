@@ -393,7 +393,6 @@ const SpeciesDetail = () => {
       {/* Observations Section */}
       <div className="mt-12 mb-8">
         <h2 className="text-2xl font-bold text-forest-950 mb-6">Recent Observations</h2>
-        
         {bird.observations && bird.observations.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {bird.observations.map((observation) => (
@@ -401,18 +400,18 @@ const SpeciesDetail = () => {
                 <DialogTrigger asChild>
                   <Card className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
                     <div className="relative">
-                      <AspectRatio ratio={4/4}>
+                      
                         <img 
                           src={observation.image} 
                           alt={`Observation of ${bird.name}`}
                           className="object-cover w-full h-full"
                         />
-                      </AspectRatio>
+                     
                     </div>
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8 border !rounded">
+                          <Avatar className="h-8 w-8 border ">
                             <AvatarImage src={observation.user.avatar} alt={observation.user.name} />
                             <AvatarFallback>{observation.user.name.charAt(0)}</AvatarFallback>
                           </Avatar>

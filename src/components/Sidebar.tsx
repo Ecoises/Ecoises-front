@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Map, Search, BookOpen, Calendar, User, Settings, LogOut, ChevronDown, Plus } from "lucide-react";
+import {
+  Home, Map, Search, BookOpen, Calendar, User,
+  Settings, LogOut, ChevronDown, Plus
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 
 interface NavItemProps {
@@ -36,7 +39,6 @@ const NavItem = ({ icon: Icon, label, to, active }: NavItemProps) => {
   );
 };
 
-// Elementos para la navegación web
 export const navItems = [
   { icon: Home, label: "Dashboard", to: "/app" },
   { icon: Search, label: "Bird Explorer", to: "/app/explorer" },
@@ -45,11 +47,10 @@ export const navItems = [
   { icon: Calendar, label: "My Sightings", to: "/app/sightings" },
 ];
 
-// Elementos para la navegación móvil - diferentes que los de la web
 export const mobileNavItems = [
   { icon: Home, label: "Home", to: "/app" },
   { icon: Search, label: "Search", to: "/app/explorer" },
-  { icon: Plus, label: "Add Sighting", to: "/app/sightings/new" }, // Botón central en móvil
+  { icon: Plus, label: "Add Sighting", to: "/app/sightings/new" },
   { icon: Map, label: "Map", to: "/app/map" },
   { icon: User, label: "Profile", to: "/app/profile" },
 ];
@@ -64,17 +65,16 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
   const isMobile = useIsMobile();
 
   return (
-    <aside 
+    <aside
       className={cn(
-        "bg-secondary fixed z-50 h-screen transition-all duration-300 shadow-lg md:shadow-none overflow-auto",
-        isMobile 
+        "bg-secondary fixed z-50 transition-all duration-300 shadow-lg md:shadow-none",
+        isMobile
           ? sidebarOpen ? "left-0 w-64" : "-left-64 w-64"
           : "w-64 left-0"
       )}
     >
-      <div className="p-4 flex flex-col h-full">
-        {/* Logo removed - now in navbar */}
-        
+      {/* CORREGIDO: h-screen y overflow-auto están aquí */}
+      <div className="h-screen overflow-auto p-4 flex flex-col">
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => (
             <NavItem
@@ -86,7 +86,8 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
             />
           ))}
         </nav>
-        
+
+        {/* Footer / Menú inferior */}
         <div className="mt-auto pt-4 border-t border-lime-100">
           <DropdownMenu>
             <DropdownMenuTrigger className="w-full">
