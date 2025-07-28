@@ -22,7 +22,8 @@ const learningPathsData = {
         duration: "15 min",
         points: 15,
         completed: true,
-        type: "video"
+        type: "video",
+        coverImage: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07"
       },
       {
         id: 2,
@@ -31,7 +32,8 @@ const learningPathsData = {
         duration: "20 min",
         points: 20,
         completed: true,
-        type: "interactive"
+        type: "interactive",
+        coverImage: "https://images.unsplash.com/photo-1509316975850-ff9c5be021d11"
       },
       {
         id: 3,
@@ -41,7 +43,8 @@ const learningPathsData = {
         points: 18,
         completed: false,
         type: "audio",
-        current: true
+        current: true,
+        coverImage: "https://images.unsplash.com/photo-1472396961693-142e6e269027"
       },
       {
         id: 4,
@@ -50,7 +53,8 @@ const learningPathsData = {
         duration: "25 min",
         points: 25,
         completed: false,
-        type: "video"
+        type: "video",
+        coverImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6"
       },
       {
         id: 5,
@@ -59,7 +63,8 @@ const learningPathsData = {
         duration: "22 min",
         points: 22,
         completed: false,
-        type: "interactive"
+        type: "interactive",
+        coverImage: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07"
       },
       {
         id: 6,
@@ -68,7 +73,8 @@ const learningPathsData = {
         duration: "30 min",
         points: 30,
         completed: false,
-        type: "video"
+        type: "video",
+        coverImage: "https://images.unsplash.com/photo-1509316975850-ff9c5be021d11"
       },
       {
         id: 7,
@@ -77,7 +83,8 @@ const learningPathsData = {
         duration: "28 min",
         points: 28,
         completed: false,
-        type: "interactive"
+        type: "interactive",
+        coverImage: "https://images.unsplash.com/photo-1472396961693-142e6e269027"
       },
       {
         id: 8,
@@ -86,7 +93,8 @@ const learningPathsData = {
         duration: "15 min",
         points: 50,
         completed: false,
-        type: "quiz"
+        type: "quiz",
+        coverImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6"
       }
     ]
   }
@@ -126,7 +134,7 @@ const LearningPath = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-white p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -196,15 +204,24 @@ const LearningPath = () => {
             >
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  {/* Status Icon */}
+                  {/* Cover Image */}
                   <div className="flex-shrink-0">
-                    {lesson.completed ? (
-                      <CheckCircle className="h-8 w-8 text-green-500" />
-                    ) : lesson.current ? (
-                      <PlayCircle className="h-8 w-8 text-blue-500" />
-                    ) : (
-                      <Lock className="h-8 w-8 text-gray-400" />
-                    )}
+                    <div className="relative w-24 h-24 rounded-lg overflow-hidden">
+                      <img 
+                        src={lesson.coverImage} 
+                        alt={lesson.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        {lesson.completed ? (
+                          <CheckCircle className="h-8 w-8 text-white" />
+                        ) : lesson.current ? (
+                          <PlayCircle className="h-8 w-8 text-white" />
+                        ) : (
+                          <Lock className="h-8 w-8 text-white/70" />
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Lesson Info */}
