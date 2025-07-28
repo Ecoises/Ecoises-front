@@ -17,6 +17,9 @@ import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import Login from "./pages/auth/Login";
 import About from "./pages/About";
+import Learn from "./pages/learning/Learn";
+import LearningPath from "./pages/learning/LearningPath";
+import Lesson from "./pages/learning/Lesson";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +42,9 @@ const App = () => (
             <Route path="/sightings" element={<Sightings />} />
             <Route path="/sightings/new" element={<NewSighting />} />
             <Route path="/about" element={<About />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/learn/path/:pathId" element={<LearningPath />} />
+            <Route path="/learn/lesson/:lessonId" element={<Lesson />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

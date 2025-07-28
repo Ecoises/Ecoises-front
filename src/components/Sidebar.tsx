@@ -45,6 +45,7 @@ export const navItems = [
   { icon: Map, label: "Sightings Map", to: "/app/map" },
   { icon: BookOpen, label: "Species Guide", to: "/app/species" },
   { icon: Calendar, label: "My Sightings", to: "/app/sightings" },
+  { icon: BookOpen, label: "Learn", to: "/app/learn" },
 ];
 
 export const mobileNavItems = [
