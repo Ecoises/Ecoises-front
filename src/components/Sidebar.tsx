@@ -40,12 +40,12 @@ const NavItem = ({ icon: Icon, label, to, active }: NavItemProps) => {
 };
 
 export const navItems = [
-  { icon: Home, label: "Dashboard", to: "/app" },
-  { icon: Search, label: "Bird Explorer", to: "/app/explorer" },
-  { icon: Map, label: "Sightings Map", to: "/app/map" },
-  { icon: BookOpen, label: "Species Guide", to: "/app/species" },
-  { icon: Calendar, label: "My Sightings", to: "/app/sightings" },
-  { icon: BookOpen, label: "Learn", to: "/app/learn" },
+  { icon: Home, label: "Inicio", to: "/home" },
+  { icon: Search, label: "Exporar", to: "/explorer" },
+  { icon: Map, label: "Sightings Map", to: "/map" },
+  { icon: BookOpen, label: "Species Guide", to: "/species" },
+  { icon: Calendar, label: "My Sightings", to: "/sightings" },
+  { icon: BookOpen, label: "Aprende", to: "/learn" },
 ];
 
 export const mobileNavItems = [
