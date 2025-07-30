@@ -156,10 +156,9 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen">
-      {/* Imagen decorativa (lado izquierdo) - SIN degradado, con carga/error */}
-      {/* Vuelve a tu diseño original con bg-lime-50, sin overflow-hidden para mantener el diseño base */}
-      <div className="hidden lg:flex lg:w-1/2 bg-lime-50 relative"> {/* Quitado overflow-hidden */}
+    <div className="flex h-screen overflow-hidden">
+      {/* Imagen decorativa (lado izquierdo) - Fija, sin scroll */}
+      <div className="hidden lg:flex lg:w-1/2 bg-lime-50 relative overflow-hidden">
         {/* El degradado de capa (que pediste quitar) no está aquí. */}
 
         {/* Indicador de carga para la imagen (sobre el fondo bg-lime-50) */}
@@ -202,9 +201,10 @@ const Login: React.FC = () => {
       </div>
 
 
-      {/* Formulario de inicio de sesión (lado derecho) - Diseño original */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
-        <div className="w-full max-w-md">
+      {/* Formulario de inicio de sesión (lado derecho) - Con scroll */}
+      <div className="w-full lg:w-1/2 bg-white overflow-y-auto">
+        <div className="flex items-center justify-center min-h-full p-8">
+          <div className="w-full max-w-md py-4">
           <div className="mb-8 text-center">
             <div className="flex justify-center items-center gap-2 mb-4">
               <div className="bg-lime-400 h-10 w-10 rounded-lg flex items-center justify-center">
@@ -340,6 +340,7 @@ const Login: React.FC = () => {
               </p>
             </CardFooter>
           </Card>
+          </div>
         </div>
       </div>
     </div>
