@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import authService from "../../services/authService";
 import axios, { AxiosError } from "axios";
 import { INatResponse, LaravelValidationError } from '../../types/api';
+import { useNavigate } from 'react-router-dom';
 
 // Si usas un router (ej. react-router-dom) para la navegación, impórtalo:
 // import { useNavigate } from 'react-router-dom';
@@ -18,8 +19,7 @@ const Login: React.FC = () => {
   const [photoAttribution, setPhotoAttribution] = useState<string>("");
   const [imageLoading, setImageLoading] = useState<boolean>(true); // Estado de carga para la imagen
   const [imageError, setImageError] = useState<boolean>(false);     // Estado de error para la imagen
-  // Eliminamos imageFullyLoaded ya que no hay una transición compleja del degradado
-  // const [imageFullyLoaded, setImageFullyLoaded] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   // --- ESTADO PARA LOS CAMPOS DEL FORMULARIO ---
   const [email, setEmail] = useState<string>("");
@@ -124,7 +124,7 @@ const Login: React.FC = () => {
       if (isLogin) {
         await authService.login({ email, password });
         console.log("Login exitoso. Usuario autenticado.");
-        alert("Inicio de sesión exitoso!");
+        navigate('/home');
       } else {
         await authService.register({
             full_name: fullName,
