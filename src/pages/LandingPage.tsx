@@ -97,7 +97,7 @@ const LandingPage = () => {
               <a href="#features" className="text-muted-foreground hover:text-foreground">Características</a>
               <a href="#team" className="text-muted-foreground hover:text-foreground">Equipo</a>
               <a href="#contact" className="text-muted-foreground hover:text-foreground">Contacto</a>
-              <Link to="/app">
+              <Link to="/login">
                 <Button>Probar App</Button>
               </Link>
             </div>

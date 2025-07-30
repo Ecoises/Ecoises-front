@@ -1,30 +1,76 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import axios from "axios";
+import authService from "../../services/authService";
+import axios, { AxiosError } from "axios";
+import { INatResponse, LaravelValidationError } from '../../types/api';
 
-const Login = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [imageUrl, setImageUrl] = useState("");
-  const [speciesName, setSpeciesName] = useState("");
-  const [photoAttribution, setPhotoAttribution] = useState(""); // Cambiado de photoAuthor
-  const toggleForm = () => setIsLogin(!isLogin);
+// Si usas un router (ej. react-router-dom) para la navegación, impórtalo:
+// import { useNavigate } from 'react-router-dom';
 
-  const fetchSpeciesImage = async () => {
+const Login: React.FC = () => {
+  const [isLogin, setIsLogin] = useState<boolean>(true);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [speciesName, setSpeciesName] = useState<string>("");
+  const [photoAttribution, setPhotoAttribution] = useState<string>("");
+  const [imageLoading, setImageLoading] = useState<boolean>(true); // Estado de carga para la imagen
+  const [imageError, setImageError] = useState<boolean>(false);     // Estado de error para la imagen
+  // Eliminamos imageFullyLoaded ya que no hay una transición compleja del degradado
+  // const [imageFullyLoaded, setImageFullyLoaded] = useState<boolean>(false);
+
+  // --- ESTADO PARA LOS CAMPOS DEL FORMULARIO ---
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [fullName, setFullName] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+
+  // --- ESTADO PARA LA INTERACCIÓN CON LA API DE AUTENTICACIÓN ---
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
+
+  // const navigate = useNavigate();
+
+  const toggleForm = (): void => {
+    setIsLogin(!isLogin);
+    setEmail("");
+    setPassword("");
+    setFullName("");
+    setConfirmPassword("");
+    setErrorMessage("");
+    setSuccessMessage("");
+  };
+
+  // --- Lógica para obtener la imagen de especie ---
+  const fetchSpeciesImage = async (retryCount: number = 0): Promise<void> => {
+    setImageLoading(true); // Se inicia la carga
+    setImageError(false);
+    setImageUrl("");
+    setSpeciesName("");
+    setPhotoAttribution("");
+    // setImageFullyLoaded(false); // Eliminado
+
     try {
-      const randomPage = Math.floor(Math.random() * 10000) + 1;
+      const MAX_RETRIES = 5;
+      if (retryCount >= MAX_RETRIES) {
+        console.error("Máximo de reintentos alcanzado para la imagen.");
+        throw new Error("Máximo de reintentos alcanzado para la imagen.");
+      }
 
-      const res = await axios.get("https://api.inaturalist.org/v1/taxa", {
+      const randomPage: number = Math.floor(Math.random() * 10000) + 1;
+
+      const res = await axios.get<INatResponse>("https://api.inaturalist.org/v1/taxa", {
         params: {
           per_page: 1,
           rank: "species",
           page: randomPage,
           locale: "es",
           has_photos: true,
-          place_id: 7196,
+          place_id: 7196, // Codazzi, Cesar, Colombia
         },
       });
 
@@ -33,42 +79,33 @@ const Login = () => {
         setImageUrl(result.default_photo.url.replace("square", "large"));
         setSpeciesName(result.preferred_common_name || result.name || "Especie desconocida");
 
-        // --- INICIO DE LA MODIFICACIÓN ---
-        const fullAttribution = result.default_photo.attribution || "Autor desconocido";
-        let author = "Autor desconocido";
-        let attributionType = "";
-
-        // Patrón para buscar "(c) Autor, algunos derechos reservados (CC BY-NC)"
-        // Captura el nombre del autor y el tipo de licencia si está presente
+        const fullAttribution: string = result.default_photo.attribution || "Autor desconocido";
+        let author: string = "Autor desconocido";
+        let license: string = "";
         const match = fullAttribution.match(/\(c\)\s*([^,]+),\s*some rights reserved\s*\((.+?)\)/);
-        
-        if (match && match[1]) {
-          author = match[1].trim();
-          if (match[2]) {
-            attributionType = `(${match[2].trim()})`;
-          }
-        } else {
-          // Si el patrón no coincide completamente, intenta extraer el autor como sea posible
-          // Por ejemplo, si solo es "(c) Autor"
-          const simpleMatch = fullAttribution.match(/\(c\)\s*(.+)/);
-          if (simpleMatch && simpleMatch[1]) {
-            author = simpleMatch[1].trim().replace(/,.*$/, ''); // Quita cualquier cosa después de la primera coma
-          }
+        if (match) {
+            author = match[1].trim();
+            license = match[2].trim();
+        } else if (fullAttribution.includes("(c)")) {
+            const simpleAuthorMatch = fullAttribution.match(/\(c\)\s*([^\(]+?)(?:,|$|\()/);
+            if (simpleAuthorMatch && simpleAuthorMatch[1]) {
+                author = simpleAuthorMatch[1].trim();
+            }
         }
-
-        // Combina el autor y el tipo de atribución para mostrar
-        setPhotoAttribution(`${author} ${attributionType}`);
-        // --- FIN DE LA MODIFICACIÓN ---
+        setPhotoAttribution(`${author}${license ? ` (${license})` : ''}`);
 
       } else {
-        console.warn("No se encontró una imagen para la especie, reintentando...");
-        fetchSpeciesImage();
+        console.warn("No se encontró una imagen para la especie, reintentando...", retryCount + 1);
+        fetchSpeciesImage(retryCount + 1);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error al obtener datos de iNaturalist", err);
+      setImageError(true);
       setImageUrl("");
-      setSpeciesName("Error al cargar especie");
-      setPhotoAttribution("Autor desconocido"); // Cambiado a photoAttribution
+      setSpeciesName("Error al cargar imagen");
+      setPhotoAttribution("No disponible");
+    } finally {
+      setImageLoading(false); // La carga finaliza, el indicador desaparecerá
     }
   };
 
@@ -76,27 +113,96 @@ const Login = () => {
     fetchSpeciesImage();
   }, []);
 
+  // --- Lógica para el envío del formulario de autenticación ---
+  const handleSubmit = async (event: FormEvent): Promise<void> => {
+    event.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+    setIsLoading(true);
+
+    try {
+      if (isLogin) {
+        await authService.login({ email, password });
+        console.log("Login exitoso. Usuario autenticado.");
+        alert("Inicio de sesión exitoso!");
+      } else {
+        await authService.register({
+            full_name: fullName,
+            email: email,
+            password: password,
+            password_confirmation: confirmPassword
+        });
+        console.log("Registro exitoso.");
+        setSuccessMessage("¡Registro exitoso! Ahora puedes iniciar sesión.");
+        setIsLogin(true);
+      }
+    } catch (error: any) {
+      console.error("Error de autenticación:", error);
+      if (axios.isAxiosError(error) && error.response) {
+        const apiError = error.response.data;
+        if (typeof apiError === 'object' && apiError !== null && 'message' in apiError && typeof apiError.message === 'string') {
+          setErrorMessage(apiError.message);
+        } else if (typeof apiError === 'object' && apiError !== null && 'errors' in apiError && typeof apiError.errors === 'object') {
+          const validationErrors: LaravelValidationError = apiError as LaravelValidationError;
+          const messages: string[] = Object.values(validationErrors.errors).flat();
+          setErrorMessage(messages.join(" "));
+        }
+      } else {
+        setErrorMessage("Ocurrió un error de red o un error desconocido. Inténtalo de nuevo.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex h-screen">
-      {/* Imagen decorativa (lado izquierdo) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-lime-50 relative">
-        {imageUrl && (
-          <>
-            <img
-              src={imageUrl}
-              alt={speciesName}
-              className="object-cover w-full h-full"
-            />
+      {/* Imagen decorativa (lado izquierdo) - SIN degradado, con carga/error */}
+      {/* Vuelve a tu diseño original con bg-lime-50, sin overflow-hidden para mantener el diseño base */}
+      <div className="hidden lg:flex lg:w-1/2 bg-lime-50 relative"> {/* Quitado overflow-hidden */}
+        {/* El degradado de capa (que pediste quitar) no está aquí. */}
+
+        {/* Indicador de carga para la imagen (sobre el fondo bg-lime-50) */}
+        {imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-lime-100 text-gray-700 text-lg animate-pulse"> {/* Un color más claro para la carga */}
+                Cargando imagen...
+            </div>
+        )}
+        {/* Indicador de error para la imagen (sobre el fondo bg-lime-50) */}
+        {imageError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-100 text-red-700 p-4 text-center">
+                <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p>Error al cargar la imagen. Inténtalo de nuevo.</p>
+            </div>
+        )}
+
+        {/* La imagen real, condicional y con transición de opacidad */}
+        {imageUrl && !imageLoading && !imageError && (
+          <img
+            src={imageUrl}
+            alt={speciesName || "Imagen de especie"}
+            className="object-cover w-full h-full transition-opacity duration-500 ease-in-out opacity-0" // Se mantiene la transición para el fade-in
+            onLoad={(e) => {
+                e.currentTarget.classList.add('opacity-100');
+                // No necesitamos setImageFullyLoaded si no hay degradado complejo
+            }}
+            onError={() => {
+                setImageError(true);
+                setImageLoading(false);
+            }}
+          />
+        )}
+        {/* La caja de información de la imagen, visible solo si hay una imagen cargada y sin error */}
+        {imageUrl && !imageLoading && !imageError && (
             <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white p-3 rounded-lg max-w-xs">
               <p className="text-sm font-heading font-bold text mb-0.5 ">{speciesName}</p>
-              <p className="text-xs text-gray-200"> Foto: (c) {photoAttribution}</p> {/* Usa photoAttribution */}
+              <p className="text-xs text-gray-200"> Foto: (c) {photoAttribution}</p>
             </div>
-          </>
         )}
       </div>
 
 
-      {/* Formulario de inicio de sesión (lado derecho) */}
+      {/* Formulario de inicio de sesión (lado derecho) - Diseño original */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
@@ -123,26 +229,71 @@ const Login = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form className="space-y-4">
+              {/* Mensajes de error y éxito */}
+              {errorMessage && (
+                <p className="text-red-500 text-sm mb-4">{errorMessage}</p>
+              )}
+              {successMessage && (
+                <p className="text-green-500 text-sm mb-4">{successMessage}</p>
+              )}
+
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 {!isLogin && (
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nombre completo</Label>
-                    <Input id="name" placeholder="Ingresa tu nombre" />
+                    <Label htmlFor="fullName">Nombre completo</Label>
+                    <Input
+                      id="fullName"
+                      placeholder="Ingresa tu nombre"
+                      value={fullName}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFullName(e.target.value)}
+                      required={!isLogin}
+                    />
                   </div>
                 )}
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="correo@ejemplo.com" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="correo@ejemplo.com"
+                    value={email}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Contraseña</Label>
-                  <Input id="password" type="password" placeholder="••••••••" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
+                {!isLogin && (
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+                      required={!isLogin}
+                    />
+                  </div>
+                )}
 
                 {isLogin && (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="remember" />
+                      <Checkbox
+                        id="remember"
+                        checked={rememberMe}
+                        onCheckedChange={(checked: boolean) => setRememberMe(checked)}
+                      />
                       <Label htmlFor="remember" className="text-sm cursor-pointer">Recordarme</Label>
                     </div>
                     <a href="#" className="text-sm text-lime-600 hover:text-lime-700">
@@ -151,8 +302,8 @@ const Login = () => {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full bg-lime-500 hover:bg-lime-600">
-                  {isLogin ? "Iniciar sesión" : "Registrarse"}
+                <Button type="submit" className="w-full bg-lime-500 hover:bg-lime-600" disabled={isLoading}>
+                  {isLoading ? "Cargando..." : (isLogin ? "Iniciar sesión" : "Registrarse")}
                 </Button>
 
                 <div className="relative mt-6">
