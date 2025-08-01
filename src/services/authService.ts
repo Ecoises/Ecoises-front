@@ -55,6 +55,11 @@ const authService = {
     }
   },
 
+  loginWithGoogle: (): void => {
+    const API_BASE_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
+    window.location.href = `${API_BASE_URL}/api/auth/google/redirect`;
+  },
+
   isAuthenticated: (): boolean => {
     return !!localStorage.getItem('auth_token');
   },

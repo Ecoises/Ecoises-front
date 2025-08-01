@@ -16,6 +16,7 @@ import NewSighting from "./pages/sightings/NewSighting";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import Login from "./pages/auth/Login";
+import GoogleCallback from "./pages/auth/GoogleCallback";
 import About from "./pages/About";
 import Learn from "./pages/learning/Learn";
 import LearningPath from "./pages/learning/LearningPath";
@@ -32,6 +33,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<GoogleCallback />} />
           <Route element={<Layout />}>
             <Route path="/home" element={<Dashboard />} />
             <Route path="/explorer" element={<Explorer />} />
