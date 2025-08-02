@@ -91,7 +91,7 @@ const LandingPage = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-2">
               <Bird className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold">Avoga</span>
+              <span className="text-2xl font-bold">Ecoises</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-muted-foreground hover:text-foreground">Características</a>

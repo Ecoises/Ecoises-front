@@ -97,9 +97,9 @@ const AuthForm: React.FC = () => {
       <div className="mb-8 text-center">
         <div className="flex justify-center items-center gap-2 mb-4">
           <div className="bg-lime-400 h-10 w-10 rounded-lg flex items-center justify-center">
-            <span className="text-forest-900 font-bold text-xl">A</span>
+            <span className="text-forest-900 font-bold text-xl">E</span>
           </div>
-          <h1 className="text-forest-900 font-bold text-2xl">Logo Here</h1>
+          <h1 className="text-forest-900 font-bold text-2xl">Ecoises</h1>
         </div>
         <p className="text-forest-700">
           {isLogin
@@ -225,6 +225,16 @@ const AuthForm: React.FC = () => {
             <Button type="submit" className="w-full bg-lime-500 hover:bg-lime-600" disabled={isLoading}>
               {isLoading ? "Cargando..." : (isLogin ? "Iniciar sesión" : "Registrarse")}
             </Button>
+            <div className="relative mt-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-2 bg-white text-muted-foreground">
+                  O continúa con
+                </span>
+              </div>
+            </div>
 
           </form>
         </CardContent>
