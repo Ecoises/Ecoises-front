@@ -8,11 +8,14 @@ import { Eye, EyeOff } from "lucide-react";
 import authService from "../../services/authService";
 import axios from "axios";
 import { LaravelValidationError } from '../../types/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AuthForm: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
   // Estado para los campos del formulario
   const [email, setEmail] = useState<string>("");
@@ -48,9 +51,17 @@ const AuthForm: React.FC = () => {
 
     try {
       if (isLogin) {
-        await authService.login({ email, password });
+        const response = await authService.login({ email, password });
         console.log("Login exitoso. Usuario autenticado.");
-        navigate('/home');
+        
+        // Actualizar el contexto de autenticación con el usuario
+        if (response.user) {
+          login(response.user);
+        }
+        
+        // Redirigir a la página anterior o al home
+        const from = location.state?.from?.pathname || '/home';
+        navigate(from, { replace: true });
       } else {
         await authService.register({
           full_name: fullName,

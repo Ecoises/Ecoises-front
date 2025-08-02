@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Search, Bell, User, X } from "lucide-react";
+import { Search, Bell, User, X, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +18,27 @@ import {
 const DashboardNavbar = () => {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const isMobile = useIsMobile();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
+  // Obtener las iniciales del nombre para el avatar
+  const getInitials = (fullName: string) => {
+    return fullName
+      .split(' ')
+      .map(name => name.charAt(0))
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+  };
 
   return (
     <nav className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -57,7 +80,7 @@ const DashboardNavbar = () => {
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/placeholder.svg" alt="Profile" />
                       <AvatarFallback>
-                        <User className="h-4 w-4" />
+                        {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -65,9 +88,9 @@ const DashboardNavbar = () => {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">Usuario</p>
+                      <p className="text-sm font-medium leading-none">{user?.full_name || 'Usuario'}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        usuario@ejemplo.com
+                        {user?.email || 'usuario@ejemplo.com'}
                       </p>
                     </div>
                   </DropdownMenuLabel>
@@ -75,7 +98,10 @@ const DashboardNavbar = () => {
                   <DropdownMenuItem>Perfil</DropdownMenuItem>
                   <DropdownMenuItem>Configuración</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Cerrar sesión</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Cerrar sesión
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -125,20 +151,20 @@ const DashboardNavbar = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src="/placeholder.svg" alt="Profile" />
-                        <AvatarFallback>
-                          <User className="h-4 w-4" />
-                        </AvatarFallback>
-                      </Avatar>
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src="/placeholder.svg" alt="Profile" />
+                      <AvatarFallback>
+                        {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">Usuario</p>
+                        <p className="text-sm font-medium leading-none">{user?.full_name || 'Usuario'}</p>
                         <p className="text-xs leading-none text-muted-foreground">
-                          usuario@ejemplo.com
+                          {user?.email || 'usuario@ejemplo.com'}
                         </p>
                       </div>
                     </DropdownMenuLabel>
@@ -146,7 +172,10 @@ const DashboardNavbar = () => {
                     <DropdownMenuItem>Perfil</DropdownMenuItem>
                     <DropdownMenuItem>Configuración</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Cerrar sesión</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Cerrar sesión
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
