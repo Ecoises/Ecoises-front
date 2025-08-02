@@ -19,6 +19,7 @@ import About from "./pages/About";
 import Learn from "./pages/learning/Learn";
 import LearningPath from "./pages/learning/LearningPath";
 import Lesson from "./pages/learning/Lesson";
+import Profile from "./pages/Profile";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -57,6 +58,8 @@ const App = () => (
               <Route path="/learn" element={<Learn />} />
               <Route path="/learn/path/:pathId" element={<LearningPath />} />
               <Route path="/learn/lesson/:lessonId" element={<Lesson />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:userId" element={<Profile />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

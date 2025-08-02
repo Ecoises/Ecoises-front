@@ -95,7 +95,7 @@ const DashboardNavbar = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Perfil</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>Perfil</DropdownMenuItem>
                   <DropdownMenuItem>Configuración</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
@@ -169,7 +169,7 @@ const DashboardNavbar = () => {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Perfil</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>Perfil</DropdownMenuItem>
                     <DropdownMenuItem>Configuración</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
