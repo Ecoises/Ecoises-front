@@ -3,7 +3,8 @@ import { INatResponse } from '../types/api';
 
 export interface SpeciesData {
   imageUrl: string;
-  speciesName: string;
+  speciesName: string; // Este será el nombre común
+  scientificName: string; // ¡Nuevo! Para el nombre científico
   photoAttribution: string;
 }
 
@@ -30,7 +31,7 @@ class INaturalistService {
     });
 
     const result = response.data.results[0];
-    
+
     if (!result || !result.default_photo) {
       console.warn('No se encontró una imagen para la especie, reintentando...', retryCount + 1);
       return this.fetchRandomSpecies(retryCount + 1);
@@ -38,11 +39,12 @@ class INaturalistService {
 
     const imageUrl = result.default_photo.url.replace('square', 'large');
     const speciesName = result.preferred_common_name || result.name || 'Especie desconocida';
-    
+    const scientificName = result.name; // El nombre científico suele estar en 'name'
+
     const fullAttribution = result.default_photo.attribution || 'Autor desconocido';
     let author = 'Autor desconocido';
     let license = '';
-    
+
     const match = fullAttribution.match(/\(c\)\s*([^,]+),\s*some rights reserved\s*\((.+?)\)/);
     if (match) {
       author = match[1].trim();
@@ -59,6 +61,7 @@ class INaturalistService {
     return {
       imageUrl,
       speciesName,
+      scientificName, // Incluimos el nombre científico
       photoAttribution,
     };
   }

@@ -2,10 +2,10 @@ import React from 'react';
 import { useSpeciesImage } from '../../hooks/useSpeciesImage';
 
 const SpeciesImage: React.FC = () => {
-  const { imageUrl, speciesName, photoAttribution, imageLoading, imageError } = useSpeciesImage();
+  const { imageUrl, speciesName, scientificName, photoAttribution, imageLoading, imageError } = useSpeciesImage();
 
   return (
-    <div className="hidden lg:flex lg:w-1/2 bg-lime-50 relative overflow-hidden">
+    <div className="hidden lg:flex lg:w-1/2 bg-lime-50 relative overflow-hidden rounded-r-lg shadow-xl">
       {/* Indicador de carga */}
       {imageLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-lime-100 text-gray-700 text-lg animate-pulse">
@@ -37,11 +37,16 @@ const SpeciesImage: React.FC = () => {
               // Este error se maneja en el hook
             }}
           />
-          
+
           {/* Información de la imagen */}
           <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white p-3 rounded-lg max-w-xs">
-            <p className="text-sm font-heading font-bold text mb-0.5">{speciesName}</p>
-            <p className="text-xs text-gray-200">Foto: (c) {photoAttribution}</p>
+            {speciesName && <p className="text-sm font-heading font-bold text mb-0.5">{speciesName}</p>}
+            {scientificName && scientificName !== speciesName && ( // Añadimos el nombre científico si es diferente al común
+              <p className="text-xs italic text-gray-200 ">
+                {scientificName}
+              </p>
+            )}
+            <p className="text-xs text-gray-200 mt-0.5 ">Foto: (c) {photoAttribution}</p>
           </div>
         </>
       )}
