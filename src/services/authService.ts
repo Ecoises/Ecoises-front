@@ -69,7 +69,14 @@ const authService = {
 
 
   isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token');
+    return !!token;
+  },
+
+  // Método para verificar si el token es válido sin hacer una llamada al servidor
+  hasValidToken: (): boolean => {
+    const token = localStorage.getItem('auth_token');
+    return !!token;
   },
 };
 

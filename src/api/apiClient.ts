@@ -30,11 +30,15 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError<AuthResponse | LaravelValidationError>) => {
-    // Si la respuesta es 401 Unauthorized y no es la ruta de login
-    if (error.response && error.response.status === 401 && error.config?.url !== '/login') {
-      console.warn("Sesión expirada o no autorizada. Limpiando token y sugiriendo redirección.");
-      localStorage.removeItem('auth_token');
-      // Aquí podrías añadir una redirección global si tienes un router (ej. navigate('/login');)
+    // Solo limpiar token en casos específicos de error 401 y rutas protegidas
+    if (error.response && error.response.status === 401) {
+      const isAuthRoute = error.config?.url?.includes('/login') || error.config?.url?.includes('/register');
+      
+      if (!isAuthRoute) {
+        console.warn("Token expirado o no autorizado. El contexto manejará la limpieza del token.");
+        // No limpiamos el token aquí para evitar problemas de concurrencia
+        // Lo manejará el AuthContext después de intentar obtener el perfil
+      }
     }
     return Promise.reject(error);
   }

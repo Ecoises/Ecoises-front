@@ -23,14 +23,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      if (authService.isAuthenticated()) {
+      const token = localStorage.getItem('auth_token');
+      
+      if (token) {
         try {
           const userProfile = await authService.getProfile();
           setUser(userProfile);
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error al obtener el perfil del usuario:', error);
-          // Si hay error, limpiar el token inválido
-          localStorage.removeItem('auth_token');
+          
+          // Solo limpiar el token si es un error de autenticación (401)
+          if (error.response?.status === 401) {
+            console.log('Token expirado o inválido, limpiando sesión');
+            localStorage.removeItem('auth_token');
+            setUser(null);
+          } else {
+            // Para otros errores (red, servidor), mantener el token pero no setear usuario
+            console.log('Error de red o servidor, manteniendo token para reintentar');
+          }
         }
       }
       setIsLoading(false);
