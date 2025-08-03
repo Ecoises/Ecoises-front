@@ -1,8 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import ProfileHeader from '@/components/profile/ProfileHeader';
-import ProfileStats from '@/components/profile/ProfileStats';
-import ProfileTabs from '@/components/profile/ProfileTabs';
+import ProfileInfo from '@/components/profile/ProfileInfo';
+import ProfileContent from '@/components/profile/ProfileContent';
 
 const Profile = () => {
   const { userId } = useParams();
@@ -16,31 +15,47 @@ const Profile = () => {
     id: isOwnProfile ? user?.id : parseInt(userId || '1'),
     full_name: isOwnProfile ? user?.full_name : 'Usuario Ejemplo',
     email: isOwnProfile ? user?.email : 'usuario@ejemplo.com',
-    bio: 'Apasionado por la observación de aves y la conservación de la naturaleza.',
+    bio: 'Apasionado por la observación de aves y la conservación de la naturaleza. Me especializo en aves migratorias de Centroamérica y participo activamente en proyectos de conservación comunitaria.',
     avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-    cover: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=300&fit=crop',
     observations_count: 45,
     followers_count: 128,
     following_count: 87,
     badges_count: 12,
     is_following: false,
-    location: 'Costa Rica',
-    joined_date: '2023-01-15'
+    location: 'San José, Costa Rica',
+    joined_date: '2023-01-15',
+    specializations: [
+      'Aves migratorias',
+      'Conservación',
+      'Fotografía de naturaleza',
+      'Ecosistemas tropicales'
+    ],
+    stats: {
+      species_identified: 156,
+      contributions: 89,
+      verified_observations: 42
+    }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto pb-8">
-        <ProfileHeader 
-          profile={profileData} 
-          isOwnProfile={isOwnProfile}
-        />
-        <div className="px-4 md:px-6">
-          <ProfileStats profile={profileData} />
-          <ProfileTabs 
-            profile={profileData} 
-            isOwnProfile={isOwnProfile}
-          />
+    <div className="min-h-screen bg-accent/5">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Sidebar izquierda - Información del perfil */}
+          <div className="lg:col-span-1">
+            <ProfileInfo 
+              profile={profileData} 
+              isOwnProfile={isOwnProfile}
+            />
+          </div>
+          
+          {/* Contenido principal */}
+          <div className="lg:col-span-2">
+            <ProfileContent 
+              profile={profileData} 
+              isOwnProfile={isOwnProfile}
+            />
+          </div>
         </div>
       </div>
     </div>
