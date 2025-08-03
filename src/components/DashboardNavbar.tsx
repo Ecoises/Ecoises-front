@@ -78,7 +78,7 @@ const DashboardNavbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg" alt="Profile" />
+                      <AvatarImage src={user?.avatar || "/placeholder"} alt="Profile" />
                       <AvatarFallback>
                         {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
                       </AvatarFallback>
@@ -152,7 +152,7 @@ const DashboardNavbar = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg" alt="Profile" />
+                      <AvatarImage src={user?.avatar || "/placeholder.svg"} alt="Profile" />
                       <AvatarFallback>
                         {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
                       </AvatarFallback>

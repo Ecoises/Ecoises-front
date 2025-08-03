@@ -276,14 +276,13 @@ const AuthForm: React.FC = () => {
                 </span>
               </div>
             </div>
-            {/* --- BOTÓN DE GOOGLE SIGN-IN --- */}
             <div className="flex justify-center mt-4">
               <GoogleSignInButton
                 onSignInSuccess={handleGoogleSignInSuccess}
                 onSignInFailure={handleGoogleSignInFailure}
               />
             </div>
-            {/* --- FIN BOTÓN DE GOOGLE SIGN-IN --- */}
+            
 
           </form>
         </CardContent>
