@@ -10,6 +10,7 @@ import axios from "axios";
 import { LaravelValidationError } from '../../types/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import GoogleSignInButton from './GoogleSignInButton';
 
 const AuthForm: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
@@ -90,6 +91,45 @@ const AuthForm: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+  const handleGoogleSignInSuccess = async (googleIdToken: string) => {
+    setErrorMessage("");
+    setSuccessMessage("");
+    setIsLoading(true); // Mostrar indicador de carga para Google también
+    try {
+      const response = await authService.googleLogin(googleIdToken);
+      console.log('Inicio de sesión con Google exitoso. Usuario autenticado.');
+
+      if (response.user) {
+        login(response.user);
+      }
+
+      const from = location.state?.from?.pathname || '/home';
+      navigate(from, { replace: true });
+
+    } catch (error: any) {
+      console.error('Error al iniciar sesión con Google:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        const apiError = error.response.data;
+        if (typeof apiError === 'object' && apiError !== null && 'message' in apiError && typeof apiError.message === 'string') {
+          setErrorMessage(apiError.message);
+        } else if (typeof apiError === 'object' && apiError !== null && 'errors' in apiError && typeof apiError.errors === 'object') {
+          const validationErrors: LaravelValidationError = apiError as LaravelValidationError;
+          const messages: string[] = Object.values(validationErrors.errors).flat();
+          setErrorMessage(messages.join(" "));
+        }
+      } else {
+        setErrorMessage("Ocurrió un error de red o un error desconocido al iniciar sesión con Google.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignInFailure = (error: any) => {
+    console.error('Fallo el inicio de sesión con Google:', error);
+    setErrorMessage("Fallo el inicio de sesión con Google. Por favor, inténtalo de nuevo.");
+    setIsLoading(false);
   };
 
   return (
@@ -225,6 +265,7 @@ const AuthForm: React.FC = () => {
             <Button type="submit" className="w-full bg-lime-500 hover:bg-lime-600" disabled={isLoading}>
               {isLoading ? "Cargando..." : (isLogin ? "Iniciar sesión" : "Registrarse")}
             </Button>
+
             <div className="relative mt-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-200" />
@@ -235,6 +276,14 @@ const AuthForm: React.FC = () => {
                 </span>
               </div>
             </div>
+            {/* --- BOTÓN DE GOOGLE SIGN-IN --- */}
+            <div className="flex justify-center mt-4">
+              <GoogleSignInButton
+                onSignInSuccess={handleGoogleSignInSuccess}
+                onSignInFailure={handleGoogleSignInFailure}
+              />
+            </div>
+            {/* --- FIN BOTÓN DE GOOGLE SIGN-IN --- */}
 
           </form>
         </CardContent>

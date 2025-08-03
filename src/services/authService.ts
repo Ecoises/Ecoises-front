@@ -34,6 +34,18 @@ const authService = {
       throw error;
     }
   },
+  googleLogin: async (idToken: string): Promise<AuthResponse> => {
+    try {
+      const response = await apiClient.post<AuthResponse>('/auth/google', { id_token: idToken });
+      if (response.data.token) {
+        localStorage.setItem('auth_token', response.data.token);
+      }
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
 
   getProfile: async (): Promise<User> => {
     try {
