@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Eye } from 'lucide-react';
+import { MapPin, Calendar, Eye, Camera } from 'lucide-react';
 
 interface ProfileObservationsProps {
   profile: any;
@@ -69,70 +69,90 @@ const ProfileObservations = ({ profile, isOwnProfile }: ProfileObservationsProps
 
   if (observations.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="w-24 h-24 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
-          <Eye className="w-12 h-12 text-muted-foreground" />
+      <div className="text-center py-16">
+        <div className="w-20 h-20 mx-auto mb-6 bg-accent/30 rounded-full flex items-center justify-center">
+          <Eye className="w-10 h-10 text-muted-foreground/60" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">
-          {isOwnProfile ? 'No tienes observaciones aún' : 'No hay observaciones disponibles'}
+        <h3 className="text-xl font-semibold mb-3 text-foreground">
+          {isOwnProfile ? 'Aún no tienes observaciones' : 'Sin observaciones públicas'}
         </h3>
-        <p className="text-muted-foreground mb-4">
+        <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
           {isOwnProfile 
-            ? 'Comienza a explorar y registra tu primera observación'
-            : 'Este usuario no ha compartido observaciones públicas'
+            ? 'Comienza tu aventura como observador de la naturaleza'
+            : 'Este usuario aún no ha compartido observaciones'
           }
         </p>
         {isOwnProfile && (
-          <Button>Crear primera observación</Button>
+          <Button className="gap-2">
+            <Camera className="w-4 h-4" />
+            Crear primera observación
+          </Button>
         )}
       </div>
     );
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-6">
       {observations.map((observation) => (
-        <Card key={observation.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-          <div className="aspect-video relative">
-            <img 
-              src={observation.image} 
-              alt={observation.species}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute top-2 right-2">
-              <Badge className={getStatusColor(observation.status)}>
+        <article key={observation.id} className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-300">
+          {/* Post header */}
+          <div className="p-4 pb-3 border-b border-border/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg text-foreground">{observation.species}</h3>
+                  <p className="text-sm text-muted-foreground italic">{observation.scientific_name}</p>
+                </div>
+              </div>
+              <Badge className={`${getStatusColor(observation.status)} text-xs`}>
                 {observation.status}
               </Badge>
             </div>
           </div>
           
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-lg mb-1">{observation.species}</h3>
-            <p className="text-sm text-muted-foreground italic mb-3">
-              {observation.scientific_name}
-            </p>
-            
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
+          {/* Image */}
+          <div className="relative aspect-[4/3] bg-accent/20">
+            <img 
+              src={observation.image} 
+              alt={observation.species}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          </div>
+          
+          {/* Post content */}
+          <div className="p-4">
+            {/* Location and date */}
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
+              <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 <span>{observation.location}</span>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                <span>{new Date(observation.date).toLocaleDateString('es-ES')}</span>
+                <span>{new Date(observation.date).toLocaleDateString('es-ES', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}</span>
               </div>
             </div>
 
-            <div className="flex justify-between items-center mt-4">
-              <Badge className={getConfidenceColor(observation.confidence)}>
-                Confianza: {observation.confidence}
+            {/* Actions and confidence */}
+            <div className="flex items-center justify-between">
+              <Badge className={`${getConfidenceColor(observation.confidence)} text-xs`}>
+                Confianza {observation.confidence}
               </Badge>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 hover:bg-primary/10">
                 Ver detalles
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </article>
       ))}
     </div>
   );

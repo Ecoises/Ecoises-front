@@ -34,17 +34,17 @@ const ProfileStats = ({ profile }: ProfileStatsProps) => {
   ];
 
   return (
-    <div className="px-6 py-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="p-4 text-center hover:shadow-md transition-shadow">
-            <div className={`text-2xl font-bold ${stat.color}`}>
+          <div key={index} className="text-center p-4 hover:bg-accent/50 rounded-lg transition-colors">
+            <div className={`text-xl md:text-2xl font-bold ${stat.color}`}>
               {stat.value.toLocaleString()}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">
+            <div className="text-xs md:text-sm text-muted-foreground mt-1">
               {stat.label}
             </div>
-          </Card>
+          </div>
         ))}
       </div>
     </div>

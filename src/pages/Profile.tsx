@@ -30,16 +30,18 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto pb-8">
         <ProfileHeader 
           profile={profileData} 
           isOwnProfile={isOwnProfile}
         />
-        <ProfileStats profile={profileData} />
-        <ProfileTabs 
-          profile={profileData} 
-          isOwnProfile={isOwnProfile}
-        />
+        <div className="px-4 md:px-6">
+          <ProfileStats profile={profileData} />
+          <ProfileTabs 
+            profile={profileData} 
+            isOwnProfile={isOwnProfile}
+          />
+        </div>
       </div>
     </div>
   );
