@@ -49,7 +49,7 @@ const authService = {
 
   getProfile: async (): Promise<User> => {
     try {
-      const response = await apiClient.get<{ status: boolean; data: User }>('/user');
+      const response = await apiClient.get<{ status: boolean; data: User }>('/profile');
       return response.data.data;
     } catch (error) {
       throw error;

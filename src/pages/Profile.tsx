@@ -17,7 +17,7 @@ const Profile = () => {
     full_name: isOwnProfile ? user?.full_name : 'Usuario Ejemplo',
     email: isOwnProfile ? user?.email : 'usuario@ejemplo.com',
     bio: 'Apasionado por la observación de aves y la conservación de la naturaleza. Me especializo en aves migratorias de Centroamérica y participo activamente en proyectos de conservación comunitaria.',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+    avatar:  isOwnProfile ? user?.avatar :'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
     observations_count: 45,
     followers_count: 128,
     following_count: 87,
