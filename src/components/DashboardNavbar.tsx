@@ -46,9 +46,9 @@ const DashboardNavbar = () => {
         {/* Logo - Always visible on left in mobile, center-left in desktop */}
         <div className="flex items-center gap-2">
           <div className="bg-lime-400 h-8 w-8 rounded-lg flex items-center justify-center">
-            <span className="text-forest-900 font-bold text-lg">B</span>
+            <span className="text-forest-900 font-bold text-lg">E</span>
           </div>
-          <h1 className="text-forest-900 font-bold text-xl">BirdWatch</h1>
+          <h1 className="text-forest-900 font-bold text-xl">Ecoises</h1>
         </div>
 
         {/* Desktop Layout */}
