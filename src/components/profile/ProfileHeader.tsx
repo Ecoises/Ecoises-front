@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { MapPin, Calendar, UserPlus, UserMinus, Settings } from 'lucide-react';
+import { UserPlus, UserMinus, Settings, Eye, Award, Users } from 'lucide-react';
 import EditProfileDialog from './EditProfileDialog';
 
 interface ProfileHeaderProps {
@@ -12,10 +11,19 @@ interface ProfileHeaderProps {
     email: string;
     bio: string;
     avatar: string;
-    cover: string;
     location: string;
     joined_date: string;
     is_following?: boolean;
+    observations_count: number;
+    followers_count: number;
+    following_count: number;
+    badges_count: number;
+    specializations: string[];
+    stats: {
+      species_identified: number;
+      contributions: number;
+      verified_observations: number;
+    };
   };
   isOwnProfile: boolean;
 }
@@ -26,137 +34,103 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
 
   const handleFollowToggle = () => {
     setIsFollowing(!isFollowing);
-    // Aquí implementarías la llamada a la API
   };
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long'
-    });
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
   };
 
   return (
-    <>
-      <div className="relative mb-8">
-        {/* Cover area with gradient */}
-        <div className="h-32 md:h-40 w-full bg-gradient-to-br from-primary/20 via-accent/30 to-secondary/20 relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent" />
+    <div className="bg-card border border-border rounded-xl p-6">
+      {/* Header principal */}
+      <div className="flex flex-col sm:flex-row gap-6">
+        {/* Avatar */}
+        <div className="flex justify-center sm:justify-start">
+          <Avatar className="w-24 h-24 border-4 border-primary/10">
+            <AvatarImage src={profile.avatar} alt={profile.full_name} />
+            <AvatarFallback className="text-2xl font-semibold bg-primary/10 text-primary">
+              {getInitials(profile.full_name)}
+            </AvatarFallback>
+          </Avatar>
         </div>
 
-        {/* Profile content */}
-        <div className="relative px-4 md:px-6">
-          {/* Avatar and action button container */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-16 sm:-mt-12">
-            {/* Avatar */}
-            <div className="flex items-end gap-4">
-              <Avatar className="w-24 h-24 sm:w-28 sm:h-28 border-4 border-background shadow-lg">
-                <AvatarImage src={profile.avatar} alt={profile.full_name} />
-                <AvatarFallback className="text-xl font-semibold bg-primary/10 text-primary">
-                  {getInitials(profile.full_name)}
-                </AvatarFallback>
-              </Avatar>
-              
-              {/* User info on mobile */}
-              <div className="sm:hidden flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-foreground truncate">
-                  {profile.full_name}
-                </h1>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {profile.location && (
-                    <>
-                      <MapPin className="w-3 h-3" />
-                      <span className="truncate">{profile.location}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Action Button */}
-            <div className="flex-shrink-0">
-              {isOwnProfile ? (
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsEditOpen(true)}
-                  className="gap-2 h-9"
-                >
-                  <Settings className="w-4 h-4" />
-                  Editar perfil
-                </Button>
-              ) : (
-                <Button 
-                  variant={isFollowing ? "outline" : "default"}
-                  onClick={handleFollowToggle}
-                  className="gap-2 h-9"
-                >
-                  {isFollowing ? (
-                    <>
-                      <UserMinus className="w-4 h-4" />
-                      Dejar de seguir
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4" />
-                      Seguir
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* User info on desktop */}
-          <div className="hidden sm:block mt-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+        {/* Información principal */}
+        <div className="flex-1 text-center sm:text-left space-y-4">
+          {/* Nombre y botón de acción */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <h1 className="text-2xl font-bold text-foreground">
               {profile.full_name}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
-              {profile.location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  <span>{profile.location}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>Miembro desde {formatDate(profile.joined_date)}</span>
-              </div>
-            </div>
-
-            {profile.bio && (
-              <p className="mt-4 text-foreground/80 max-w-2xl leading-relaxed">
-                {profile.bio}
-              </p>
+            {isOwnProfile ? (
+              <Button 
+                variant="outline" 
+                onClick={() => setIsEditOpen(true)}
+                className="gap-2 self-center sm:self-auto"
+              >
+                <Settings className="w-4 h-4" />
+                Editar perfil
+              </Button>
+            ) : (
+              <Button 
+                variant={isFollowing ? "outline" : "default"}
+                onClick={handleFollowToggle}
+                className="gap-2 self-center sm:self-auto"
+              >
+                {isFollowing ? (
+                  <>
+                    <UserMinus className="w-4 h-4" />
+                    Siguiendo
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4" />
+                    Seguir
+                  </>
+                )}
+              </Button>
             )}
-
-            <div className="flex flex-wrap gap-2 mt-4">
-              <Badge variant="secondary" className="text-xs">Observador activo</Badge>
-              <Badge variant="secondary" className="text-xs">Experto en aves</Badge>
-            </div>
           </div>
 
-          {/* Bio on mobile */}
-          <div className="sm:hidden mt-4">
-            {profile.bio && (
-              <p className="text-sm text-foreground/80 leading-relaxed">
-                {profile.bio}
-              </p>
-            )}
-            
-            <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-              <Calendar className="w-3 h-3" />
-              <span>Miembro desde {formatDate(profile.joined_date)}</span>
+          {/* Estadísticas principales */}
+          <div className="grid grid-cols-3 gap-6 text-center">
+            <div className="space-y-1">
+              <div className="flex items-center justify-center gap-2">
+                <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-xl font-bold text-foreground">
+                  {formatNumber(profile.observations_count)}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">Observaciones</p>
             </div>
-
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              <Badge variant="secondary" className="text-xs">Observador activo</Badge>
-              <Badge variant="secondary" className="text-xs">Experto en aves</Badge>
+            
+            <div className="space-y-1">
+              <div className="flex items-center justify-center gap-2">
+                <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <span className="text-xl font-bold text-foreground">
+                  {formatNumber(profile.followers_count)}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">Seguidores</p>
+            </div>
+            
+            <div className="space-y-1">
+              <div className="flex items-center justify-center gap-2">
+                <Award className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span className="text-xl font-bold text-foreground">
+                  {formatNumber(profile.badges_count)}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">Medallas</p>
             </div>
           </div>
         </div>
@@ -167,7 +141,7 @@ const ProfileHeader = ({ profile, isOwnProfile }: ProfileHeaderProps) => {
         onOpenChange={setIsEditOpen}
         profile={profile}
       />
-    </>
+    </div>
   );
 };
 

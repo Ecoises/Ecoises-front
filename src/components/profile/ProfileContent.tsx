@@ -193,7 +193,7 @@ const ProfileContent = ({ profile, isOwnProfile }: ProfileContentProps) => {
             </Card>
           ) : (
             observations.map((observation) => (
-              <Card key={observation.id} className="border-border bg-card overflow-hidden hover:shadow-lg transition-shadow duration-300">
+              <Card key={observation.id} className="border-border bg-card overflow-hidden hover:shadow-md transition-all duration-300">
                 {/* Header del post */}
                 <CardContent className="p-0">
                   <div className="p-4 border-b border-border/50">
@@ -230,7 +230,7 @@ const ProfileContent = ({ profile, isOwnProfile }: ProfileContentProps) => {
                   </div>
 
                   {/* Imagen */}
-                  <div className="aspect-[4/3] relative bg-accent/20">
+                  <div className="aspect-[3/2] relative bg-accent/20">
                     <img 
                       src={observation.image} 
                       alt={observation.species}
@@ -239,16 +239,16 @@ const ProfileContent = ({ profile, isOwnProfile }: ProfileContentProps) => {
                   </div>
 
                   {/* Contenido del post */}
-                  <div className="p-4 space-y-4">
+                  <div className="p-4 space-y-3">
                     {/* Información de la especie */}
                     <div>
-                      <h3 className="text-lg font-bold text-foreground mb-1">
+                      <h3 className="text-base font-bold text-foreground mb-1">
                         {observation.species}
                       </h3>
-                      <p className="text-sm text-muted-foreground italic mb-3">
+                      <p className="text-xs text-muted-foreground italic mb-2">
                         {observation.scientific_name}
                       </p>
-                      <p className="text-foreground leading-relaxed">
+                      <p className="text-sm text-foreground leading-relaxed">
                         {observation.description}
                       </p>
                     </div>

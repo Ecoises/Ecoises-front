@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileInfo from '@/components/profile/ProfileInfo';
 import ProfileContent from '@/components/profile/ProfileContent';
 
@@ -38,10 +39,17 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-accent/5">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Sidebar izquierda - Información del perfil */}
+    <div className="min-h-screen bg-background">
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Header del perfil - Avatar, nombre y stats principales */}
+        <ProfileHeader 
+          profile={profileData} 
+          isOwnProfile={isOwnProfile}
+        />
+        
+        {/* Layout de dos columnas */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+          {/* Sidebar izquierda - Información personal */}
           <div className="lg:col-span-1">
             <ProfileInfo 
               profile={profileData} 
