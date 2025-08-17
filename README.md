@@ -1,73 +1,47 @@
-# Welcome to your Lovable project
+# Ecoises
 
-## Project info
+¡Bienvenido al repositorio de Ecoises! 
 
-**URL**: https://lovable.dev/projects/904419e5-6015-4739-9b4b-2762a66dda53
+---
 
-## How can I edit this code?
+## Tecnologías Utilizadas
 
-There are several ways of editing your application.
+Este proyecto fue construido utilizando las siguientes tecnologías:
 
-**Use Lovable**
+* **Vite**: Un *bundler* de JavaScript para un entorno de desarrollo rápido.
+* **TypeScript**: Un superset de JavaScript que añade tipado estático.
+* **React**: Una biblioteca de JavaScript para construir interfaces de usuario.
+* **shadcn-ui**: Una colección de componentes de interfaz de usuario reutilizables.
+* **Tailwind CSS**: Un framework de CSS para construir rápidamente diseños personalizados.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/904419e5-6015-4739-9b4b-2762a66dda53) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## Cómo Ejecutar el Proyecto Localmente
 
-**Use your preferred IDE**
+Para que otros miembros del equipo puedan empezar a trabajar, solo tienen que seguir estos sencillos pasos. Asegúrate de tener **Node.js** y **npm** instalados en tu sistema.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1.  **Clonar el repositorio**: Abre tu terminal y clona el proyecto.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+    ```bash
+    git clone <URL_DEL_REPOSITORIO>
+    ```
 
-Follow these steps:
+2.  **Acceder al directorio**: Navega a la carpeta del proyecto.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+    ```bash
+    cd Ecoises
+    ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3.  **Instalar dependencias**: Instala todas las librerías y paquetes necesarios.
 
-# Step 3: Install the necessary dependencies.
-npm i
+    ```bash
+    npm install
+    ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+4.  **Iniciar el servidor de desarrollo**: Lanza la aplicación en tu entorno local.
 
-**Edit a file directly in GitHub**
+    ```bash
+    npm run dev
+    ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/904419e5-6015-4739-9b4b-2762a66dda53) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Una vez que el servidor esté en funcionamiento, podrás ver el proyecto en tu navegador, generalmente en `http://localhost:5173`.
