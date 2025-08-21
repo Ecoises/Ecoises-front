@@ -139,7 +139,7 @@ const LandingPage = () => {
             <div className="flex justify-center lg:justify-end">
               <img
                 src="/images/ilustracion.svg"
-                alt="Avoga - Observación de aves"
+                alt="Ecoises - Observación de aves"
                 className="max-w-md lg:max-w-lg w-full h-auto"
               />
             </div>
@@ -171,7 +171,7 @@ const LandingPage = () => {
               Características revolucionarias
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Avoga combina tecnología de vanguardia con la pasión por la observación de aves
+              Ecoises combina tecnología de vanguardia con la pasión por la observación de aves
               para crear una experiencia única e innovadora.
             </p>
           </div>
@@ -251,7 +251,7 @@ const LandingPage = () => {
                 <Link to="/app">
                   <Button size="lg" className="gap-2">
                     <Globe className="h-4 w-4" />
-                    Probar Avoga gratis
+                    Probar Ecoises gratis
                   </Button>
                 </Link>
                 <Button size="lg" variant="outline" className="gap-2">
@@ -262,11 +262,11 @@ const LandingPage = () => {
               <div className="flex flex-col sm:flex-row justify-center items-center gap-6 text-muted-foreground">
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4" />
-                  <span>contacto@avoga.com</span>
+                  <span>contacto@Ecoises.com</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Github className="h-4 w-4" />
-                  <span>github.com/avoga</span>
+                  <span>github.com/Ecoises</span>
                 </div>
               </div>
             </CardContent>
@@ -280,10 +280,10 @@ const LandingPage = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
               <Bird className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">Avoga</span>
+              <span className="text-xl font-bold">Ecoises</span>
             </div>
             <p className="text-muted-foreground text-center md:text-right">
-              © 2024 Avoga. Todos los derechos reservados. Hecho con ❤️ para la conservación.
+              © 2024 Ecoises. Todos los derechos reservados. Hecho con ❤️ para la conservación.
             </p>
           </div>
         </div>

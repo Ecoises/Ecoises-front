@@ -10,7 +10,7 @@ const About = () => {
       role: "Fundadora & CEO",
       bio: "Bióloga especializada en ornitología con 10 años de experiencia en conservación.",
       avatar: "/placeholder.svg",
-      email: "maria@avoga.com",
+      email: "maria@Ecoises.com",
       github: "mariagonzalez",
       linkedin: "maria-gonzalez"
     },
@@ -19,7 +19,7 @@ const About = () => {
       role: "CTO",
       bio: "Desarrollador full-stack apasionado por la tecnología aplicada a la conservación.",
       avatar: "/placeholder.svg",
-      email: "carlos@avoga.com",
+      email: "carlos@Ecoises.com",
       github: "carlosruiz",
       linkedin: "carlos-ruiz"
     },
@@ -28,7 +28,7 @@ const About = () => {
       role: "Científica de Datos",
       bio: "Especialista en machine learning e inteligencia artificial para reconocimiento de especies.",
       avatar: "/placeholder.svg",
-      email: "ana@avoga.com",
+      email: "ana@Ecoises.com",
       github: "anamorales",
       linkedin: "ana-morales"
     },
@@ -37,7 +37,7 @@ const About = () => {
       role: "Diseñador UX/UI",
       bio: "Diseñador enfocado en crear experiencias intuitivas para la observación de aves.",
       avatar: "/placeholder.svg",
-      email: "diego@avoga.com",
+      email: "diego@Ecoises.com",
       github: "diegolopez",
       linkedin: "diego-lopez"
     }
@@ -71,10 +71,10 @@ const About = () => {
       {/* Hero Section */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl md:text-6xl font-bold text-foreground">
-          Sobre <span className="text-primary">Avoga</span>
+          Sobre <span className="text-primary">Ecoises</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Avoga es una plataforma innovadora que combina tecnología avanzada con la pasión por la observación de aves, 
+          Ecoises es una plataforma innovadora que combina tecnología avanzada con la pasión por la observación de aves, 
           creando una comunidad global dedicada a la conservación y el estudio de la biodiversidad aviar.
         </p>
       </div>
@@ -99,7 +99,7 @@ const About = () => {
 
       {/* Features Section */}
       <div className="space-y-8">
-        <h2 className="text-3xl font-bold text-center">¿Qué hace especial a Avoga?</h2>
+        <h2 className="text-3xl font-bold text-center">¿Qué hace especial a Ecoises?</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {features.map((feature, index) => (
             <Card key={index} className="card-hover">
@@ -175,11 +175,11 @@ const About = () => {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <div className="flex items-center space-x-2">
               <Mail className="h-5 w-5 text-primary" />
-              <span>contacto@avoga.com</span>
+              <span>contacto@Ecoises.com</span>
             </div>
             <div className="flex items-center space-x-2">
               <Github className="h-5 w-5 text-primary" />
-              <span>github.com/avoga</span>
+              <span>github.com/Ecoises</span>
             </div>
           </div>
         </CardContent>
