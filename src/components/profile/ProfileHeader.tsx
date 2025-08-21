@@ -10,7 +10,7 @@ interface ProfileHeaderProps {
     full_name: string;
     email: string;
     bio: string;
-    avatar: string;
+    avatar?: string;
     location: string;
     joined_date: string;
     is_following?: boolean;
