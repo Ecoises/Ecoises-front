@@ -1,21 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, MapPin, Calendar, Clock, Heart, MessageCircle, Send, Star, Cloud } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, Clock, Heart, MessageCircle, Send, Star, Cloud, Eye, Share2, User, Music } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Observation, Comment } from "@/types/observation";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock data - en una app real vendría de una API
-const mockObservation: Observation = {
+// Mock data
+const MOCK_OBSERVATION: Observation = {
   id: 101,
   species_name: "American Robin",
   scientific_name: "Turdus migratorius",
-  image: "https://images.unsplash.com/photo-1621105249905-39e9d9b1367f?auto=format&fit=crop&w=800&h=600",
+  image: "https://inaturalist-open-data.s3.amazonaws.com/photos/452211470/original.jpg",
   location: "Central Park, New York",
   date: "May 15, 2024",
   time: "10:23 AM",
@@ -52,266 +53,360 @@ const mockObservation: Observation = {
   ]
 };
 
+const CURRENT_USER_ID = 999;
+
+// Componente para un comentario individual
+const CommentItem = ({ comment }: { comment: Comment }) => {
+  const formattedDate = useMemo(() => {
+    return new Date(comment.created_at).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }, [comment.created_at]);
+
+  return (
+    <div className="py-3 first:pt-0 last:pb-0">
+      <div className="flex gap-3">
+        <Avatar className="h-8 w-8 border border-lime-200">
+          <AvatarImage src={comment.user.avatar} alt={`${comment.user.name} avatar`} />
+          <AvatarFallback>{comment.user.name[0]}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1 space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-sm text-forest-900">{comment.user.name}</span>
+            <span className="text-xs text-forest-600">{formattedDate}</span>
+          </div>
+          <p className="text-sm text-forest-700">{comment.content}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ObservationDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [observation, setObservation] = useState<Observation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Simular carga de datos
-    setLoading(true);
-    setTimeout(() => {
-      // En una app real, aquí harías la llamada a la API
-      setObservation(mockObservation);
-      setIsFavorite(mockObservation.is_favorite || false);
-      setComments(mockObservation.comments || []);
-      setLoading(false);
-    }, 300);
+    const loadObservation = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        if (!id || id === 'invalid') {
+          throw new Error('Observation not found');
+        }
+        
+        setObservation(MOCK_OBSERVATION);
+        setIsFavorite(MOCK_OBSERVATION.is_favorite || false);
+        setComments(MOCK_OBSERVATION.comments || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load observation');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadObservation();
   }, [id]);
 
-  const handleToggleFavorite = () => {
+  const handleToggleFavorite = useCallback(async () => {
+    const previousState = isFavorite;
     setIsFavorite(!isFavorite);
-    toast({
-      title: isFavorite ? "Removed from favorites" : "Added to favorites",
-      description: isFavorite ? "Observation removed from your favorites" : "Observation added to your favorites",
-    });
-  };
+    
+    try {
+      toast({
+        title: !previousState ? "Added to favorites" : "Removed from favorites",
+        description: !previousState 
+          ? "Observation added to your favorites" 
+          : "Observation removed from your favorites",
+      });
+    } catch (error) {
+      setIsFavorite(previousState);
+      toast({
+        title: "Error",
+        description: "Failed to update favorites. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [isFavorite, toast]);
 
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
+  const handleAddComment = useCallback(async () => {
+    const trimmedComment = newComment.trim();
+    
+    if (!trimmedComment || trimmedComment.length > 500) return;
 
-    const comment: Comment = {
-      id: comments.length + 1,
+    const tempComment: Comment = {
+      id: Date.now(),
       user: {
-        id: 999, // ID del usuario actual
+        id: CURRENT_USER_ID,
         name: "Current User",
         avatar: "https://randomuser.me/api/portraits/men/1.jpg",
       },
-      content: newComment,
+      content: trimmedComment,
       created_at: new Date().toISOString()
     };
 
-    setComments([...comments, comment]);
+    setComments(prev => [...prev, tempComment]);
     setNewComment("");
-    toast({
-      title: "Comment added",
-      description: "Your comment has been added to this observation",
-    });
-  };
+
+    try {
+      toast({
+        title: "Comment added",
+        description: "Your comment has been added to this observation",
+      });
+    } catch (error) {
+      setComments(prev => prev.filter(c => c.id !== tempComment.id));
+      setNewComment(trimmedComment);
+      toast({
+        title: "Error",
+        description: "Failed to add comment. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [newComment, toast]);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[50vh]">
-        <div className="animate-pulse text-muted-foreground">Loading observation...</div>
+        <div className="animate-pulse text-forest-700">Loading observation...</div>
       </div>
     );
   }
 
-  if (!observation) {
+  if (error || !observation) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-2xl font-bold mb-4">Observation Not Found</h2>
-        <p className="text-muted-foreground mb-6">We couldn't find this observation.</p>
+        <h2 className="text-2xl font-bold text-forest-900 mb-4">
+          {error ? "Error Loading Observation" : "Observation Not Found"}
+        </h2>
+        <p className="text-forest-700 mb-6">
+          {error || "We couldn't find this observation."}
+        </p>
         <Link to="/sightings">
-          <Button>Back to Sightings</Button>
+          <Button className="bg-lime-500 hover:bg-lime-600 text-white">Back to Sightings</Button>
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      {/* Navigation */}
+    <div className="animate-fade-in">
       <div className="mb-6">
-        <Link to="/sightings" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 mb-4">
+        <Link 
+          to="/sightings" 
+          className="text-forest-700 hover:text-forest-900 inline-flex items-center gap-1"
+        >
           <ArrowLeft className="h-4 w-4" />
           Back to Sightings
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Image */}
-          <Card className="overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left Column: Image and Comments */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card className="relative overflow-hidden border rounded-xl shadow-md">
             <img
               src={observation.image}
-              alt={`${observation.species_name} observation`}
-              className="w-full aspect-video object-cover"
+              alt={`${observation.species_name} observation by ${observation.user.name}`}
+              className="w-full aspect-[4/3] md:aspect-[4/4] object-cover"
+              loading="lazy"
             />
-          </Card>
-
-          {/* Species Info */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-2xl">{observation.species_name}</CardTitle>
-                  {observation.scientific_name && (
-                    <p className="text-muted-foreground italic text-lg">{observation.scientific_name}</p>
-                  )}
-                </div>
-                <Button
-                  variant={isFavorite ? "default" : "outline"}
-                  onClick={handleToggleFavorite}
-                  className="gap-2"
-                >
-                  <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
-                  {isFavorite ? "Favorited" : "Add to Favorites"}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-foreground leading-relaxed">{observation.description}</p>
-              
-              {observation.notes && (
-                <div>
-                  <h4 className="font-semibold text-sm text-muted-foreground mb-2">Additional Notes</h4>
-                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">{observation.notes}</p>
-                </div>
-              )}
-            </CardContent>
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+              <p className="text-xs text-white font-medium">
+                Photo by: {observation.user.name}
+              </p>
+            </div>
           </Card>
 
           {/* Comments Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5" />
-                Comments ({comments.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Add Comment */}
-              <div className="space-y-3">
-                <Textarea
-                  placeholder="Share your thoughts about this observation..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-[80px]"
-                />
-                <Button onClick={handleAddComment} className="gap-2" disabled={!newComment.trim()}>
+          <Card className="border-lime-200 p-4">
+            <h3 className="font-semibold text-lg text-forest-950 mb-4 flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              Comments ({comments.length})
+            </h3>
+            
+            {/* Add Comment */}
+            <div className="space-y-3 mb-4">
+              <Textarea
+                placeholder="Share your thoughts about this observation..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                className="min-h-[80px] border-lime-200 focus:border-lime-400"
+                maxLength={500}
+              />
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-forest-600">
+                  {newComment.length}/500 characters
+                </span>
+                <Button 
+                  onClick={handleAddComment}
+                  className="gap-2 bg-lime-500 hover:bg-lime-600 text-white"
+                  disabled={!newComment.trim() || newComment.length > 500}
+                >
                   <Send className="h-4 w-4" />
                   Add Comment
                 </Button>
               </div>
+            </div>
 
-              <Separator />
+            <Separator className="my-4" />
 
-              {/* Comments List */}
-              <div className="space-y-4">
-                {comments.length > 0 ? (
-                  comments.map((comment) => (
-                    <div key={comment.id} className="flex gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={comment.user.avatar} />
-                        <AvatarFallback>{comment.user.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{comment.user.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(comment.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{comment.content}</p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground py-4">
-                    No comments yet. Be the first to share your thoughts!
-                  </p>
-                )}
+            {/* Comments List */}
+            {comments.length > 0 ? (
+              <div className="divide-y divide-lime-100">
+                {comments.map((comment) => (
+                  <CommentItem key={comment.id} comment={comment} />
+                ))}
               </div>
-            </CardContent>
+            ) : (
+              <div className="text-center py-6">
+                <MessageCircle className="h-8 w-8 text-forest-400 mx-auto mb-2" />
+                <p className="text-forest-700 mb-1">No comments yet</p>
+                <p className="text-sm text-forest-600">Be the first to share your thoughts!</p>
+              </div>
+            )}
           </Card>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Observer Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Observer</CardTitle>
-            </CardHeader>
-            <CardContent>
+        {/* Right Column: Details */}
+        <div className="lg:col-span-1 space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-forest-950 mb-1">{observation.species_name}</h1>
+            <p className="text-forest-700 italic mb-4">{observation.scientific_name}</p>
+
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Button
+                variant={isFavorite ? "default" : "outline"}
+                onClick={handleToggleFavorite}
+                className={`gap-2 rounded-full ${isFavorite ? 'bg-lime-500 hover:bg-lime-600' : ''}`}
+              >
+                <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
+                {isFavorite ? "Favorited" : "Add to Favorites"}
+              </Button>
+              
+              <Button variant="outline" className="gap-2 rounded-full">
+                <Share2 className="h-4 w-4" />
+                Share
+              </Button>
+            </div>
+
+            <p className="text-forest-800 mb-6">{observation.description}</p>
+          </div>
+
+          <Card className="border-lime-200 p-4">
+            <h3 className="font-semibold text-lg text-forest-950 mb-4">Observation Details</h3>
+            
+            {/* Observer Info */}
+            <div className="mb-6">
+              <h4 className="font-medium text-forest-900 mb-3">Observed by</h4>
               <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={observation.user.avatar} />
-                  <AvatarFallback>{observation.user.name[0]}</AvatarFallback>
+                <Avatar className="h-12 w-12 border-2 border-lime-200">
+                  <AvatarImage src={observation.user.avatar} alt={observation.user.name} />
+                  <AvatarFallback className="bg-lime-100 text-lime-700 font-bold">
+                    {observation.user.name[0]}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{observation.user.name}</p>
-                  <p className="text-sm text-muted-foreground">Observer</p>
+                  <p className="font-semibold text-forest-900">{observation.user.name}</p>
+                  <p className="text-sm text-forest-600">Observer & Naturalist</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Observation Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <Separator className="my-4" />
+
+            {/* Observation Details Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="font-medium">Location</p>
-                  <p className="text-sm text-muted-foreground">{observation.location}</p>
+                <div className="bg-lime-100 p-2 rounded-lg">
+                  <MapPin className="h-5 w-5 text-lime-700" />
                 </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="font-medium">Date</p>
-                  <p className="text-sm text-muted-foreground">{observation.date}</p>
+                  <h3 className="font-medium text-forest-900">Location</h3>
+                  <p className="text-forest-700">{observation.location}</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div className="bg-lime-100 p-2 rounded-lg">
+                  <Calendar className="h-5 w-5 text-lime-700" />
+                </div>
                 <div>
-                  <p className="font-medium">Time</p>
-                  <p className="text-sm text-muted-foreground">{observation.time}</p>
+                  <h3 className="font-medium text-forest-900">Date</h3>
+                  <p className="text-forest-700">{observation.date}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="bg-lime-100 p-2 rounded-lg">
+                  <Clock className="h-5 w-5 text-lime-700" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-forest-900">Time</h3>
+                  <p className="text-forest-700">{observation.time}</p>
                 </div>
               </div>
 
               {observation.weather && (
                 <div className="flex items-start gap-3">
-                  <Cloud className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div className="bg-lime-100 p-2 rounded-lg">
+                    <Cloud className="h-5 w-5 text-lime-700" />
+                  </div>
                   <div>
-                    <p className="font-medium">Weather</p>
-                    <p className="text-sm text-muted-foreground">{observation.weather}</p>
+                    <h3 className="font-medium text-forest-900">Weather</h3>
+                    <p className="text-forest-700">{observation.weather}</p>
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Star className="h-4 w-4" />
-                View Species Details
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <MapPin className="h-4 w-4" />
-                View on Map
-              </Button>
-            </CardContent>
+            </div>
+            
+            {observation.notes && (
+              <div className="mt-6">
+                <h3 className="font-medium text-forest-900 mb-2">Field Notes</h3>
+                <div className="bg-lime-50 p-3 rounded-lg">
+                  <p className="text-forest-700 text-sm italic">{observation.notes}</p>
+                </div>
+              </div>
+            )}
           </Card>
         </div>
+      </div>
+
+      {/* Species Actions Section */}
+      <div className="mt-12 mb-8">
+        <h2 className="text-2xl font-bold text-forest-950 mb-6">About This Species</h2>
+        <Card className="border-lime-200 p-6">
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button variant="outline" className="gap-2 rounded-full">
+              <Star className="h-4 w-4" />
+              View Species Guide
+            </Button>
+            <Button variant="outline" className="gap-2 rounded-full">
+              <Eye className="h-4 w-4" />
+              Similar Observations
+            </Button>
+            <Button variant="outline" className="gap-2 rounded-full">
+              <Music className="h-4 w-4" />
+              Listen to Call
+            </Button>
+            <Button variant="outline" className="gap-2 rounded-full">
+              <MapPin className="h-4 w-4" />
+              View on Map
+            </Button>
+          </div>
+        </Card>
       </div>
     </div>
   );
