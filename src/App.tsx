@@ -17,6 +17,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/auth/Login";
 import About from "./pages/About";
 import Profile from "./pages/Profile";
+import ObservationDetail from "./pages/observations/ObservationDetail";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/map" element={<Map />} />
               <Route path="/sightings" element={<Sightings />} />
               <Route path="/sightings/new" element={<NewSighting />} />
+              <Route path="/observations/:id" element={<ObservationDetail />} />
               <Route path="/about" element={<About />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:userId" element={<Profile />} />
