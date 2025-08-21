@@ -15,7 +15,8 @@ import {
   MessageCircle, 
   Share2,
   CheckCircle,
-  Clock
+  Clock,
+  BadgeCheck
 } from 'lucide-react';
 
 interface ProfileContentProps {
@@ -204,10 +205,10 @@ const ProfileContent = ({ profile, isOwnProfile }: ProfileContentProps) => {
                           <AvatarFallback>{profile.full_name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <h4 className="font-semibold text-foreground">{profile.full_name}</h4>
                             {observation.verified && (
-                              <CheckCircle className="w-4 h-4 text-primary" />
+                              < BadgeCheck className="w-4 h-4 text-primary" />
                             )}
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
