@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import Login from "./pages/auth/Login";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 import About from "./pages/About";
 import Profile from "./pages/Profile";
 import ObservationDetail from "./pages/observations/ObservationDetail";
@@ -42,6 +43,11 @@ const App = () => (
             <Route path="/forgot-password" element={
               <PublicRoute>
                 <ForgotPassword />
+              </PublicRoute>
+            } />
+            <Route path="/reset-password" element={
+              <PublicRoute>
+                <ResetPassword />
               </PublicRoute>
             } />
             
