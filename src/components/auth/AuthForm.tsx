@@ -8,7 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 import authService from "../../services/authService";
 import axios from "axios";
 import { LaravelValidationError } from '../../types/api';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import GoogleSignInButton from './GoogleSignInButton';
 
@@ -24,6 +24,7 @@ const AuthForm: React.FC = () => {
   const [fullName, setFullName] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
 
   // Estado para la interacción con la API
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -40,6 +41,7 @@ const AuthForm: React.FC = () => {
     setPassword("");
     setFullName("");
     setConfirmPassword("");
+    setAcceptTerms(false);
     setErrorMessage("");
     setSuccessMessage("");
   };
@@ -246,6 +248,27 @@ const AuthForm: React.FC = () => {
               </div>
             )}
 
+            {!isLogin && (
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="terms"
+                  checked={acceptTerms}
+                  onCheckedChange={(checked: boolean) => setAcceptTerms(checked)}
+                  required
+                />
+                <Label htmlFor="terms" className="text-sm cursor-pointer leading-relaxed">
+                  Acepto los{" "}
+                  <a href="#" className="text-lime-600 hover:text-lime-700 underline">
+                    términos y condiciones
+                  </a>{" "}
+                  y las{" "}
+                  <a href="#" className="text-lime-600 hover:text-lime-700 underline">
+                    políticas de privacidad
+                  </a>
+                </Label>
+              </div>
+            )}
+
             {isLogin && (
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -256,13 +279,17 @@ const AuthForm: React.FC = () => {
                   />
                   <Label htmlFor="remember" className="text-sm cursor-pointer">Recordarme</Label>
                 </div>
-                <a href="#" className="text-sm text-lime-600 hover:text-lime-700">
+                <Link to="/forgot-password" className="text-sm text-lime-600 hover:text-lime-700">
                   ¿Olvidaste tu contraseña?
-                </a>
+                </Link>
               </div>
             )}
 
-            <Button type="submit" className="w-full bg-lime-500 hover:bg-lime-600" disabled={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full bg-lime-500 hover:bg-lime-600" 
+              disabled={isLoading || (!isLogin && !acceptTerms)}
+            >
               {isLoading ? "Cargando..." : (isLogin ? "Iniciar sesión" : "Registrarse")}
             </Button>
 
