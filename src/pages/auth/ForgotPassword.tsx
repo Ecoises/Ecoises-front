@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import SpeciesImage from "../../components/auth/SpeciesImage";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState<string>("");
@@ -35,16 +36,7 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Imagen de fondo (lado izquierdo) */}
-      <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-lime-400 to-forest-600 relative">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute bottom-8 left-8 text-white">
-          <h2 className="text-3xl font-bold mb-2">Recupera tu cuenta</h2>
-          <p className="text-lg opacity-90">
-            Te ayudamos a recuperar el acceso a tu cuenta de Ecoises
-          </p>
-        </div>
-      </div>
+      <SpeciesImage />
       
       {/* Formulario (lado derecho) */}
       <div className="w-full lg:w-1/2 bg-white overflow-y-auto">
