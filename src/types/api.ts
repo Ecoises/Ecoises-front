@@ -5,7 +5,6 @@ export interface User {
   full_name: string;
   email: string;
   avatar?: string;
-  // Añade aquí cualquier otro campo que tu API devuelva para el usuario
   created_at?: string;
   updated_at?: string;
 }
@@ -14,8 +13,7 @@ export interface AuthResponse {
   status: boolean;
   message: string;
   token?: string;
-  user?: User; // El usuario que se devuelve al iniciar sesión
-  // Si tu API de registro devuelve algo diferente, puedes crear otra interfaz (ej. RegisterResponse)
+  user?: User;
 }
 
 // Para errores de validación de Laravel (código 422)
@@ -26,12 +24,24 @@ export interface LaravelValidationError {
   };
 }
 
+// Para las respuestas de restablecimiento de contraseña
+export interface ForgotPasswordResponse {
+  status: boolean;
+  message: string;
+  error?: string;
+}
+
+export interface ResetPasswordResponse {
+  status: boolean;
+  message: string;
+  error?: string;
+}
+
 // Para la imagen de iNaturalist
 export interface INatPhoto {
   id: number;
   url: string;
   attribution: string;
-  // Otros campos relevantes si los usas
 }
 
 export interface INatResult {
@@ -39,7 +49,6 @@ export interface INatResult {
   name: string;
   preferred_common_name?: string;
   default_photo?: INatPhoto;
-  // Otros campos relevantes del resultado de la especie
 }
 
 export interface INatResponse {

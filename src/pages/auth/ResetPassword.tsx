@@ -1,113 +1,143 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import React, { useState, FormEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 import SpeciesImage from "../../components/auth/SpeciesImage";
-
-const resetPasswordSchema = z.object({
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
-  password_confirmation: z.string()
-}).refine((data) => data.password === data.password_confirmation, {
-  message: "Las contraseñas no coinciden",
-  path: ["password_confirmation"],
-});
-
-type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
+import authService from "../../services/authService";
+import { AxiosError } from "axios";
+import { LaravelValidationError } from "../../types/api";
 
 const ResetPassword: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   
-  const token = searchParams.get('token');
-  const email = searchParams.get('email');
-
-  const form = useForm<ResetPasswordForm>({
-    resolver: zodResolver(resetPasswordSchema),
-    defaultValues: {
-      password: "",
-      password_confirmation: "",
-    },
+  const [formData, setFormData] = useState({
+    token: searchParams.get('token') || '',
+    email: searchParams.get('email') || '',
+    password: '',
+    password_confirmation: ''
   });
+  
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState<boolean>(false);
+  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  const onSubmit = async (data: ResetPasswordForm) => {
-    if (!token || !email) {
-      toast({
-        title: "Error",
-        description: "Token o email no válido",
-        variant: "destructive",
-      });
-      return;
+  useEffect(() => {
+    // Verificar que tenemos token y email
+    if (!formData.token || !formData.email) {
+      setError('Enlace de restablecimiento inválido o expirado');
     }
+  }, [formData.token, formData.email]);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Limpiar errores específicos del campo
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSubmit = async (event: FormEvent): Promise<void> => {
+    event.preventDefault();
     setIsLoading(true);
+    setMessage("");
+    setError("");
+    setFieldErrors({});
+
     try {
-      // Aquí iría la llamada a la API para resetear la contraseña
-      // const response = await authService.resetPassword({
-      //   token,
-      //   email,
-      //   password: data.password,
-      //   password_confirmation: data.password_confirmation
-      // });
+      const response = await authService.resetPassword(formData);
       
-      // Simulación de éxito
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (response.status) {
+        setIsSuccess(true);
+        setMessage("Contraseña restablecida exitosamente. Redirigiendo al inicio de sesión...");
+        
+        // Redirigir después de 3 segundos
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } else {
+        setError(response.error || "No se pudo restablecer la contraseña.");
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError<LaravelValidationError>;
       
-      toast({
-        title: "¡Contraseña actualizada!",
-        description: "Tu contraseña ha sido cambiada exitosamente",
-      });
-      
-      navigate("/login");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Error al cambiar la contraseña",
-        variant: "destructive",
-      });
+      if (axiosError.response?.status === 422) {
+        // Errores de validación de Laravel
+        const validationErrors = axiosError.response.data.errors;
+        const newFieldErrors: Record<string, string> = {};
+        
+        Object.keys(validationErrors).forEach(field => {
+          newFieldErrors[field] = validationErrors[field][0];
+        });
+        
+        setFieldErrors(newFieldErrors);
+      } else if (axiosError.response?.data?.message) {
+        setError(axiosError.response.data.message);
+      } else {
+        setError("Ocurrió un error de conexión. Por favor, inténtalo de nuevo.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!token || !email) {
+  // Si no hay token o email válidos
+  if (!formData.token || !formData.email) {
     return (
       <div className="flex h-screen overflow-hidden">
         <SpeciesImage />
+        
         <div className="w-full lg:w-1/2 bg-white overflow-y-auto">
-          <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-              <Card className="w-full max-w-md mx-auto shadow-lg">
-                <CardHeader className="space-y-1 text-center">
-                  <CardTitle className="text-2xl font-bold text-destructive">Enlace inválido</CardTitle>
+          <div className="flex items-center justify-center min-h-full p-8">
+            <div className="w-full max-w-md text-center">
+              <div className="mb-8">
+                <div className="flex justify-center items-center gap-2 mb-4">
+                  <div className="bg-lime-400 h-10 w-10 rounded-lg flex items-center justify-center">
+                    <span className="text-forest-900 font-bold text-xl">E</span>
+                  </div>
+                  <h1 className="text-forest-900 font-bold text-2xl">Ecoises</h1>
+                </div>
+              </div>
+
+              <Card>
+                <CardHeader className="text-center">
+                  <CardTitle className="text-red-600">Enlace inválido</CardTitle>
                   <CardDescription>
-                    El enlace para restablecer la contraseña no es válido o ha expirado
+                    El enlace de restablecimiento es inválido o ha expirado.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Button asChild className="w-full">
-                      <Link to="/forgot-password">
-                        Solicitar nuevo enlace
-                      </Link>
+                <CardContent className="text-center space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Por favor, solicita un nuevo enlace de restablecimiento.
+                  </p>
+                  <Link to="/forgot-password">
+                    <Button className="w-full bg-lime-500 hover:bg-lime-600">
+                      Solicitar nuevo enlace
                     </Button>
-                    <Button variant="outline" asChild className="w-full">
-                      <Link to="/login">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Volver al inicio de sesión
-                      </Link>
-                    </Button>
-                  </div>
+                  </Link>
+                  <Link 
+                    to="/login" 
+                    className="inline-flex items-center text-sm text-lime-600 hover:text-lime-700"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Volver al inicio de sesión
+                  </Link>
                 </CardContent>
               </Card>
             </div>
@@ -123,98 +153,156 @@ const ResetPassword: React.FC = () => {
       
       {/* Formulario (lado derecho) */}
       <div className="w-full lg:w-1/2 bg-white overflow-y-auto">
-        <div className="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8">
-            <Card className="w-full max-w-md mx-auto shadow-lg">
-              <CardHeader className="space-y-1 text-center">
-                <CardTitle className="text-2xl font-bold">Nueva contraseña</CardTitle>
+        <div className="flex items-center justify-center min-h-full p-8">
+          <div className="w-full max-w-md">
+            {/* Header */}
+            <div className="mb-8 text-center">
+              <div className="flex justify-center items-center gap-2 mb-4">
+                <div className="bg-lime-400 h-10 w-10 rounded-lg flex items-center justify-center">
+                  <span className="text-forest-900 font-bold text-xl">E</span>
+                </div>
+                <h1 className="text-forest-900 font-bold text-2xl">Ecoises</h1>
+              </div>
+              {/* <p className="text-forest-700">
+                Ingresa tu nueva contraseña
+              </p> */}
+            </div>
+
+            <Card>
+              <CardHeader className="text-center">
+                <div className="mx-auto w-12 h-12 bg-lime-100 rounded-full flex items-center justify-center mb-4">
+                  <Lock className="h-6 w-6 text-lime-600" />
+                </div>
+                <CardTitle>Restablecer contraseña</CardTitle>
                 <CardDescription>
-                  Ingresa tu nueva contraseña para {email}
+                  {!isSuccess 
+                    ? "Crea una nueva contraseña para tu cuenta"
+                    : "¡Contraseña actualizada correctamente!"
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nueva contraseña</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input
-                                {...field}
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Ingresa tu nueva contraseña"
-                                className="pl-10 pr-10"
-                                disabled={isLoading}
-                              />
-                              <button
-                                type="button"
-                                className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
-                                onClick={() => setShowPassword(!showPassword)}
-                              >
-                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {/* Mensaje de éxito */}
+                {message && isSuccess && (
+                  <div className="p-4 rounded-md mb-4 bg-green-50 text-green-700 border border-green-200">
+                    <p className="text-sm">{message}</p>
+                  </div>
+                )}
 
-                    <FormField
-                      control={form.control}
-                      name="password_confirmation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirmar contraseña</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                              <Input
-                                {...field}
-                                type={showConfirmPassword ? "text" : "password"}
-                                placeholder="Confirma tu nueva contraseña"
-                                className="pl-10 pr-10"
-                                disabled={isLoading}
-                              />
-                              <button
-                                type="button"
-                                className="absolute right-3 top-3 h-4 w-4 text-muted-foreground hover:text-foreground"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              >
-                                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {/* Mensaje de error general */}
+                {error && (
+                  <div className="p-4 rounded-md mb-4 bg-red-50 text-red-700 border border-red-200">
+                    <p className="text-sm">{error}</p>
+                  </div>
+                )}
 
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Cambiando contraseña...
-                        </>
-                      ) : (
-                        "Cambiar contraseña"
+                {!isSuccess ? (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Email (solo lectura) */}
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Correo electrónico</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        readOnly
+                        className="bg-gray-50 text-gray-500"
+                      />
+                    </div>
+
+                    {/* Nueva contraseña */}
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Nueva contraseña</Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          name="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Ingresa tu nueva contraseña"
+                          value={formData.password}
+                          onChange={handleChange}
+                          required
+                          disabled={isLoading}
+                          className={fieldErrors.password ? "border-red-300" : ""}
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-gray-400" />
+                          )}
+                        </button>
+                      </div>
+                      {fieldErrors.password && (
+                        <p className="text-sm text-red-600">{fieldErrors.password}</p>
                       )}
+                    </div>
+
+                    {/* Confirmar contraseña */}
+                    <div className="space-y-2">
+                      <Label htmlFor="password_confirmation">Confirmar contraseña</Label>
+                      <div className="relative">
+                        <Input
+                          id="password_confirmation"
+                          name="password_confirmation"
+                          type={showPasswordConfirmation ? "text" : "password"}
+                          placeholder="Confirma tu nueva contraseña"
+                          value={formData.password_confirmation}
+                          onChange={handleChange}
+                          required
+                          disabled={isLoading}
+                          className={fieldErrors.password_confirmation ? "border-red-300" : ""}
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
+                        >
+                          {showPasswordConfirmation ? (
+                            <EyeOff className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-gray-400" />
+                          )}
+                        </button>
+                      </div>
+                      {fieldErrors.password_confirmation && (
+                        <p className="text-sm text-red-600">{fieldErrors.password_confirmation}</p>
+                      )}
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-lime-500 hover:bg-lime-600" 
+                      disabled={isLoading || !formData.password || !formData.password_confirmation}
+                    >
+                      {isLoading ? "Restableciendo..." : "Restablecer contraseña"}
                     </Button>
                   </form>
-                </Form>
-
-                <div className="mt-6">
-                  <Button variant="outline" asChild className="w-full">
+                ) : (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Serás redirigido al inicio de sesión en unos segundos...
+                    </p>
                     <Link to="/login">
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      Volver al inicio de sesión
+                      <Button className="w-full bg-lime-500 hover:bg-lime-600">
+                        Ir al inicio de sesión ahora
+                      </Button>
                     </Link>
-                  </Button>
+                  </div>
+                )}
+
+                <div className="mt-6 text-center">
+                  <Link 
+                    to="/login" 
+                    className="inline-flex items-center text-sm text-lime-600 hover:text-lime-700"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Volver al inicio de sesión
+                  </Link>
                 </div>
               </CardContent>
             </Card>

@@ -1,5 +1,5 @@
 import apiClient from '../api/apiClient';
-import { AuthResponse, User } from '../types/api'; // Importa tus tipos
+import { AuthResponse, User } from '../types/api';
 
 interface LoginCredentials {
   email: string;
@@ -11,6 +11,29 @@ interface RegisterData {
   email: string;
   password: string;
   password_confirmation: string;
+}
+
+interface ForgotPasswordData {
+  email: string;
+}
+
+interface ResetPasswordData {
+  token: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}
+
+interface ForgotPasswordResponse {
+  status: boolean;
+  message: string;
+  error?: string;
+}
+
+interface ResetPasswordResponse {
+  status: boolean;
+  message: string;
+  error?: string;
 }
 
 const authService = {
@@ -34,6 +57,7 @@ const authService = {
       throw error;
     }
   },
+
   googleLogin: async (idToken: string): Promise<AuthResponse> => {
     try {
       const response = await apiClient.post<AuthResponse>('/auth/google', { id_token: idToken });
@@ -46,6 +70,25 @@ const authService = {
     }
   },
 
+  // Nuevo: Solicitar enlace de restablecimiento de contraseña
+  forgotPassword: async (data: ForgotPasswordData): Promise<ForgotPasswordResponse> => {
+    try {
+      const response = await apiClient.post<ForgotPasswordResponse>('/forgot-password', data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Nuevo: Restablecer contraseña
+  resetPassword: async (data: ResetPasswordData): Promise<ResetPasswordResponse> => {
+    try {
+      const response = await apiClient.post<ResetPasswordResponse>('/reset-password', data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 
   getProfile: async (): Promise<User> => {
     try {
@@ -58,22 +101,20 @@ const authService = {
 
   logout: async (): Promise<void> => {
     try {
-        await apiClient.post('/logout');
-        localStorage.removeItem('auth_token');
+      await apiClient.post('/logout');
+      localStorage.removeItem('auth_token');
     } catch (error) {
-        console.error("Error al cerrar sesión en el servidor:", error);
-        localStorage.removeItem('auth_token'); // Asegurarse de limpiar el token incluso si el backend falla
-        throw error;
+      console.error("Error al cerrar sesión en el servidor:", error);
+      localStorage.removeItem('auth_token');
+      throw error;
     }
   },
-
 
   isAuthenticated: (): boolean => {
     const token = localStorage.getItem('auth_token');
     return !!token;
   },
 
-  // Método para verificar si el token es válido sin hacer una llamada al servidor
   hasValidToken: (): boolean => {
     const token = localStorage.getItem('auth_token');
     return !!token;
