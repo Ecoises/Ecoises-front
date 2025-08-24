@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   MapPin, 
   Filter, 
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import LeafletMap from "@/components/LeafletMap";
 
 // Sample sighting data
 const sightings = [
@@ -146,19 +147,6 @@ const HotspotCard = ({ hotspot }: { hotspot: typeof hotspots[0] }) => {
   );
 };
 
-const MapPlaceholder = () => (
-  <div className="bg-lime-50 rounded-lg border border-lime-200 flex items-center justify-center h-[500px]">
-    <div className="text-center">
-      <div className="mx-auto bg-lime-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-        <MapPin className="h-8 w-8 text-lime-600" />
-      </div>
-      <h3 className="text-forest-900 font-medium mb-2">Interactive Map</h3>
-      <p className="text-forest-700 text-sm max-w-xs mx-auto">
-        This is where the interactive map will be displayed, showing bird sighting locations.
-      </p>
-    </div>
-  </div>
-);
 
 const Map = () => {
   const [activeTab, setActiveTab] = useState<"sightings" | "hotspots">("sightings");
@@ -261,7 +249,11 @@ const Map = () => {
             )}
             
             <div>
-              <MapPlaceholder />
+              <LeafletMap 
+                sightings={sightings} 
+                hotspots={hotspots} 
+                activeTab={activeTab} 
+              />
             </div>
           </Card>
         </div>
