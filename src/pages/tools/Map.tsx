@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import LeafletMap from "@/components/LeafletMap";
+import SimpleMap from "@/components/LeafletMap";
 
 // Sample sighting data
 const sightings = [
@@ -249,7 +249,7 @@ const Map = () => {
             )}
             
             <div>
-              <LeafletMap 
+              <SimpleMap 
                 sightings={sightings} 
                 hotspots={hotspots} 
                 activeTab={activeTab} 
