@@ -1,7 +1,7 @@
 import { useState, FC } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ const speciesData = [
     family: "Thrushes",
     habitat: ["Urban", "Woodland", "Gardens"],
     status: "Common",
+    observations: 1247,
     image: "https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -24,6 +25,7 @@ const speciesData = [
     family: "Cardinals",
     habitat: ["Woodland", "Gardens", "Shrubland"],
     status: "Common",
+    observations: 892,
     image: "https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -33,6 +35,7 @@ const speciesData = [
     family: "Jays and Crows",
     habitat: ["Woodland", "Urban", "Parks"],
     status: "Common",
+    observations: 673,
     image: "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -42,6 +45,7 @@ const speciesData = [
     family: "Finches",
     habitat: ["Open country", "Gardens", "Meadows"],
     status: "Common",
+    observations: 534,
     image: "https://images.unsplash.com/photo-1591198936750-16d8e15edc9f?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -51,6 +55,7 @@ const speciesData = [
     family: "Hawks, Eagles, and Kites",
     habitat: ["Open country", "Woodland", "Urban"],
     status: "Common",
+    observations: 421,
     image: "https://images.unsplash.com/photo-1606567595334-d0781bd70527?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -60,6 +65,7 @@ const speciesData = [
     family: "Herons and Egrets",
     habitat: ["Wetlands", "Coastal", "Lakes"],
     status: "Common",
+    observations: 367,
     image: "https://images.unsplash.com/photo-1517824587134-3e3b97472a2a?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -69,6 +75,7 @@ const speciesData = [
     family: "Swallows",
     habitat: ["Open country", "Farms", "Near water"],
     status: "Common",
+    observations: 298,
     image: "https://images.unsplash.com/photo-1591718537660-aedd7576f401?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -78,6 +85,7 @@ const speciesData = [
     family: "Thrushes",
     habitat: ["Open woodland", "Farmland", "Gardens"],
     status: "Common",
+    observations: 189,
     image: "https://images.unsplash.com/photo-1547804270-1e15a27c8495?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -87,6 +95,7 @@ const speciesData = [
     family: "Tits and Chickadees",
     habitat: ["Woodland", "Urban", "Gardens"],
     status: "Common",
+    observations: 756,
     image: "https://images.unsplash.com/photo-1613322800652-00229d479b6d?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -96,6 +105,7 @@ const speciesData = [
     family: "Woodpeckers",
     habitat: ["Woodland", "Urban", "Parks"],
     status: "Common",
+    observations: 445,
     image: "https://images.unsplash.com/photo-1591570773933-f4b465bd3ee2?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -105,6 +115,7 @@ const speciesData = [
     family: "Hawks, Eagles, and Kites",
     habitat: ["Lakes", "Rivers", "Coastal"],
     status: "Uncommon",
+    observations: 87,
     image: "https://images.unsplash.com/photo-1548090463-c4a449026f1a?auto=format&fit=crop&w=600&h=400",
   },
   {
@@ -114,6 +125,7 @@ const speciesData = [
     family: "Falcons",
     habitat: ["Cliffs", "Urban", "Coastal"],
     status: "Uncommon",
+    observations: 54,
     image: "https://images.unsplash.com/photo-1618602051703-bee0a42c1852?auto=format&fit=crop&w=600&h=400",
   },
 ];
@@ -134,23 +146,19 @@ const SpeciesCard: FC<{ species: typeof speciesData[0] }> = ({ species }) => {
             className="w-full h-full object-cover"
           />
           <div className="absolute bottom-2 right-2">
-            <Badge className="bg-lime-500 text-white hover:bg-lime-600">
-              {species.status}
-            </Badge>
+            <div className="bg-white/90 backdrop-blur-sm text-forest-900 px-2 py-1 rounded-full flex items-center gap-1 text-xs font-medium">
+              <Eye className="h-3 w-3" />
+              {species.observations}
+            </div>
           </div>
         </div>
         <div className="p-4">
-          <h3 className="font-heading font-bold text-forest-900 text-lg">
+          <h3 className="font-heading font-bold text-forest-900 text-lg mb-1">
             {species.name}
           </h3>
-          <p className="text-forest-700 text-sm italic mb-2">
+          <p className="text-forest-700 text-sm italic">
             {species.scientificName}
           </p>
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-forest-800 bg-lime-100 px-2 py-1 rounded-full">
-              {species.family}
-            </span>
-          </div>
         </div>
       </Card>
     </Link>
