@@ -46,17 +46,17 @@ const PasswordRequirements: React.FC<PasswordRequirementsProps> = ({ password, o
   }
 
   return (
-    <div className="mt-2 p-3 bg-gray-50 rounded-md">
-      <p className="text-sm font-medium text-gray-700 mb-2">Requisitos de contraseña:</p>
-      <ul className="space-y-1">
+    <div className="mt-2 p-2 bg-gray-50 rounded-md border border-gray-200">
+      <p className="text-xs font-medium text-gray-600 mb-1">Requisitos de contraseña:</p>
+      <ul className="space-y-0.5">
         {requirements.map((requirement, index) => {
           const isMet = requirement.test(password);
           return (
-            <li key={index} className={`flex items-center text-sm ${isMet ? 'text-green-600' : 'text-red-600'}`}>
+            <li key={index} className={`flex items-center text-xs ${isMet ? 'text-green-600' : 'text-red-600'}`}>
               {isMet ? (
-                <Check className="h-4 w-4 mr-2" />
+                <Check className="h-3 w-3 mr-1.5" />
               ) : (
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-3 w-3 mr-1.5" />
               )}
               {requirement.text}
             </li>
