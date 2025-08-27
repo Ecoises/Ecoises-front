@@ -138,10 +138,14 @@ const AuthForm: React.FC = () => {
     <div className="w-full max-w-md py-4">
       <div className="mb-8 text-center">
         <div className="flex justify-center items-center gap-2 mb-4">
-          <div className="bg-lime-400 h-10 w-10 rounded-lg flex items-center justify-center">
-            <span className="text-forest-900 font-bold text-xl">E</span>
+          <div className="flex items-center justify-center">
+            <img
+              src="/favicon.png"
+              alt="Logo Ecoises"
+              className="h-12 w-12 object-contain"
+            />
           </div>
-          <h1 className="text-forest-900 font-bold text-2xl">Ecoises</h1>
+          <h1 className="text-forest-900 font-bold text-3xl">Ecoises</h1>
         </div>
         <p className="text-forest-700">
           {isLogin
