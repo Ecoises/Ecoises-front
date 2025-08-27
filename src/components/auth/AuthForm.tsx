@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { LaravelValidationError } from '../../types/api';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import GoogleSignInButton from './GoogleSignInButton';
+import PasswordRequirements from './PasswordRequirements';
 
 const AuthForm: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
@@ -26,6 +27,9 @@ const AuthForm: React.FC = () => {
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
 
+  // Estado para la validación de contraseña
+  const [isPasswordValid, setIsPasswordValid] = useState<boolean>(false);
+
   // Estado para la interacción con la API
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -34,6 +38,10 @@ const AuthForm: React.FC = () => {
   // Estado para mostrar/ocultar contraseñas
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+
+  const handlePasswordValidityChange = useCallback((isValid: boolean) => {
+    setIsPasswordValid(isValid);
+  }, []);
 
   const toggleForm = (): void => {
     setIsLogin(!isLogin);
@@ -44,6 +52,7 @@ const AuthForm: React.FC = () => {
     setAcceptTerms(false);
     setErrorMessage("");
     setSuccessMessage("");
+    setIsPasswordValid(false);
   };
 
   const handleSubmit = async (event: FormEvent): Promise<void> => {
@@ -94,10 +103,11 @@ const AuthForm: React.FC = () => {
       setIsLoading(false);
     }
   };
+
   const handleGoogleSignInSuccess = async (googleIdToken: string) => {
     setErrorMessage("");
     setSuccessMessage("");
-    setIsLoading(true); // Mostrar indicador de carga para Google también
+    setIsLoading(true);
     try {
       const response = await authService.googleLogin(googleIdToken);
       console.log('Inicio de sesión con Google exitoso. Usuario autenticado.');
@@ -222,6 +232,12 @@ const AuthForm: React.FC = () => {
                   )}
                 </button>
               </div>
+              {!isLogin && (
+                <PasswordRequirements 
+                  password={password} 
+                  onValidityChange={handlePasswordValidityChange}
+                />
+              )}
             </div>
             
             {!isLogin && (
@@ -292,7 +308,7 @@ const AuthForm: React.FC = () => {
             <Button 
               type="submit" 
               className="w-full bg-lime-500 hover:bg-lime-600" 
-              disabled={isLoading || (!isLogin && !acceptTerms)}
+              disabled={isLoading || (!isLogin && (!acceptTerms || !isPasswordValid))}
             >
               {isLoading ? "Cargando..." : (isLogin ? "Iniciar sesión" : "Registrarse")}
             </Button>
@@ -313,8 +329,6 @@ const AuthForm: React.FC = () => {
                 onSignInFailure={handleGoogleSignInFailure}
               />
             </div>
-            
-
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">

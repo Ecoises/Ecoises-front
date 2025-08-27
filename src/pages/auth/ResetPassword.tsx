@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, useEffect } from "react";
+import React, { useState, FormEvent, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import SpeciesImage from "../../components/auth/SpeciesImage";
+import PasswordRequirements from "../../components/auth/PasswordRequirements";
 import authService from "../../services/authService";
 import { AxiosError } from "axios";
 import { LaravelValidationError } from "../../types/api";
@@ -28,6 +29,11 @@ const ResetPassword: React.FC = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showPasswordConfirmation, setShowPasswordConfirmation] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [isPasswordValid, setIsPasswordValid] = useState<boolean>(false);
+
+  const handlePasswordValidityChange = useCallback((isValid: boolean) => {
+    setIsPasswordValid(isValid);
+  }, []);
 
   useEffect(() => {
     // Verificar que tenemos token y email
@@ -163,9 +169,6 @@ const ResetPassword: React.FC = () => {
                 </div>
                 <h1 className="text-forest-900 font-bold text-2xl">Ecoises</h1>
               </div>
-              {/* <p className="text-forest-700">
-                Ingresa tu nueva contraseña
-              </p> */}
             </div>
 
             <Card>
@@ -240,6 +243,10 @@ const ResetPassword: React.FC = () => {
                       {fieldErrors.password && (
                         <p className="text-sm text-red-600">{fieldErrors.password}</p>
                       )}
+                      <PasswordRequirements 
+                        password={formData.password} 
+                        onValidityChange={handlePasswordValidityChange}
+                      />
                     </div>
 
                     {/* Confirmar contraseña */}
@@ -277,7 +284,7 @@ const ResetPassword: React.FC = () => {
                     <Button 
                       type="submit" 
                       className="w-full bg-lime-500 hover:bg-lime-600" 
-                      disabled={isLoading || !formData.password || !formData.password_confirmation}
+                      disabled={isLoading || !isPasswordValid || !formData.password || !formData.password_confirmation}
                     >
                       {isLoading ? "Restableciendo..." : "Restablecer contraseña"}
                     </Button>
