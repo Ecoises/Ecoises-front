@@ -145,7 +145,7 @@ const AuthForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md py-4">
+    <div className="w-full max-w-md">
       <div className="mb-8 text-center">
         <div className="flex justify-center items-center gap-2 mb-4">
           <div className="flex items-center justify-center">
