@@ -71,9 +71,13 @@ const ForgotPassword: React.FC = () => {
             {/* Header */}
             <div className="mb-8 text-center">
               <div className="flex justify-center items-center gap-2 mb-4">
-                <div className="bg-lime-400 h-10 w-10 rounded-lg flex items-center justify-center">
-                  <span className="text-forest-900 font-bold text-xl">E</span>
-                </div>
+                <div className="flex items-center justify-center">
+            <img
+              src="/favicon.png"
+              alt="Logo Ecoises"
+              className="h-10 w-10 object-contain"
+            />
+          </div>
                 <h1 className="text-forest-900 font-bold text-2xl">Ecoises</h1>
               </div>
               {/* <p className="text-forest-700">

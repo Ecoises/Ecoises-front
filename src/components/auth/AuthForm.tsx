@@ -152,10 +152,10 @@ const AuthForm: React.FC = () => {
             <img
               src="/favicon.png"
               alt="Logo Ecoises"
-              className="h-12 w-12 object-contain"
+              className="h-10 w-10 object-contain"
             />
           </div>
-          <h1 className="text-forest-900 font-bold text-3xl">Ecoises</h1>
+          <h1 className="text-forest-900 font-bold text-2xl">Ecoises</h1>
         </div>
         <p className="text-forest-700">
           {isLogin
