@@ -5,11 +5,12 @@ import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, Calendar, ArrowLeft, Clock, Ruler, Music, Star, Eye, Info } from "lucide-react"
+import { MapPin, Calendar, ArrowLeft, Clock, Ruler, Music, Star, Eye, Info, TreePine } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
+import SimpleMap from "@/components/LeafletMap"
 
 // Sample bird data
 const birdsData = [
@@ -31,6 +32,16 @@ const birdsData = [
     range: "Throughout North America",
     category: "Thrush",
     audio: "https://example.com/robin-call.mp3",
+    // Taxonomic information
+    taxonomy: {
+      kingdom: "Animalia",
+      phylum: "Chordata",
+      class: "Aves",
+      order: "Passeriformes",
+      family: "Turdidae",
+      genus: "Turdus",
+      species: "T. migratorius"
+    },
     gallery: [
       "https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=800&h=500",
       "https://images.unsplash.com/photo-1555446667-cfec1fb467c5?auto=format&fit=crop&w=800&h=500",
@@ -104,6 +115,16 @@ const birdsData = [
     range: "Eastern and central North America, Mexico",
     category: "Cardinal",
     audio: "https://example.com/cardinal-call.mp3",
+    // Taxonomic information
+    taxonomy: {
+      kingdom: "Animalia",
+      phylum: "Chordata",
+      class: "Aves",
+      order: "Passeriformes",
+      family: "Cardinalidae",
+      genus: "Cardinalis",
+      species: "C. cardinalis"
+    },
     gallery: [
       "https://inaturalist-open-data.s3.amazonaws.com/photos/189434971/large.jpg",
       "https://images.unsplash.com/photo-1520808663317-647b476a81b9?auto=format&fit=crop&w=800&h=500",
@@ -192,9 +213,21 @@ type ObservationType = {
   notes: string;
 };
 
+type BirdType = (typeof birdsData)[0] & {
+  taxonomy?: {
+    kingdom: string;
+    phylum: string;
+    class: string;
+    order: string;
+    family: string;
+    genus: string;
+    species: string;
+  }
+}
+
 const SpeciesDetail = () => {
   const { id } = useParams<{ id: string }>()
-  const [bird, setBird] = useState<(typeof birdsData)[0] | null>(null)
+  const [bird, setBird] = useState<BirdType | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeImage, setActiveImage] = useState("")
   const [selectedObservation, setSelectedObservation] = useState<ObservationType | null>(null)
@@ -275,58 +308,59 @@ const SpeciesDetail = () => {
           <Tabs defaultValue="info" className="w-full">
             <TabsList className="bg-lime-50 p-1 rounded-xl">
               <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-white">
-                General Info
+                Información Taxonómica
               </TabsTrigger>
               <TabsTrigger value="habitat" className="rounded-lg data-[state=active]:bg-white">
                 Habitat & Behavior
               </TabsTrigger>
               <TabsTrigger value="sightings" className="rounded-lg data-[state=active]:bg-white">
-                Your Sightings
+                Mapa de Avistamientos
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="info" className="animate-fade-in mt-4">
               <Card className="border-lime-200 p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-lime-100 p-2 rounded-lg">
-                      <Ruler className="h-5 w-5 text-lime-700" />
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-forest-900 mb-3 flex items-center gap-2">
+                    <TreePine className="h-5 w-5 text-lime-600" />
+                    Clasificación Taxonómica
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between py-1 border-b border-lime-100">
+                        <span className="font-medium text-forest-700">Reino:</span>
+                        <span className="text-forest-900">{bird.taxonomy?.kingdom || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-lime-100">
+                        <span className="font-medium text-forest-700">Filo:</span>
+                        <span className="text-forest-900">{bird.taxonomy?.phylum || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-lime-100">
+                        <span className="font-medium text-forest-700">Clase:</span>
+                        <span className="text-forest-900">{bird.taxonomy?.class || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-lime-100">
+                        <span className="font-medium text-forest-700">Orden:</span>
+                        <span className="text-forest-900">{bird.taxonomy?.order || 'N/A'}</span>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-medium text-forest-900">Size</h3>
-                      <p className="text-forest-700">{bird.size}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="bg-lime-100 p-2 rounded-lg">
-                      <Clock className="h-5 w-5 text-lime-700" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-forest-900">Lifespan</h3>
-                      <p className="text-forest-700">{bird.lifespan}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="bg-lime-100 p-2 rounded-lg">
-                      <MapPin className="h-5 w-5 text-lime-700" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-forest-900">Range</h3>
-                      <p className="text-forest-700">{bird.range}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="bg-lime-100 p-2 rounded-lg">
-                      <Music className="h-5 w-5 text-lime-700" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-forest-900">Song</h3>
-                      <p className="text-forest-700">
-                        <button className="text-lime-600 hover:text-lime-700 underline">Listen to call</button>
-                      </p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between py-1 border-b border-lime-100">
+                        <span className="font-medium text-forest-700">Familia:</span>
+                        <span className="text-forest-900">{bird.taxonomy?.family || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-lime-100">
+                        <span className="font-medium text-forest-700">Género:</span>
+                        <span className="text-forest-900 italic">{bird.taxonomy?.genus || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-lime-100">
+                        <span className="font-medium text-forest-700">Especie:</span>
+                        <span className="text-forest-900 italic">{bird.taxonomy?.species || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span className="font-medium text-forest-700">Nombre científico:</span>
+                        <span className="text-forest-900 italic">{bird.scientificName}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -355,36 +389,58 @@ const SpeciesDetail = () => {
             </TabsContent>
 
             <TabsContent value="sightings" className="animate-fade-in mt-4">
-              <Card className="border-lime-200 p-4">
-                {bird.sightings.length > 0 ? (
-                  <div className="divide-y divide-lime-100">
-                    {bird.sightings.map((sighting, index) => (
-                      <div key={index} className="py-3 first:pt-0 last:pb-0">
-                        <div className="flex justify-between">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-lime-600" />
-                            <span className="text-forest-900">{sighting.location}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-forest-700 text-sm">
-                            <Calendar className="h-3 w-3" />
-                            <span>{sighting.date}</span>
-                            <Clock className="h-3 w-3 ml-2" />
-                            <span>{sighting.time}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-forest-700 mb-3">You haven't recorded any sightings of this species yet.</p>
-                    <Button className="bg-lime-500 hover:bg-lime-600 text-white gap-2 rounded-full">
-                      <Eye className="h-4 w-4" />
-                      Log Your First Sighting
-                    </Button>
-                  </div>
-                )}
-              </Card>
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-forest-900 flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-lime-600" />
+                  Distribución de Avistamientos
+                </h3>
+                <SimpleMap 
+                  sightings={[
+                    {
+                      id: 1,
+                      birdName: bird.name,
+                      location: "Central Park, NYC",
+                      coordinates: { lat: 40.7829, lng: -73.9654 },
+                      date: "May 5, 2023",
+                      time: "10:23 AM",
+                      observer: "Maria García",
+                      category: bird.category
+                    },
+                    {
+                      id: 2,
+                      birdName: bird.name,
+                      location: "Riverside Trail, Boston",
+                      coordinates: { lat: 42.3601, lng: -71.0589 },
+                      date: "April 28, 2023",
+                      time: "9:15 AM",
+                      observer: "John Smith",
+                      category: bird.category
+                    },
+                    {
+                      id: 3,
+                      birdName: bird.name,
+                      location: "Oakwood Garden, Chicago",
+                      coordinates: { lat: 41.8781, lng: -87.6298 },
+                      date: "April 15, 2023",
+                      time: "12:45 PM",
+                      observer: "Emma Johnson",
+                      category: bird.category
+                    },
+                    {
+                      id: 4,
+                      birdName: bird.name,
+                      location: "Golden Gate Park, SF",
+                      coordinates: { lat: 37.7694, lng: -122.4862 },
+                      date: "May 1, 2023",
+                      time: "7:30 AM",
+                      observer: "Carlos Rodriguez",
+                      category: bird.category
+                    }
+                  ]}
+                  hotspots={[]}
+                  activeTab="sightings"
+                />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
