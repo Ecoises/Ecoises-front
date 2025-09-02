@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
-import SimpleMap from "@/components/LeafletMap"
+
 
 // Sample bird data
 const birdsData = [
@@ -289,6 +289,53 @@ const SpeciesDetail = () => {
               </p>
             </div>
         </Card>
+        
+        {/* Map on desktop - appears below image */}
+        <div className="hidden lg:block">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-forest-900 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-lime-600" />
+              Distribución de Avistamientos
+            </h3>
+            <div className="h-[300px] w-full relative bg-gradient-to-br from-blue-100 to-green-100 rounded-xl overflow-hidden border border-lime-200">
+              {/* Map Background Pattern */}
+              <div className="absolute inset-0 opacity-20">
+                <svg width="100%" height="100%" className="absolute inset-0">
+                  <defs>
+                    <pattern id="grid-desktop" width="40" height="40" patternUnits="userSpaceOnUse">
+                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#059669" strokeWidth="1"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid-desktop)" />
+                </svg>
+              </div>
+              
+              {/* Map Title */}
+              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                <h3 className="text-sm font-medium text-forest-900">Avistamientos de {bird.name}</h3>
+              </div>
+              
+              {/* Sample markers */}
+              <div className="absolute top-1/3 left-1/4 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
+                <MapPin className="w-3 h-3 text-white" />
+              </div>
+              <div className="absolute top-2/3 left-2/3 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
+                <MapPin className="w-3 h-3 text-white" />
+              </div>
+              <div className="absolute top-1/2 left-1/2 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
+                <MapPin className="w-3 h-3 text-white" />
+              </div>
+              
+              {/* Legend */}
+              <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="w-3 h-3 bg-lime-500 rounded-full"></div>
+                  <span className="text-forest-700">Avistamientos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
        </div>
 
         {/* Right Column: Details */}
@@ -394,52 +441,50 @@ const SpeciesDetail = () => {
                   <MapPin className="h-5 w-5 text-lime-600" />
                   Distribución de Avistamientos
                 </h3>
-                <SimpleMap 
-                  sightings={[
-                    {
-                      id: 1,
-                      birdName: bird.name,
-                      location: "Central Park, NYC",
-                      coordinates: { lat: 40.7829, lng: -73.9654 },
-                      date: "May 5, 2023",
-                      time: "10:23 AM",
-                      observer: "Maria García",
-                      category: bird.category
-                    },
-                    {
-                      id: 2,
-                      birdName: bird.name,
-                      location: "Riverside Trail, Boston",
-                      coordinates: { lat: 42.3601, lng: -71.0589 },
-                      date: "April 28, 2023",
-                      time: "9:15 AM",
-                      observer: "John Smith",
-                      category: bird.category
-                    },
-                    {
-                      id: 3,
-                      birdName: bird.name,
-                      location: "Oakwood Garden, Chicago",
-                      coordinates: { lat: 41.8781, lng: -87.6298 },
-                      date: "April 15, 2023",
-                      time: "12:45 PM",
-                      observer: "Emma Johnson",
-                      category: bird.category
-                    },
-                    {
-                      id: 4,
-                      birdName: bird.name,
-                      location: "Golden Gate Park, SF",
-                      coordinates: { lat: 37.7694, lng: -122.4862 },
-                      date: "May 1, 2023",
-                      time: "7:30 AM",
-                      observer: "Carlos Rodriguez",
-                      category: bird.category
-                    }
-                  ]}
-                  hotspots={[]}
-                  activeTab="sightings"
-                />
+                
+                {/* Map on mobile - appears in tabs below taxonomic info */}
+                <div className="lg:hidden">
+                  <div className="h-[300px] w-full relative bg-gradient-to-br from-blue-100 to-green-100 rounded-xl overflow-hidden border border-lime-200">
+                    {/* Map Background Pattern */}
+                    <div className="absolute inset-0 opacity-20">
+                      <svg width="100%" height="100%" className="absolute inset-0">
+                        <defs>
+                          <pattern id="grid-mobile" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#059669" strokeWidth="1"/>
+                          </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid-mobile)" />
+                      </svg>
+                    </div>
+                    
+                    {/* Map Title */}
+                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                      <h3 className="text-sm font-medium text-forest-900">Avistamientos de {bird.name}</h3>
+                    </div>
+                    
+                    {/* Sample markers */}
+                    <div className="absolute top-1/3 left-1/4 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
+                      <MapPin className="w-3 h-3 text-white" />
+                    </div>
+                    <div className="absolute top-2/3 left-2/3 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
+                      <MapPin className="w-3 h-3 text-white" />
+                    </div>
+                    <div className="absolute top-1/2 left-1/2 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
+                      <MapPin className="w-3 h-3 text-white" />
+                    </div>
+                    <div className="absolute top-1/4 left-3/4 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
+                      <MapPin className="w-3 h-3 text-white" />
+                    </div>
+                    
+                    {/* Legend */}
+                    <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
+                      <div className="flex items-center gap-2 text-xs">
+                        <div className="w-3 h-3 bg-lime-500 rounded-full"></div>
+                        <span className="text-forest-700">Avistamientos</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
