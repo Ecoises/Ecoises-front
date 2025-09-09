@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import SpeciesImage from "../../components/auth/SpeciesImage";
-import authService from "../../services/authService";
+import authService from "../../api/services/AuthService";
 import { AxiosError } from "axios";
 import { LaravelValidationError } from "../../types/api";
 

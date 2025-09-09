@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
-import authService from "../../services/authService";
+import authService from "../../api/services/AuthService";
 import axios from "axios";
 import { LaravelValidationError } from '../../types/api';
 import { useNavigate, useLocation, Link } from 'react-router-dom';

@@ -7,7 +7,7 @@ import { ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import SpeciesImage from "../../components/auth/SpeciesImage";
 import PasswordRequirements from "../../components/auth/PasswordRequirements";
-import authService from "../../services/authService";
+import authService from "../../api/services/AuthService";
 import { AxiosError } from "axios";
 import { LaravelValidationError } from "../../types/api";
 
