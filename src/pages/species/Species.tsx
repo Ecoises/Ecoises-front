@@ -1,10 +1,19 @@
 import { useState, FC } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, X, Eye } from "lucide-react";
+import { Search, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 // Sample species data
 const speciesData = [
@@ -15,6 +24,7 @@ const speciesData = [
     family: "Thrushes",
     habitat: ["Urban", "Woodland", "Gardens"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 1247,
     image: "https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=600&h=400",
   },
@@ -25,6 +35,7 @@ const speciesData = [
     family: "Cardinals",
     habitat: ["Woodland", "Gardens", "Shrubland"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 892,
     image: "https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=600&h=400",
   },
@@ -35,6 +46,7 @@ const speciesData = [
     family: "Jays and Crows",
     habitat: ["Woodland", "Urban", "Parks"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 673,
     image: "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=600&h=400",
   },
@@ -45,6 +57,7 @@ const speciesData = [
     family: "Finches",
     habitat: ["Open country", "Gardens", "Meadows"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 534,
     image: "https://images.unsplash.com/photo-1591198936750-16d8e15edc9f?auto=format&fit=crop&w=600&h=400",
   },
@@ -55,6 +68,7 @@ const speciesData = [
     family: "Hawks, Eagles, and Kites",
     habitat: ["Open country", "Woodland", "Urban"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 421,
     image: "https://images.unsplash.com/photo-1606567595334-d0781bd70527?auto=format&fit=crop&w=600&h=400",
   },
@@ -65,6 +79,7 @@ const speciesData = [
     family: "Herons and Egrets",
     habitat: ["Wetlands", "Coastal", "Lakes"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 367,
     image: "https://images.unsplash.com/photo-1517824587134-3e3b97472a2a?auto=format&fit=crop&w=600&h=400",
   },
@@ -75,6 +90,7 @@ const speciesData = [
     family: "Swallows",
     habitat: ["Open country", "Farms", "Near water"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 298,
     image: "https://images.unsplash.com/photo-1591718537660-aedd7576f401?auto=format&fit=crop&w=600&h=400",
   },
@@ -85,6 +101,7 @@ const speciesData = [
     family: "Thrushes",
     habitat: ["Open woodland", "Farmland", "Gardens"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 189,
     image: "https://images.unsplash.com/photo-1547804270-1e15a27c8495?auto=format&fit=crop&w=600&h=400",
   },
@@ -95,6 +112,7 @@ const speciesData = [
     family: "Tits and Chickadees",
     habitat: ["Woodland", "Urban", "Gardens"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 756,
     image: "https://images.unsplash.com/photo-1613322800652-00229d479b6d?auto=format&fit=crop&w=600&h=400",
   },
@@ -105,6 +123,7 @@ const speciesData = [
     family: "Woodpeckers",
     habitat: ["Woodland", "Urban", "Parks"],
     status: "Common",
+    conservationStatus: "Least Concern",
     observations: 445,
     image: "https://images.unsplash.com/photo-1591570773933-f4b465bd3ee2?auto=format&fit=crop&w=600&h=400",
   },
@@ -115,6 +134,7 @@ const speciesData = [
     family: "Hawks, Eagles, and Kites",
     habitat: ["Lakes", "Rivers", "Coastal"],
     status: "Uncommon",
+    conservationStatus: "Least Concern",
     observations: 87,
     image: "https://images.unsplash.com/photo-1548090463-c4a449026f1a?auto=format&fit=crop&w=600&h=400",
   },
@@ -125,6 +145,7 @@ const speciesData = [
     family: "Falcons",
     habitat: ["Cliffs", "Urban", "Coastal"],
     status: "Uncommon",
+    conservationStatus: "Least Concern",
     observations: 54,
     image: "https://images.unsplash.com/photo-1618602051703-bee0a42c1852?auto=format&fit=crop&w=600&h=400",
   },
@@ -134,6 +155,23 @@ const speciesData = [
 const families = [...new Set(speciesData.map((s) => s.family))];
 const statuses = [...new Set(speciesData.map((s) => s.status))];
 const habitats = [...new Set(speciesData.flatMap((s) => s.habitat))];
+
+const getConservationStatusColor = (status: string) => {
+  switch (status) {
+    case "Least Concern":
+      return "bg-green-500";
+    case "Near Threatened":
+      return "bg-yellow-500";
+    case "Vulnerable":
+      return "bg-orange-500";
+    case "Endangered":
+      return "bg-red-500";
+    case "Critically Endangered":
+      return "bg-red-700";
+    default:
+      return "bg-gray-500";
+  }
+};
 
 const SpeciesCard: FC<{ species: typeof speciesData[0] }> = ({ species }) => {
   return (
@@ -145,11 +183,12 @@ const SpeciesCard: FC<{ species: typeof speciesData[0] }> = ({ species }) => {
             alt={species.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute bottom-2 right-2">
-            <div className="bg-white/90 backdrop-blur-sm text-forest-900 px-2 py-1 rounded-full flex items-center gap-1 text-xs font-medium">
-              <Eye className="h-3 w-3" />
-              {species.observations}
-            </div>
+          <div className="absolute top-2 right-2">
+            <Badge 
+              className={`${getConservationStatusColor(species.conservationStatus)} text-white text-xs`}
+            >
+              {species.conservationStatus}
+            </Badge>
           </div>
         </div>
         <div className="p-4">
@@ -171,6 +210,8 @@ const Species = () => {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedHabitat, setSelectedHabitat] = useState<string | null>(null);
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   // Filter species
   const filteredSpecies = speciesData.filter((species) => {
@@ -188,12 +229,29 @@ const Species = () => {
     return matchesSearch && matchesFamily && matchesStatus && matchesHabitat;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredSpecies.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSpecies = filteredSpecies.slice(startIndex, endIndex);
+
   const toggleFilters = () => setFiltersVisible(!filtersVisible);
 
   const clearFilters = () => {
     setSelectedFamily(null);
     setSelectedStatus(null);
     setSelectedHabitat(null);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Reset to first page when filters or search change
+  const resetPagination = () => {
+    setCurrentPage(1);
   };
 
   return (
@@ -215,7 +273,10 @@ const Species = () => {
             placeholder="Search by name or scientific name..."
             className="pl-10 bg-white rounded-xl border-lime-200"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              resetPagination();
+            }}
           />
           {searchTerm && (
             <button
@@ -263,11 +324,12 @@ const Species = () => {
                         ? "bg-lime-500 text-white"
                         : "bg-lime-50 text-forest-700 hover:bg-lime-100"
                     }`}
-                    onClick={() =>
+                    onClick={() => {
                       setSelectedFamily(
                         selectedFamily === family ? null : family
-                      )
-                    }
+                      );
+                      resetPagination();
+                    }}
                   >
                     {family}
                   </button>
@@ -286,11 +348,12 @@ const Species = () => {
                         ? "bg-lime-500 text-white"
                         : "bg-lime-50 text-forest-700 hover:bg-lime-100"
                     }`}
-                    onClick={() =>
+                    onClick={() => {
                       setSelectedStatus(
                         selectedStatus === status ? null : status
-                      )
-                    }
+                      );
+                      resetPagination();
+                    }}
                   >
                     {status}
                   </button>
@@ -309,11 +372,12 @@ const Species = () => {
                         ? "bg-lime-500 text-white"
                         : "bg-lime-50 text-forest-700 hover:bg-lime-100"
                     }`}
-                    onClick={() =>
+                    onClick={() => {
                       setSelectedHabitat(
                         selectedHabitat === habitat ? null : habitat
-                      )
-                    }
+                      );
+                      resetPagination();
+                    }}
                   >
                     {habitat}
                   </button>
@@ -331,14 +395,85 @@ const Species = () => {
             {filteredSpecies.length}{" "}
             {filteredSpecies.length === 1 ? "Species" : "Species"} Found
           </h2>
+          {totalPages > 1 && (
+            <p className="text-forest-700 text-sm">
+              Página {currentPage} de {totalPages}
+            </p>
+          )}
         </div>
 
         {filteredSpecies.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredSpecies.map((species) => (
-              <SpeciesCard key={species.id} species={species} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {paginatedSpecies.map((species) => (
+                <SpeciesCard key={species.id} species={species} />
+              ))}
+            </div>
+            
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1) handlePageChange(currentPage - 1);
+                        }}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <PaginationItem key={pageNum}>
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handlePageChange(pageNum);
+                            }}
+                            isActive={currentPage === pageNum}
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    
+                    {totalPages > 5 && currentPage < totalPages - 2 && (
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    )}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                        }}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         ) : (
           <Card className="p-8 text-center border-lime-200">
             <h3 className="text-forest-900 font-medium mb-2">
