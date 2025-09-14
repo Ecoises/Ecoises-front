@@ -78,8 +78,24 @@ const DashboardNavbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.avatar || "/placeholder"} alt="Profile" />
-                      <AvatarFallback>
+                      {user?.avatar && (
+                        <AvatarImage 
+                          src={user.avatar} 
+                          alt={user.full_name || 'Perfil'}
+                          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                            // Si falla la carga de la imagen, mostrar las iniciales
+                            const target = e.target as HTMLImageElement;
+                            if (target) {
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement | null;
+                              if (fallback) {
+                                fallback.style.display = 'flex';
+                              }
+                            }
+                          }}
+                        />
+                      )}
+                      <AvatarFallback className="bg-primary/10">
                         {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
                       </AvatarFallback>
                     </Avatar>
@@ -152,8 +168,24 @@ const DashboardNavbar = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.avatar || "/placeholder.svg"} alt="Profile" />
-                      <AvatarFallback>
+                      {user?.avatar && (
+                        <AvatarImage 
+                          src={user.avatar} 
+                          alt={user.full_name || 'Perfil'}
+                          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                            // Si falla la carga de la imagen, mostrar las iniciales
+                            const target = e.target as HTMLImageElement;
+                            if (target) {
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement | null;
+                              if (fallback) {
+                                fallback.style.display = 'flex';
+                              }
+                            }
+                          }}
+                        />
+                      )}
+                      <AvatarFallback className="bg-primary/10">
                         {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
                       </AvatarFallback>
                     </Avatar>
