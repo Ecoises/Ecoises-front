@@ -211,7 +211,7 @@ const Species = () => {
   const [selectedHabitat, setSelectedHabitat] = useState<string | null>(null);
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 6;
 
   // Filter species
   const filteredSpecies = speciesData.filter((species) => {
