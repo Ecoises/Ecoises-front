@@ -183,13 +183,6 @@ const SpeciesCard: FC<{ species: typeof speciesData[0] }> = ({ species }) => {
             alt={species.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute top-2 right-2">
-            <Badge 
-              className={`${getConservationStatusColor(species.conservationStatus)} text-white text-xs`}
-            >
-              {species.conservationStatus}
-            </Badge>
-          </div>
         </div>
         <div className="p-4">
           <h3 className="font-heading font-bold text-forest-900 text-lg mb-1">
