@@ -21,15 +21,27 @@ export interface ConservationStatus {
 export interface Taxon {
   id: number;
   name: string;
-  preferred_common_name?: string | null;
+  scientific_name: string;
+  common_name?: string | null;
+  rank?: string;
+  rank_level?: number;
   observations_count?: number;
   default_photo?: Photo | null;
   conservation_status?: ConservationStatus | null;
-  scientific_name?: string;
-  rank?: string;
-  rank_level?: number;
   wikipedia_url?: string;
-  preferred_establishment_means?: string;
+  extinct?: boolean;
+  threatened?: boolean;
+  iconic_taxon_name?: string;
+  ancestry?: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface LocationInfo {
+  name: string;
+  latitude: number;
+  longitude: number;
+  radius_km: number;
 }
 
 export interface PaginationMeta {
@@ -49,6 +61,7 @@ export interface ApiResponse<T = any> {
     pagination?: PaginationMeta;
     source?: string;
     cached?: boolean;
+    location?: LocationInfo;
   };
 }
 
@@ -57,6 +70,7 @@ export interface TaxonListResponse extends ApiResponse<Taxon[]> {
     pagination: PaginationMeta;
     source?: string;
     cached?: boolean;
+    location?: LocationInfo;
   };
 }
 
@@ -72,32 +86,45 @@ export class TaxonService extends BaseService<any> {
   }
 
   /**
-   * Obtiene una lista de especies por lugar
+   * 🆕 MÉTODO PRINCIPAL: Obtiene especies cercanas a la ubicación del usuario
+   * Este método corresponde al endpoint listSpeciesByPlace de tu backend
    */
-  async getSpeciesByPlace(placeId: number, params: any = {}): Promise<TaxonListResponse> {
+  async getNearbySpecies(params: any = {}): Promise<TaxonListResponse> {
     try {
+      const { page = 1, per_page = 12, ...restParams } = params;
+      
       const response = await apiClient.get<TaxonListResponse>('/taxa/place/species', {
         params: {
-          place_id: placeId,
-          per_page: 12,
-          ...params
+          page,
+          per_page,
+          order_by: 'observations_count',
+          order: 'desc',
+          ...restParams
         }
       });
-      return response.data;
+      
+      const responseData = response.data;
+      
+      if (responseData.success === false) {
+        throw new Error(responseData.message || 'Error al obtener especies cercanas');
+      }
+      
+      return responseData;
+      
     } catch (error) {
-      console.error('Error fetching species by place:', error);
+      console.error('Error fetching nearby species:', error);
       throw this.normalizeError(error);
     }
   }
 
   /**
-   * Busca taxones por nombre
+   * Busca taxones por nombre - CORREGIDO para usar el endpoint correcto
    */
   async searchTaxa(query: string = '', params: any = {}): Promise<TaxonListResponse> {
     try {
       const { page = 1, per_page = 12, ...restParams } = params;
       
-      // Usamos 'all' como valor por defecto para obtener todos los taxones
+      // Si no hay query, usar 'all' para obtener especies populares
       const searchQuery = query.trim() || 'all';
       
       const searchParams: Record<string, any> = {
@@ -111,15 +138,12 @@ export class TaxonService extends BaseService<any> {
         params: searchParams
       });
       
-      // Normalizar la respuesta para asegurar consistencia
       const responseData = response.data;
       
-      // Verificar si la respuesta es exitosa
       if (responseData.success === false) {
         throw new Error(responseData.message || 'Error en la búsqueda de taxones');
       }
       
-      // Extraer datos y metadatos
       const data = Array.isArray(responseData.data) ? responseData.data : [];
       const meta = responseData.meta || {};
       const pagination = meta.pagination || {
@@ -148,11 +172,15 @@ export class TaxonService extends BaseService<any> {
   }
 
   /**
-   * Obtiene los detalles de un taxón específico
+   * Obtiene los detalles completos de un taxón específico
    */
-  async getTaxonDetails(taxonId: number | string): Promise<ApiResponse<Taxon>> {
+  async getTaxonDetails(taxonId: number | string, refresh: boolean = false): Promise<ApiResponse<Taxon>> {
     try {
-      const response = await apiClient.get<ApiResponse<Taxon>>(`/taxa/${taxonId}`);
+      const params = refresh ? { refresh: true } : {};
+      
+      const response = await apiClient.get<ApiResponse<Taxon>>(`/taxa/${taxonId}`, {
+        params
+      });
       
       const responseData = response.data;
       
@@ -163,6 +191,74 @@ export class TaxonService extends BaseService<any> {
       return responseData;
     } catch (error) {
       console.error(`Error fetching taxon details for ID ${taxonId}:`, error);
+      throw this.normalizeError(error);
+    }
+  }
+
+  /**
+   * 🆕 Obtiene las observaciones de un taxón específico
+   */
+  async getTaxonObservations(taxonId: number | string, params: any = {}): Promise<ApiResponse<any[]>> {
+    try {
+      const { page = 1, per_page = 30, ...restParams } = params;
+      
+      const response = await apiClient.get<ApiResponse<any[]>>(`/taxa/${taxonId}/observations`, {
+        params: {
+          page,
+          per_page,
+          ...restParams
+        }
+      });
+      
+      const responseData = response.data;
+      
+      if (responseData.success === false) {
+        throw new Error(responseData.message || `Error al obtener observaciones del taxón ${taxonId}`);
+      }
+      
+      return responseData;
+    } catch (error) {
+      console.error(`Error fetching observations for taxon ${taxonId}:`, error);
+      throw this.normalizeError(error);
+    }
+  }
+
+  /**
+   * 🆕 Sincroniza las observaciones de un taxón desde la API
+   */
+  async syncTaxonObservations(taxonId: number | string): Promise<ApiResponse<any>> {
+    try {
+      const response = await apiClient.post<ApiResponse<any>>(`/taxa/${taxonId}/sync-observations`);
+      
+      const responseData = response.data;
+      
+      if (responseData.success === false) {
+        throw new Error(responseData.message || `Error al sincronizar observaciones del taxón ${taxonId}`);
+      }
+      
+      return responseData;
+    } catch (error) {
+      console.error(`Error syncing observations for taxon ${taxonId}:`, error);
+      throw this.normalizeError(error);
+    }
+  }
+
+  /**
+   * 🆕 Obtiene estadísticas de un taxón
+   */
+  async getTaxonStats(taxonId: number | string): Promise<ApiResponse<any>> {
+    try {
+      const response = await apiClient.get<ApiResponse<any>>(`/taxa/${taxonId}/stats`);
+      
+      const responseData = response.data;
+      
+      if (responseData.success === false) {
+        throw new Error(responseData.message || `Error al obtener estadísticas del taxón ${taxonId}`);
+      }
+      
+      return responseData;
+    } catch (error) {
+      console.error(`Error fetching stats for taxon ${taxonId}:`, error);
       throw this.normalizeError(error);
     }
   }
@@ -212,6 +308,15 @@ export class TaxonService extends BaseService<any> {
       console.error('Error fetching all taxa:', error);
       throw this.normalizeError(error);
     }
+  }
+
+  /**
+   * 🔄 MÉTODO LEGACY: Mantenido para compatibilidad, pero redirige al método principal
+   * @deprecated Usa getNearbySpecies() en su lugar
+   */
+  async getSpeciesByPlace(placeId: number, params: any = {}): Promise<TaxonListResponse> {
+    console.warn('getSpeciesByPlace() está obsoleto. Usa getNearbySpecies() en su lugar.');
+    return this.getNearbySpecies(params);
   }
 
   /**
