@@ -15,7 +15,7 @@ const Index = () => {
   return (
     <div>
   
-      <div className="space-y-8 animate-fade-in p-6">
+      <div className="space-y-8 animate-fade-in ">
         {/* Hero Section */}
         <HeroSection />
 
