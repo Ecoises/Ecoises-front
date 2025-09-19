@@ -25,12 +25,12 @@ const useSpecies = (placeId = 12731) => {
       
       setSpecies(response.data || []);
       
-      if (response.meta) {
+      if (response.meta?.pagination) {
         setPagination(prev => ({
           ...prev,
-          page: response.meta.current_page,
-          total: response.meta.total,
-          totalPages: response.meta.last_page
+          page: response.meta.pagination.current_page,
+          total: response.meta.pagination.total,
+          totalPages: response.meta.pagination.last_page
         }));
       }
       
@@ -55,12 +55,12 @@ const useSpecies = (placeId = 12731) => {
       
       setSpecies(response.data || []);
       
-      if (response.meta) {
+      if (response.meta?.pagination) {
         setPagination(prev => ({
           ...prev,
           page: 1,
-          total: response.meta.total,
-          totalPages: response.meta.last_page
+          total: response.meta.pagination.total,
+          totalPages: response.meta.pagination.last_page
         }));
       }
       
