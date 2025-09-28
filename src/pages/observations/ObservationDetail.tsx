@@ -10,6 +10,7 @@ import { ArrowLeft, MapPin, Calendar, Clock, Heart, MessageCircle, Send, Star, C
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Observation, Comment } from "@/types/observation";
 import { useToast } from "@/hooks/use-toast";
+import RecentObservations from "@/components/observations/RecentObservations";
 
 // Mock data
 const MOCK_OBSERVATION: Observation = {
@@ -408,6 +409,9 @@ const ObservationDetail = () => {
           </div>
         </Card>
       </div>
+
+      {/* Recent Observations Section */}
+      <RecentObservations speciesName={observation.species_name} />
     </div>
   );
 };

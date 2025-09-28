@@ -491,113 +491,54 @@ const SpeciesDetail = () => {
         </div>
       </div>
       
-      {/* Observations Section */}
+      {/* Similar Species Section */}
       <div className="mt-12 mb-8">
-        <h2 className="text-2xl font-bold text-forest-950 mb-6">Recent Observations</h2>
-        {bird.observations && bird.observations.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {bird.observations.map((observation) => (
-              <Dialog key={observation.id}>
-                <DialogTrigger asChild>
-                  <Card className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
-                    <div className="relative">
-                      
-                        <img 
-                          src={observation.image} 
-                          alt={`Observation of ${bird.name}`}
-                          className="object-cover w-full h-full"
-                        />
-                     
-                    </div>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8 border ">
-                            <AvatarImage src={observation.user.avatar} alt={observation.user.name} />
-                            <AvatarFallback>{observation.user.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium text-sm text-forest-800">{observation.user.name}</span>
-                        </div>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 rounded-full p-0">
-                          <Info className="h-4 w-4 text-forest-600" />
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-forest-700 mb-2">
-                        <MapPin className="h-3 w-3 text-lime-600" />
-                        <span>{observation.location}</span>
-                      </div>
-                      {/* <div className="flex items-center gap-2 text-xs text-forest-600">
-                        <Calendar className="h-3 w-3" />
-                        <span>{observation.date}</span>
-                        <Clock className="h-3 w-3 ml-1" />
-                        <span>{observation.time}</span>
-                      </div> */}
-                    </CardContent>
-                  </Card>
-                </DialogTrigger>
-                
-                <DialogContent className="sm:max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle className="text-xl font-semibold text-forest-900">
-                      {bird.name} Observation
-                    </DialogTitle>
-                  </DialogHeader>
-                  
-                  <div className="mt-2">
-                    <img 
-                      src={observation.image} 
-                      alt={`Observation of ${bird.name}`} 
-                      className="w-full h-auto rounded-md object-cover mb-4"
-                    />
-                    
-                    <div className="flex items-center gap-2 mb-4">
-                      <Avatar className="h-8 w-8 border border-lime-200">
-                        <AvatarImage src={observation.user.avatar} alt={observation.user.name} />
-                        <AvatarFallback>{observation.user.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium text-forest-900">{observation.user.name}</span>
-                    </div>
-                    
-                    <div className="space-y-3 text-forest-800">
-                      <div>
-                        <h3 className="font-medium text-forest-900">Description</h3>
-                        <p className="text-sm">{observation.description}</p>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-                        <div>
-                          <span className="font-medium text-forest-700">Location:</span> {observation.location}
-                        </div>
-                        <div>
-                          <span className="font-medium text-forest-700">Date:</span> {observation.date}
-                        </div>
-                        <div>
-                          <span className="font-medium text-forest-700">Time:</span> {observation.time}
-                        </div>
-                        <div>
-                          <span className="font-medium text-forest-700">Weather:</span> {observation.weather}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h3 className="font-medium text-forest-900">Notes</h3>
-                        <p className="text-sm">{observation.notes}</p>
-                      </div>
+        <h2 className="text-2xl font-bold text-forest-950 mb-6">Especies Similares</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {birdsData.filter(b => b.id !== bird.id).slice(0, 3).map((similarBird) => (
+            <Link key={similarBird.id} to={`/species/${similarBird.id}`}>
+              <Card className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-lime-200">
+                <div className="relative overflow-hidden rounded-t-xl">
+                  <img
+                    src={similarBird.image}
+                    alt={similarBird.name}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <div className="text-white">
+                      <h3 className="font-bold text-lg">{similarBird.name}</h3>
+                      <p className="text-sm italic opacity-90">{similarBird.scientificName}</p>
                     </div>
                   </div>
-                </DialogContent>
-              </Dialog>
-            ))}
-          </div>
-        ) : (
-          <Card className="p-8 text-center">
-            <p className="text-forest-700 mb-4">No observations have been recorded for this species yet.</p>
-            <Button className="bg-lime-500 hover:bg-lime-600 text-white gap-2 rounded-full mx-auto">
+                </div>
+                
+                <CardContent className="p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-lime-100 text-lime-800 px-2 py-1 rounded-full text-xs">{similarBird.category}</span>
+                    </div>
+                    <p className="text-forest-800 text-sm line-clamp-2">{similarBird.description}</p>
+                    <div className="flex items-center gap-2 text-sm text-forest-600">
+                      <MapPin className="h-4 w-4 text-lime-600" />
+                      <span>{similarBird.habitat}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+        
+        <div className="text-center mt-8">
+          <Link to="/species">
+            <Button variant="outline" className="gap-2">
               <Eye className="h-4 w-4" />
-              Share Your Observation
+              Ver Todas las Especies
             </Button>
-          </Card>
-        )}
+          </Link>
+        </div>
       </div>
       
     </div>
