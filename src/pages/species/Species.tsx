@@ -54,9 +54,11 @@ const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
         </div>
         <div className="p-4">
           <h3 className="font-heading font-bold text-forest-900 text-lg mb-1">
+            aaaa
             {species.common_name || species.name}
           </h3>
           <p className="text-forest-700 text-sm italic">
+            ss
             {species.scientific_name || species.name}
           </p>
         </div>

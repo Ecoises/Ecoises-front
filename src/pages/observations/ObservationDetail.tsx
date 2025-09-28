@@ -16,7 +16,7 @@ const MOCK_OBSERVATION: Observation = {
   id: 101,
   species_name: "American Robin",
   scientific_name: "Turdus migratorius",
-  image: "https://inaturalist-open-data.s3.amazonaws.com/photos/452211470/original.jpg",
+  image: "https://inaturalist-open-data.s3.amazonaws.com/photos/176519930/original.jpeg",
   location: "Central Park, New York",
   date: "May 15, 2024",
   time: "10:23 AM",

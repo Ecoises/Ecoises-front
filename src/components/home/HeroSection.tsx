@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 
 const HeroSection = () => {
   const images = [
+
     "/images/hero-img-1.png",
-    "/images/hero-imgg.png",
+    "/images/hero-img.png",
     "/images/hero-img-2.png",
     "/images/hero-img-4.png",
   ];
@@ -21,7 +22,7 @@ const HeroSection = () => {
 
   return (
     <section className="relative rounded-3xl overflow-hidden">
-      <div className="relative w-full h-80 md:h-50 lg:h-[350px]">
+      <div className="relative w-full h-80 md:h-50 lg:h-[330px]">
         {images.map((img, index) => (
           <img
             key={index}

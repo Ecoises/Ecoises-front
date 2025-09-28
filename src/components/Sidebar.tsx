@@ -89,38 +89,19 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
         </nav>
 
         {/* Footer / Menú inferior */}
-        <div className="mt-auto pt-4 border-t border-lime-100">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="w-full">
-              <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-lime-50 transition-colors cursor-pointer">
-                <Avatar className="h-8 w-8 bg-lime-100">
-                  <AvatarImage src="/avatar-placeholder.png" alt="User" />
-                  <AvatarFallback className="text-forest-800 bg-lime-200">JD</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 text-left">
-                  <p className="text-forest-900 font-medium text-sm">John Doe</p>
-                  <p className="text-forest-700 text-xs">Bird Enthusiast</p>
-                </div>
-                <ChevronDown size={16} className="text-forest-700" />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="cursor-pointer">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-red-500 focus:text-red-500">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="mt-auto pt-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 pb-2">
+          <div className="flex flex-col items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex flex-wrap justify-center gap-2">
+              <a href="#" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Privacidad</a>
+              <a href="#" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Condiciones</a>
+              <a href="#" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Cookies</a>
+            </div>
+            <div className="text-gray-400 dark:text-gray-500">
+              <span>&copy; 2025 Ecoises</span>
+            </div>
+          </div>
         </div>
+
       </div>
     </aside>
   );

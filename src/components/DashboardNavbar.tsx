@@ -41,14 +41,20 @@ const DashboardNavbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
       <div className="flex h-16 items-center justify-between px-4">
         {/* Logo - Always visible on left in mobile, center-left in desktop */}
         <div className="flex items-center gap-2">
-          <div className="bg-lime-400 h-8 w-8 rounded-lg flex items-center justify-center">
+          {/* <div className="bg-lime-400 h-8 w-8 rounded-lg flex items-center justify-center">
             <span className="text-forest-900 font-bold text-lg">E</span>
           </div>
-          <h1 className="text-forest-900 font-bold text-xl">Ecoises</h1>
+          <h1 className="text-forest-900 font-bold text-xl">Ecoises</h1> */}
+          <img
+              src="/favicon.png"
+              alt="Logo Ecoises"
+              className="h-9 w-9 object-contain"
+            />
+            <h1 className="text-forest-900 font-bold text-xl">Ecoises</h1> 
         </div>
 
         {/* Desktop Layout */}
