@@ -16,28 +16,27 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 const birdsData = [
   {
     id: 1,
-    name: "American Robin",
-    scientificName: "Turdus migratorius",
-    image: "https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=800&h=500",
+    name: "Gavilán Pollero",
+    scientificName: "Rupornis magnirostris",
+    image: "https://inaturalist-open-data.s3.amazonaws.com/photos/1316192/medium.jpg",
     description:
-      "The American Robin is a migratory songbird of the true thrush genus and Turdidae, the wider thrush family. It is named after the European robin because of its reddish-orange breast, though the two species are not closely related.",
-    habitat: "Woodland, Urban areas, Gardens, Parks",
+      "El gavilán pollero (Rupornis magnirostris), también conocido como aguilucho de ala rojiza, gavilán caminero, taguato común o Pupa; y también como aguililla caminera, busardo caminero, gavilán chapulinero, chuubi o guío, es una especie de ave accipitriforme de la familia Accipitridae (milanos, aguilillas, gavilanes y águilas). Es a veces colocado en el género Buteo en vez de Rupornis. Es autóctona de la Región Neotropical, encontrándose desde el sur de México hasta Uruguay.Mide aproximadamente 35 cm y pesa alrededor de 295 g. Se alimenta de insectos, pequeños mamíferos y pequeños reptiles. Habita en sabanas, montes y bosques. ",
     diet: "Earthworms, insects, berries, fruits",
     behavior:
       "Forages on lawns for earthworms, nests in trees or shrubs, migrates south in winter from northern regions.",
-    conservation: "Least Concern - abundant and widespread",
+    conservation: "NA - Preocupación menor",
     size: "25 cm (9.8 in)",
     weight: "77-85 g (2.7-3 oz)",
     lifespan: "2 years average, up to 14 years",
     range: "Throughout North America",
-    category: "Thrush",
+    category: "Nativa",
     audio: "https://example.com/robin-call.mp3",
     // Taxonomic information
     taxonomy: {
       kingdom: "Animalia",
-      phylum: "Chordata",
-      class: "Aves",
-      order: "Passeriformes",
+      phylum: "Chxxxxxxxordata",
+      class: "Avexxxs",
+      order: "Pasxxxxxxssssssss seriformes",
       family: "Turdidae",
       genus: "Turdus",
       species: "T. migratorius"
@@ -117,13 +116,13 @@ const birdsData = [
     audio: "https://example.com/cardinal-call.mp3",
     // Taxonomic information
     taxonomy: {
-      kingdom: "Animalia",
-      phylum: "Chordata",
-      class: "Aves",
+      kingdom: "Anxxximalia",
+      phylum: "Choxxxxrdata",
+      class: "Avesxxx",
       order: "Passeriformes",
-      family: "Cardinalidae",
-      genus: "Cardinalis",
-      species: "C. cardinalis"
+      family: "Cardinalxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxidae",
+      genus: "Cardinalxxxis",
+      species: "Cardinalijsjsjjsjsjsjs"
     },
     gallery: [
       "https://inaturalist-open-data.s3.amazonaws.com/photos/189434971/large.jpg",
@@ -267,10 +266,10 @@ const SpeciesDetail = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6">
+      <div className="mb-4">
         <Link to="/explorer" className="text-forest-700 hover:text-forest-900 inline-flex items-center gap-1">
           <ArrowLeft className="h-4 w-4" />
-          Back to Explorer
+          Volver a explorar
         </Link>
       </div>
 
@@ -285,18 +284,149 @@ const SpeciesDetail = () => {
           />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
               <p className="text-xs text-white font-medium">
-                Foto por:
+                Foto por: Jhonatan Camelo CCC
               </p>
             </div>
         </Card>
         
-        {/* Map on desktop - appears below image */}
-        <div className="hidden lg:block">
+        
+       </div>
+
+        {/* Right Column: Details */}
+        <div className="lg:col-span-1 space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-forest-950 mb-1">{bird.name}</h1>
+            <p className="text-forest-700 italic mb-4">{bird.scientificName}</p>
+
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="bg-lime-100 text-lime-800 px-3 py-1 rounded-full text-sm">{bird.category}</span>
+              <span className="bg-forest-100 text-forest-800 px-3 py-1 rounded-full text-sm">{bird.conservation}</span>
+            </div>
+
+            <p className="text-forest-800 mb-6 text-justify">{bird.description}</p>
+          </div>
+
+          <Tabs defaultValue="info" className="w-full">
+            <TabsList className="bg-lime-50 p-1 rounded-xl">
+              <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-white">
+                Taxonómia 
+              </TabsTrigger>
+              <TabsTrigger value="habitat" className="rounded-lg data-[state=active]:bg-white">
+                Habitat 
+              </TabsTrigger>
+              <TabsTrigger value="atribution" className="rounded-lg data-[state=active]:bg-white">
+                Atribucion 
+              </TabsTrigger>
+              <TabsTrigger value="sightings" className="rounded-lg data-[state=active]:bg-white">
+                Atribucion 
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="info" className="animate-fade-in mt-4">
+              <Card className="border-lime-200 p-4">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-forest-900 mb-3 flex items-center gap-2">
+                    <TreePine className="h-5 w-5 text-lime-600" />
+                    Clasificación Taxonómica
+                  </h3>
+                  <div className="relative">
+                    <div className="space-y-4">
+                      {[
+                        { level: 0, label: 'Reino', value: bird.taxonomy?.kingdom, icon: '👑', color: 'text-lime-600' },
+                        { level: 1, label: 'Filo', value: bird.taxonomy?.phylum, icon: '📜', color: 'text-lime-500' },
+                        { level: 2, label: 'Clase', value: bird.taxonomy?.class, icon: '📚', color: 'text-lime-400' },
+                        { level: 3, label: 'Orden', value: bird.taxonomy?.order, icon: '📖', color: 'text-lime-300' },
+                        { level: 4, label: 'Familia', value: bird.taxonomy?.family, icon: '👪', color: 'text-lime-200' },
+                        { level: 5, label: 'Género', value: bird.taxonomy?.genus, icon: '🌿', color: 'text-lime-100', italic: true },
+                        { level: 6, label: 'Especie', value: bird.taxonomy?.species, icon: '🦜', color: 'text-lime-50', italic: true }
+                      ].map((item, index) => (
+                        <div key={item.label} className="flex items-start relative">
+                          {/* Línea vertical */}
+                          {index < 6 && (
+                            <div 
+                              className={`absolute left-6 top-6 h-${(6-index)*8} border-l-2 border-lime-300`}
+                              style={{ height: `${(6-index)*32}px` }}
+                            />
+                          )}
+                          
+                          {/* Nodo */}
+                          <div className={`flex-shrink-0 w-12 flex items-center justify-center ${item.color}`}>
+                            <span className="text-lg">{item.icon}</span>
+                          </div>
+                          
+                          {/* Contenido */}
+                          <div className="flex-1 ml-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-forest-700">{item.label}:</span>
+                              <span className={`${item.italic ? 'italic' : ''} text-forest-900`}>
+                                {item.value || 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>  
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="habitat" className="animate-fade-in mt-4">
+              <Card className="border-lime-200 p-4">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-medium text-forest-900 mb-1">Habitat</h3>
+                    <p className="text-forest-700">{bird.habitat}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium text-forest-900 mb-1">Diet</h3>
+                    <p className="text-forest-700">{bird.diet}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium text-forest-900 mb-1">Behavior</h3>
+                    <p className="text-forest-700">{bird.behavior}</p>
+                  </div>
+                </div>
+              </Card>
+            </TabsContent>
+            <TabsContent value="atribution" className="animate-fade-in mt-4">
+              <Card className="border-lime-200 p-4">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-medium text-forest-900 mb-1">Habitat</h3>
+                    <p className="text-forest-700">{bird.habitat}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium text-forest-900 mb-1">Diet</h3>
+                    <p className="text-forest-700">{bird.diet}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium text-forest-900 mb-1">Behavior</h3>
+                    <p className="text-forest-700">{bird.behavior}</p>
+                  </div>
+                </div>
+              </Card>
+            </TabsContent>
+
+            
+              
+          </Tabs>
+        </div>
+      </div>
+
+      <div className="mt-12 mb-8">
+        <h2 className="text-2xl font-bold text-forest-950 mb-6">Mapa de Distribución</h2>
+        
+      </div>
+
+      {/* Map on desktop - appears below image */}
+        <div className="lg:block">
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-forest-900 flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-lime-600" />
-              Distribución de Avistamientos
-            </h3>
+            
             <div className="h-[300px] w-full relative bg-gradient-to-br from-blue-100 to-green-100 rounded-xl overflow-hidden border border-lime-200">
               {/* Map Background Pattern */}
               <div className="absolute inset-0 opacity-20">
@@ -336,209 +466,114 @@ const SpeciesDetail = () => {
             </div>
           </div>
         </div>
-       </div>
-
-        {/* Right Column: Details */}
-        <div className="lg:col-span-1 space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold text-forest-950 mb-1">{bird.name}</h1>
-            <p className="text-forest-700 italic mb-4">{bird.scientificName}</p>
-
-            <div className="flex flex-wrap gap-2 mb-4">
-              <span className="bg-lime-100 text-lime-800 px-3 py-1 rounded-full text-sm">{bird.category}</span>
-              <span className="bg-forest-100 text-forest-800 px-3 py-1 rounded-full text-sm">{bird.conservation}</span>
-            </div>
-
-            <p className="text-forest-800 mb-6">{bird.description}</p>
-          </div>
-
-          <Tabs defaultValue="info" className="w-full">
-            <TabsList className="bg-lime-50 p-1 rounded-xl">
-              <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-white">
-                Información Taxonómica
-              </TabsTrigger>
-              <TabsTrigger value="habitat" className="rounded-lg data-[state=active]:bg-white">
-                Habitat & Behavior
-              </TabsTrigger>
-              <TabsTrigger value="sightings" className="rounded-lg data-[state=active]:bg-white">
-                Mapa de Avistamientos
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="info" className="animate-fade-in mt-4">
-              <Card className="border-lime-200 p-4">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-forest-900 mb-3 flex items-center gap-2">
-                    <TreePine className="h-5 w-5 text-lime-600" />
-                    Clasificación Taxonómica
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between py-1 border-b border-lime-100">
-                        <span className="font-medium text-forest-700">Reino:</span>
-                        <span className="text-forest-900">{bird.taxonomy?.kingdom || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-lime-100">
-                        <span className="font-medium text-forest-700">Filo:</span>
-                        <span className="text-forest-900">{bird.taxonomy?.phylum || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-lime-100">
-                        <span className="font-medium text-forest-700">Clase:</span>
-                        <span className="text-forest-900">{bird.taxonomy?.class || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-lime-100">
-                        <span className="font-medium text-forest-700">Orden:</span>
-                        <span className="text-forest-900">{bird.taxonomy?.order || 'N/A'}</span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between py-1 border-b border-lime-100">
-                        <span className="font-medium text-forest-700">Familia:</span>
-                        <span className="text-forest-900">{bird.taxonomy?.family || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-lime-100">
-                        <span className="font-medium text-forest-700">Género:</span>
-                        <span className="text-forest-900 italic">{bird.taxonomy?.genus || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-lime-100">
-                        <span className="font-medium text-forest-700">Especie:</span>
-                        <span className="text-forest-900 italic">{bird.taxonomy?.species || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between py-1">
-                        <span className="font-medium text-forest-700">Nombre científico:</span>
-                        <span className="text-forest-900 italic">{bird.scientificName}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="habitat" className="animate-fade-in mt-4">
-              <Card className="border-lime-200 p-4">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium text-forest-900 mb-1">Habitat</h3>
-                    <p className="text-forest-700">{bird.habitat}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium text-forest-900 mb-1">Diet</h3>
-                    <p className="text-forest-700">{bird.diet}</p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-medium text-forest-900 mb-1">Behavior</h3>
-                    <p className="text-forest-700">{bird.behavior}</p>
-                  </div>
-                </div>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="sightings" className="animate-fade-in mt-4">
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-forest-900 flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-lime-600" />
-                  Distribución de Avistamientos
-                </h3>
-                
-                {/* Map on mobile - appears in tabs below taxonomic info */}
-                <div className="lg:hidden">
-                  <div className="h-[300px] w-full relative bg-gradient-to-br from-blue-100 to-green-100 rounded-xl overflow-hidden border border-lime-200">
-                    {/* Map Background Pattern */}
-                    <div className="absolute inset-0 opacity-20">
-                      <svg width="100%" height="100%" className="absolute inset-0">
-                        <defs>
-                          <pattern id="grid-mobile" width="40" height="40" patternUnits="userSpaceOnUse">
-                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#059669" strokeWidth="1"/>
-                          </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill="url(#grid-mobile)" />
-                      </svg>
-                    </div>
-                    
-                    {/* Map Title */}
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-                      <h3 className="text-sm font-medium text-forest-900">Avistamientos de {bird.name}</h3>
-                    </div>
-                    
-                    {/* Sample markers */}
-                    <div className="absolute top-1/3 left-1/4 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
-                      <MapPin className="w-3 h-3 text-white" />
-                    </div>
-                    <div className="absolute top-2/3 left-2/3 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
-                      <MapPin className="w-3 h-3 text-white" />
-                    </div>
-                    <div className="absolute top-1/2 left-1/2 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
-                      <MapPin className="w-3 h-3 text-white" />
-                    </div>
-                    <div className="absolute top-1/4 left-3/4 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
-                      <MapPin className="w-3 h-3 text-white" />
-                    </div>
-                    
-                    {/* Legend */}
-                    <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-                      <div className="flex items-center gap-2 text-xs">
-                        <div className="w-3 h-3 bg-lime-500 rounded-full"></div>
-                        <span className="text-forest-700">Avistamientos</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
       
-      {/* Similar Species Section */}
+      {/* Observations Section */}
       <div className="mt-12 mb-8">
-        <h2 className="text-2xl font-bold text-forest-950 mb-6">Especies Similares</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {birdsData.filter(b => b.id !== bird.id).slice(0, 3).map((similarBird) => (
-            <Link key={similarBird.id} to={`/species/${similarBird.id}`}>
-              <Card className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-lime-200">
-                <div className="relative overflow-hidden rounded-t-xl">
-                  <img
-                    src={similarBird.image}
-                    alt={similarBird.name}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <div className="text-white">
-                      <h3 className="font-bold text-lg">{similarBird.name}</h3>
-                      <p className="text-sm italic opacity-90">{similarBird.scientificName}</p>
+        <h2 className="text-2xl font-bold text-forest-950 mb-6">Recent Observations</h2>
+        {bird.observations && bird.observations.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {bird.observations.map((observation) => (
+              <Dialog key={observation.id}>
+                <DialogTrigger asChild>
+                  <Card className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
+                    <div className="relative">
+                      
+                        <img 
+                          src={observation.image} 
+                          alt={`Observation of ${bird.name}`}
+                          className="object-cover w-full h-full"
+                        />
+                     
                     </div>
-                  </div>
-                </div>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8 border ">
+                            <AvatarImage src={observation.user.avatar} alt={observation.user.name} />
+                            <AvatarFallback>{observation.user.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium text-sm text-forest-800">{observation.user.name}</span>
+                        </div>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 rounded-full p-0">
+                          <Info className="h-4 w-4 text-forest-600" />
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-forest-700 mb-2">
+                        <MapPin className="h-3 w-3 text-lime-600" />
+                        <span>{observation.location}</span>
+                      </div>
+                      {/* <div className="flex items-center gap-2 text-xs text-forest-600">
+                        <Calendar className="h-3 w-3" />
+                        <span>{observation.date}</span>
+                        <Clock className="h-3 w-3 ml-1" />
+                        <span>{observation.time}</span>
+                      </div> */}
+                    </CardContent>
+                  </Card>
+                </DialogTrigger>
                 
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-lime-100 text-lime-800 px-2 py-1 rounded-full text-xs">{similarBird.category}</span>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-semibold text-forest-900">
+                      {bird.name} Observation
+                    </DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="mt-2">
+                    <img 
+                      src={observation.image} 
+                      alt={`Observation of ${bird.name}`} 
+                      className="w-full h-auto rounded-md object-cover mb-4"
+                    />
+                    
+                    <div className="flex items-center gap-2 mb-4">
+                      <Avatar className="h-8 w-8 border border-lime-200">
+                        <AvatarImage src={observation.user.avatar} alt={observation.user.name} />
+                        <AvatarFallback>{observation.user.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium text-forest-900">{observation.user.name}</span>
                     </div>
-                    <p className="text-forest-800 text-sm line-clamp-2">{similarBird.description}</p>
-                    <div className="flex items-center gap-2 text-sm text-forest-600">
-                      <MapPin className="h-4 w-4 text-lime-600" />
-                      <span>{similarBird.habitat}</span>
+                    
+                    <div className="space-y-3 text-forest-800">
+                      <div>
+                        <h3 className="font-medium text-forest-900">Description</h3>
+                        <p className="text-sm">{observation.description}</p>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                        <div>
+                          <span className="font-medium text-forest-700">Location:</span> {observation.location}
+                        </div>
+                        <div>
+                          <span className="font-medium text-forest-700">Date:</span> {observation.date}
+                        </div>
+                        <div>
+                          <span className="font-medium text-forest-700">Time:</span> {observation.time}
+                        </div>
+                        <div>
+                          <span className="font-medium text-forest-700">Weather:</span> {observation.weather}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="font-medium text-forest-900">Notes</h3>
+                        <p className="text-sm">{observation.notes}</p>
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-        
-        <div className="text-center mt-8">
-          <Link to="/species">
-            <Button variant="outline" className="gap-2">
+                </DialogContent>
+              </Dialog>
+            ))}
+          </div>
+        ) : (
+          <Card className="p-8 text-center">
+            <p className="text-forest-700 mb-4">No observations have been recorded for this species yet.</p>
+            <Button className="bg-lime-500 hover:bg-lime-600 text-white gap-2 rounded-full mx-auto">
               <Eye className="h-4 w-4" />
-              Ver Todas las Especies
+              Share Your Observation
             </Button>
-          </Link>
-        </div>
+          </Card>
+        )}
       </div>
       
     </div>
