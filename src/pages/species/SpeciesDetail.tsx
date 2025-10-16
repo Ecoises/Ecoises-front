@@ -289,7 +289,26 @@ const SpeciesDetail = () => {
             </div>
         </Card>
         
-        
+        {/* Gallery thumbnails */}
+        {bird.gallery && bird.gallery.length > 0 && (
+          <div className="grid grid-cols-3 gap-3">
+            {bird.gallery.map((imgUrl, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveImage(imgUrl)}
+                className={`relative overflow-hidden rounded-lg border-2 transition-all hover:scale-105 ${
+                  activeImage === imgUrl ? 'border-primary ring-2 ring-primary/50' : 'border-border hover:border-primary/50'
+                }`}
+              >
+                <img
+                  src={imgUrl}
+                  alt={`${bird.name} - imagen ${index + 1}`}
+                  className="w-full aspect-square object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
        </div>
 
         {/* Right Column: Details */}
