@@ -291,12 +291,12 @@ const SpeciesDetail = () => {
         
         {/* Gallery thumbnails */}
         {bird.gallery && bird.gallery.length > 0 && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
             {bird.gallery.map((imgUrl, index) => (
               <button
                 key={index}
                 onClick={() => setActiveImage(imgUrl)}
-                className={`relative overflow-hidden rounded-lg border-2 transition-all hover:scale-105 ${
+                className={`relative overflow-hidden rounded-md border-2 transition-all hover:scale-105 ${
                   activeImage === imgUrl ? 'border-primary ring-2 ring-primary/50' : 'border-border hover:border-primary/50'
                 }`}
               >
