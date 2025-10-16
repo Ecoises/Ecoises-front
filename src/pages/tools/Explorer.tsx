@@ -213,7 +213,7 @@ export default function Explorer() {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   
-  const ITEMS_PER_PAGE = 12;
+  const ITEMS_PER_PAGE = 6;
   
   const filteredData = data.filter(species => {
     const matchesSearch = 
