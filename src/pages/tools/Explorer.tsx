@@ -3,6 +3,15 @@ import { Search, Filter, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 // Sample data - estructura compatible con API
 const data = [
@@ -202,6 +211,9 @@ export default function Explorer() {
   const [selectedConservationStatus, setSelectedConservationStatus] = useState("Todos");
   const [nativeFilter, setNativeFilter] = useState("all");
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const ITEMS_PER_PAGE = 12;
   
   const filteredData = data.filter(species => {
     const matchesSearch = 
@@ -222,6 +234,18 @@ export default function Explorer() {
     return matchesSearch && matchesClass && matchesConservationStatus && matchesNativeFilter;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentData = filteredData.slice(startIndex, endIndex);
+  
+  // Reset to page 1 when filters change
+  const updateFilters = (callback: () => void) => {
+    callback();
+    setCurrentPage(1);
+  };
+
   const toggleFilters = () => setFiltersVisible(!filtersVisible);
   
   const clearAllFilters = () => {
@@ -229,6 +253,7 @@ export default function Explorer() {
     setSelectedClass("Todas");
     setSelectedConservationStatus("Todos");
     setNativeFilter("all");
+    setCurrentPage(1);
   };
   
   return (
@@ -356,11 +381,68 @@ export default function Explorer() {
         </div>
         
         {filteredData.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredData.map(species => (
-              <SpeciesCard key={species.id} species={species} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {currentData.map(species => (
+                <SpeciesCard key={species.id} species={species} />
+              ))}
+            </div>
+            
+            {totalPages > 1 && (
+              <div className="mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    
+                    {[...Array(totalPages)].map((_, index) => {
+                      const page = index + 1;
+                      
+                      // Show first page, last page, current page, and pages around current
+                      if (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      ) {
+                        return (
+                          <PaginationItem key={page}>
+                            <PaginationLink
+                              onClick={() => setCurrentPage(page)}
+                              isActive={currentPage === page}
+                              className="cursor-pointer"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      } else if (
+                        page === currentPage - 2 ||
+                        page === currentPage + 2
+                      ) {
+                        return (
+                          <PaginationItem key={page}>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        );
+                      }
+                      return null;
+                    })}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         ) : (
           <Card className="p-12 text-center border-lime-200 shadow-md">
             <h3 className="text-forest-900 font-semibold mb-2 text-xl">No se encontraron especies</h3>
