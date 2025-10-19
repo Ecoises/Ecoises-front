@@ -368,9 +368,68 @@ const SpeciesDetail = () => {
                   </span>
                 );
               })()}
-              <span className="bg-forest-100 text-forest-800 px-3 py-1 rounded-full text-sm">
-                {bird.conservation_status} - {bird.ecological_importance?.conservation_status?.description || 'Sin información'}
-              </span>
+              {bird.conservation_status && (() => {
+                const getConservationConfig = (status: string) => {
+                  switch (status.toUpperCase()) {
+                    case 'EX':
+                      return { 
+                        label: 'Extinto (EX)', 
+                        className: 'bg-black text-white'
+                      };
+                    case 'EW':
+                      return { 
+                        label: 'Extinto en Estado Silvestre (EW)', 
+                        className: 'bg-purple-900 text-white'
+                      };
+                    case 'CR':
+                      return { 
+                        label: 'En Peligro Crítico (CR)', 
+                        className: 'bg-red-700 text-white'
+                      };
+                    case 'EN':
+                      return { 
+                        label: 'En Peligro (EN)', 
+                        className: 'bg-orange-500 text-white'
+                      };
+                    case 'VU':
+                      return { 
+                        label: 'Vulnerable (VU)', 
+                        className: 'bg-yellow-400 text-black'
+                      };
+                    case 'NT':
+                      return { 
+                        label: 'Casi Amenazado (NT)', 
+                        className: 'bg-lime-400 text-black'
+                      };
+                    case 'LC':
+                      return { 
+                        label: 'Preocupación Menor (LC)', 
+                        className: 'bg-green-500 text-white'
+                      };
+                    case 'DD':
+                      return { 
+                        label: 'Datos Insuficientes (DD)', 
+                        className: 'bg-gray-400 text-white'
+                      };
+                    case 'NE':
+                      return { 
+                        label: 'No Evaluado (NE)', 
+                        className: 'bg-gray-200 text-gray-800'
+                      };
+                    default:
+                      return { 
+                        label: status, 
+                        className: 'bg-gray-200 text-gray-800'
+                      };
+                  }
+                };
+                const config = getConservationConfig(bird.conservation_status);
+                return (
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${config.className}`}>
+                    {config.label}
+                  </span>
+                );
+              })()}
             </div>
 
             <p className="text-forest-800 mb-6 text-justify">
