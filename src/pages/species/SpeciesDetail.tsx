@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, Calendar, ArrowLeft, Clock, Ruler, Music, Star, Eye, Info, TreePine } from "lucide-react"
+import { MapPin, Calendar, ArrowLeft, Clock, Ruler, Music, Star, Eye, Info, TreePine, Sparkles, CornerRightDown } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -330,9 +330,27 @@ const SpeciesDetail = () => {
             <p className="text-forest-700 italic mb-4">{bird.scientific_name}</p>
 
             <div className="flex flex-wrap gap-2 mb-4">
-              <span className="bg-lime-100 text-lime-800 px-3 py-1 rounded-full text-sm">
-                {bird.establishment_status_colombia }
-              </span>
+              {bird.establishment_status_colombia && bird.establishment_status_colombia !== "unknown" && (
+                <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1.5 ${
+                  bird.establishment_status_colombia === "nativa" 
+                    ? "bg-forest-100 text-forest-800" 
+                    : bird.establishment_status_colombia === "edemica" || bird.establishment_status_colombia === "endémica"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : bird.establishment_status_colombia === "introducida"
+                    ? "bg-pink-100 text-pink-800"
+                    : "bg-lime-100 text-lime-800"
+                }`}>
+                  {bird.establishment_status_colombia === "nativa" 
+                    ? <Star className="h-3.5 w-3.5" />
+                    : bird.establishment_status_colombia === "edemica" || bird.establishment_status_colombia === "endémica"
+                    ? <Sparkles className="h-3.5 w-3.5" />
+                    : bird.establishment_status_colombia === "introducida"
+                    ? <CornerRightDown className="h-3.5 w-3.5" />
+                    : null
+                  }
+                  {bird.establishment_status_colombia}
+                </span>
+              )}
               <span className="bg-forest-100 text-forest-800 px-3 py-1 rounded-full text-sm">
                 {bird.conservation_status} - {bird.ecological_importance?.conservation_status?.description || 'Sin información'}
               </span>
