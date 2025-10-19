@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState } from "react"
@@ -16,35 +15,50 @@ import { AspectRatio } from "@/components/ui/aspect-ratio"
 const birdsData = [
   {
     id: 1,
-    name: "Gavilán Pollero",
-    scientificName: "Rupornis magnirostris",
-    image: "https://inaturalist-open-data.s3.amazonaws.com/photos/1316192/medium.jpg",
-    description:
-      "El gavilán pollero (Rupornis magnirostris), también conocido como aguilucho de ala rojiza, gavilán caminero, taguato común o Pupa; y también como aguililla caminera, busardo caminero, gavilán chapulinero, chuubi o guío, es una especie de ave accipitriforme de la familia Accipitridae (milanos, aguilillas, gavilanes y águilas). Es a veces colocado en el género Buteo en vez de Rupornis. Es autóctona de la Región Neotropical, encontrándose desde el sur de México hasta Uruguay.Mide aproximadamente 35 cm y pesa alrededor de 295 g. Se alimenta de insectos, pequeños mamíferos y pequeños reptiles. Habita en sabanas, montes y bosques. ",
-    diet: "Earthworms, insects, berries, fruits",
-    behavior:
-      "Forages on lawns for earthworms, nests in trees or shrubs, migrates south in winter from northern regions.",
-    conservation: "NA - Preocupación menor",
-    size: "25 cm (9.8 in)",
-    weight: "77-85 g (2.7-3 oz)",
-    lifespan: "2 years average, up to 14 years",
-    range: "Throughout North America",
-    category: "Nativa",
-    audio: "https://example.com/robin-call.mp3",
-    // Taxonomic information
-    taxonomy: {
-      kingdom: "Animalia",
-      phylum: "Chxxxxxxxordata",
-      class: "Avexxxs",
-      order: "Pasxxxxxxssssssss seriformes",
-      family: "Turdidae",
-      genus: "Turdus",
-      species: "T. migratorius"
+    common_name: "Gavilán Pollero",
+    scientific_name: "Rupornis magnirostris",
+    default_photo: {
+      medium_url: "https://inaturalist-open-data.s3.amazonaws.com/photos/1316192/medium.jpg",
+      attribution: "(c) Alejandro  Bayer Tamayo, some rights reserved (CC BY-SA)",
+      license_code: "cc-by"
     },
-    gallery: [
-      "https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=800&h=500",
-      "https://images.unsplash.com/photo-1555446667-cfec1fb467c5?auto=format&fit=crop&w=800&h=500",
-      "https://images.unsplash.com/photo-1555284224-731a5843d1ef?auto=format&fit=crop&w=800&h=500",
+    ecological_importance: {
+      conservation_status: {
+        status: "LC",
+        description: "Preocupación Menor"
+      },
+      establishment_in_colombia: {
+        is_native: true,
+        is_endemic: false,
+        description: "Especie nativa de la Región Neotropical, encontrándose desde el sur de México hasta Uruguay"
+      }
+    },
+    habitat: "Sabanas, montes y bosques",
+    diet: "Insectos, pequeños mamíferos y pequeños reptiles",
+    behavior: "Se alimenta cazando desde perchas. Habita en sabanas, montes y bosques",
+    conservation_status: "LC",
+    is_native: true,
+    is_endemic: false,  
+    establishment_status_colombia: "edemica",
+    // Taxonomic information
+    kingdom: "Animalia",
+    phylum: "Chordata",
+    class: "Aves",
+    order_name: "Accipitriformes",
+    family: "Accipitridae",
+    genus: "Rupornis",
+    species: "R. magnirostris",
+    rank: "species",
+    api_references: [
+      {
+        data: {
+          taxon_photos: [
+            { photo: { medium_url: "https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=800&h=500" } },
+            { photo: { medium_url: "https://images.unsplash.com/photo-1555446667-cfec1fb467c5?auto=format&fit=crop&w=800&h=500" } },
+            { photo: { medium_url: "https://images.unsplash.com/photo-1555284224-731a5843d1ef?auto=format&fit=crop&w=800&h=500" } }
+          ]
+        }
+      }
     ],
     sightings: [
       { location: "Central Park", date: "May 5, 2023", time: "10:23 AM" },
@@ -99,37 +113,50 @@ const birdsData = [
   // Add more birds with similar structure...
   {
     id: 2,
-    name: "Northern Cardinal",
-    scientificName: "Cardinalis cardinalis",
-    image: "https://inaturalist-open-data.s3.amazonaws.com/photos/452211470/original.jpg",
-    description:
-      "The Northern Cardinal is a bird in the genus Cardinalis. It is also known colloquially as the redbird, common cardinal, red cardinal, or just cardinal. It can be found in southeastern Canada, through the eastern United States, and south to Mexico.",
-    habitat: "Woodlands, Gardens, Shrublands, Swamps",
-    diet: "Seeds, fruits, insects",
-    behavior: "Ground forager, maintains year-round territories, males are aggressive in defending territory.",
-    conservation: "Least Concern - population increasing",
-    size: "21-23 cm (8.3-9.1 in)",
-    weight: "42-48 g (1.5-1.7 oz)",
-    lifespan: "3 years average, up to 15 years",
-    range: "Eastern and central North America, Mexico",
-    category: "Cardinal",
-    audio: "https://example.com/cardinal-call.mp3",
-    // Taxonomic information
-    taxonomy: {
-      kingdom: "Anxxximalia",
-      phylum: "Choxxxxrdata",
-      class: "Avesxxx",
-      order: "Passeriformes",
-      family: "Cardinalxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxidae",
-      genus: "Cardinalxxxis",
-      species: "Cardinalijsjsjjsjsjsjs"
+    common_name: "Canario coronado",
+    scientific_name: "Sicalis flaveola",
+    default_photo: {
+      medium_url: "https://inaturalist-open-data.s3.amazonaws.com/photos/23856507/large.jpg",
+      attribution: "(c) Alejandro Bayer Tamayo, some rights reserved (CC BY-SA)",
+      license_code: "cc-by-sa"
     },
-    gallery: [
-      "https://inaturalist-open-data.s3.amazonaws.com/photos/189434971/large.jpg",
-      "https://images.unsplash.com/photo-1520808663317-647b476a81b9?auto=format&fit=crop&w=800&h=500",
-      "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&h=500",
-      
-      
+    ecological_importance: {
+      conservation_status: {
+        status: "LC",
+        description: "Preocupación Menor - La especie tiene poblaciones saludables"
+      },
+      establishment_in_colombia: {
+        is_native: true,
+        is_endemic: false,
+        description: "Especie nativa de Colombia - forma parte del ecosistema natural del país"
+      }
+    },
+    habitat: "Áreas abiertas y sotobosques de tierras bajas",
+    diet: "Semillas, frutas, insectos",
+    behavior: "Forrajea en el suelo, común en áreas urbanas y rurales",
+    conservation_status: "LC",
+    is_native: true,
+    is_endemic: false,
+    establishment_status_colombia: "nativa",
+    // Taxonomic information
+    kingdom: "Animalia",
+    phylum: "Chordata",
+    class: "Aves",
+    order_name: "Passeriformes",
+    family: "Thraupidae",
+    genus: "Sicalis",
+    species: "S. flaveola",
+    rank: "species",
+    api_references: [
+      {
+        data: {
+          taxon_photos: [
+            { photo: { medium_url: "https://inaturalist-open-data.s3.amazonaws.com/photos/220765971/medium.jpg" } },
+            { photo: { medium_url: "https://inaturalist-open-data.s3.amazonaws.com/photos/255647599/medium.jpg" } },
+            { photo: { medium_url: "https://inaturalist-open-data.s3.amazonaws.com/photos/526826763/medium.jpg" } }
+          ]
+        }
+      }
     ],
     sightings: [
       { location: "Backyard Feeder", date: "May 6, 2023", time: "8:13 AM" },
@@ -178,20 +205,6 @@ const birdsData = [
         description: "Female Northern Cardinal collecting grass and small twigs. Very cautious and would fly away when anyone approached.",
         weather: "Partly cloudy, breezy",
         notes: "Seemed to be in the early stages of nest building based on the materials being gathered.",
-      },
-      {
-        id: 203,
-        image: "https://inaturalist-open-data.s3.amazonaws.com/photos/452211470/original.jpg",
-        location: "River Trail, Louisville",
-        date: "April 22, 2023",
-        time: "10:20 AM",
-        user: {
-          name: "David Chen",
-          avatar: "https://randomuser.me/api/portraits/men/77.jpg",
-        },
-        description: "Female Northern Cardinal collecting grass and small twigs. Very cautious and would fly away when anyone approached.",
-        weather: "Partly cloudy, breezy",
-        notes: "Seemed to be in the early stages of nest building based on the materials being gathered.",
       }
     ]
   },
@@ -213,15 +226,14 @@ type ObservationType = {
 };
 
 type BirdType = (typeof birdsData)[0] & {
-  taxonomy?: {
-    kingdom: string;
-    phylum: string;
-    class: string;
-    order: string;
-    family: string;
-    genus: string;
-    species: string;
-  }
+  kingdom?: string;
+  phylum?: string;
+  class?: string;
+  order_name?: string;
+  family?: string;
+  genus?: string;
+  species?: string;
+  rank?: string;
 }
 
 const SpeciesDetail = () => {
@@ -238,7 +250,7 @@ const SpeciesDetail = () => {
       const foundBird = birdsData.find((b) => b.id === Number(id))
       if (foundBird) {
         setBird(foundBird)
-        setActiveImage(foundBird.image)
+        setActiveImage(foundBird.default_photo.medium_url)
       }
       setLoading(false)
     }, 300)
@@ -279,30 +291,30 @@ const SpeciesDetail = () => {
         <Card className="relative overflow-hidden border rounded-xl shadow-md">
           <img
             src={activeImage || "/placeholder.svg"}
-            alt={bird.name}
+            alt={bird.common_name}
             className="w-full aspect-[4/3] md:aspect-[4/4] object-cover"
           />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
               <p className="text-xs text-white font-medium">
-                Foto por: Jhonatan Camelo CCC
+                {bird.default_photo.attribution}
               </p>
             </div>
         </Card>
         
         {/* Gallery thumbnails */}
-        {bird.gallery && bird.gallery.length > 0 && (
+        {bird.api_references && bird.api_references[0]?.data?.taxon_photos && bird.api_references[0].data.taxon_photos.length > 0 && (
           <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
-            {bird.gallery.map((imgUrl, index) => (
+            {bird.api_references[0].data.taxon_photos.map((item, index) => (
               <button
                 key={index}
-                onClick={() => setActiveImage(imgUrl)}
+                onClick={() => setActiveImage(item.photo.medium_url)}
                 className={`relative overflow-hidden rounded-md border-2 transition-all hover:scale-105 ${
-                  activeImage === imgUrl ? 'border-primary ring-2 ring-primary/50' : 'border-border hover:border-primary/50'
+                  activeImage === item.photo.medium_url ? 'border-primary ring-2 ring-primary/50' : 'border-border hover:border-primary/50'
                 }`}
               >
                 <img
-                  src={imgUrl}
-                  alt={`${bird.name} - imagen ${index + 1}`}
+                  src={item.photo.medium_url}
+                  alt={`${bird.common_name} - imagen ${index + 1}`}
                   className="w-full aspect-square object-cover"
                 />
               </button>
@@ -314,15 +326,21 @@ const SpeciesDetail = () => {
         {/* Right Column: Details */}
         <div className="lg:col-span-1 space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-forest-950 mb-1">{bird.name}</h1>
-            <p className="text-forest-700 italic mb-4">{bird.scientificName}</p>
+            <h1 className="text-3xl font-bold text-forest-950 mb-1">{bird.common_name}</h1>
+            <p className="text-forest-700 italic mb-4">{bird.scientific_name}</p>
 
             <div className="flex flex-wrap gap-2 mb-4">
-              <span className="bg-lime-100 text-lime-800 px-3 py-1 rounded-full text-sm">{bird.category}</span>
-              <span className="bg-forest-100 text-forest-800 px-3 py-1 rounded-full text-sm">{bird.conservation}</span>
+              <span className="bg-lime-100 text-lime-800 px-3 py-1 rounded-full text-sm">
+                {bird.establishment_status_colombia }
+              </span>
+              <span className="bg-forest-100 text-forest-800 px-3 py-1 rounded-full text-sm">
+                {bird.conservation_status} - {bird.ecological_importance?.conservation_status?.description || 'Sin información'}
+              </span>
             </div>
 
-            <p className="text-forest-800 mb-6 text-justify">{bird.description}</p>
+            <p className="text-forest-800 mb-6 text-justify">
+              {bird.ecological_importance?.establishment_in_colombia?.description || 'Especie registrada en Colombia'}
+            </p>
           </div>
 
           <Tabs defaultValue="info" className="w-full">
@@ -351,13 +369,13 @@ const SpeciesDetail = () => {
                   <div className="relative">
                     <div className="space-y-4">
                       {[
-                        { level: 0, label: 'Reino', value: bird.taxonomy?.kingdom, icon: '👑', color: 'text-lime-600' },
-                        { level: 1, label: 'Filo', value: bird.taxonomy?.phylum, icon: '📜', color: 'text-lime-500' },
-                        { level: 2, label: 'Clase', value: bird.taxonomy?.class, icon: '📚', color: 'text-lime-400' },
-                        { level: 3, label: 'Orden', value: bird.taxonomy?.order, icon: '📖', color: 'text-lime-300' },
-                        { level: 4, label: 'Familia', value: bird.taxonomy?.family, icon: '👪', color: 'text-lime-200' },
-                        { level: 5, label: 'Género', value: bird.taxonomy?.genus, icon: '🌿', color: 'text-lime-100', italic: true },
-                        { level: 6, label: 'Especie', value: bird.taxonomy?.species, icon: '🦜', color: 'text-lime-50', italic: true }
+                        { level: 0, label: 'Reino', value: bird.kingdom, icon: '👑', color: 'text-lime-600' },
+                        { level: 1, label: 'Filo', value: bird.phylum, icon: '📜', color: 'text-lime-500' },
+                        { level: 2, label: 'Clase', value: bird.class, icon: '📚', color: 'text-lime-400' },
+                        { level: 3, label: 'Orden', value: bird.order_name, icon: '📖', color: 'text-lime-300' },
+                        { level: 4, label: 'Familia', value: bird.family, icon: '👪', color: 'text-lime-200' },
+                        { level: 5, label: 'Género', value: bird.genus, icon: '🌿', color: 'text-lime-100', italic: true },
+                        { level: 6, label: 'Especie', value: bird.species, icon: '🦜', color: 'text-lime-50', italic: true }
                       ].map((item, index) => (
                         <div key={item.label} className="flex items-start relative">
                           {/* Línea vertical */}
@@ -461,7 +479,7 @@ const SpeciesDetail = () => {
               
               {/* Map Title */}
               <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-                <h3 className="text-sm font-medium text-forest-900">Avistamientos de {bird.name}</h3>
+                <h3 className="text-sm font-medium text-forest-900">Avistamientos de {bird.common_name}</h3>
               </div>
               
               {/* Sample markers */}
