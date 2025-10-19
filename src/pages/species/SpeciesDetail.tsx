@@ -330,27 +330,44 @@ const SpeciesDetail = () => {
             <p className="text-forest-700 italic mb-4">{bird.scientific_name}</p>
 
             <div className="flex flex-wrap gap-2 mb-4">
-              {bird.establishment_status_colombia && bird.establishment_status_colombia !== "unknown" && (
-                <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1.5 ${
-                  bird.establishment_status_colombia === "nativa" 
-                    ? "bg-forest-100 text-forest-800" 
-                    : bird.establishment_status_colombia === "edemica" || bird.establishment_status_colombia === "endémica"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : bird.establishment_status_colombia === "introducida"
-                    ? "bg-pink-100 text-pink-800"
-                    : "bg-lime-100 text-lime-800"
-                }`}>
-                  {bird.establishment_status_colombia === "nativa" 
-                    ? <Star className="h-3.5 w-3.5" />
-                    : bird.establishment_status_colombia === "edemica" || bird.establishment_status_colombia === "endémica"
-                    ? <Sparkles className="h-3.5 w-3.5" />
-                    : bird.establishment_status_colombia === "introducida"
-                    ? <CornerRightDown className="h-3.5 w-3.5" />
-                    : null
+              {bird.establishment_status_colombia && bird.establishment_status_colombia !== "unknown" && (() => {
+                const status = bird.establishment_status_colombia.toLowerCase();
+                const getStatusConfig = () => {
+                  if (status === "native" || status === "nativa") {
+                    return { 
+                      icon: <Star className="h-3.5 w-3.5" />, 
+                      className: "bg-forest-100 text-forest-800",
+                      label: "Nativa"
+                    };
                   }
-                  {bird.establishment_status_colombia}
-                </span>
-              )}
+                  if (status === "endemic" || status === "edemica" || status === "endémica") {
+                    return { 
+                      icon: <Sparkles className="h-3.5 w-3.5" />, 
+                      className: "bg-yellow-100 text-yellow-800",
+                      label: "Endémica"
+                    };
+                  }
+                  if (status === "introduced" || status === "introducida") {
+                    return { 
+                      icon: <CornerRightDown className="h-3.5 w-3.5" />, 
+                      className: "bg-pink-100 text-pink-800",
+                      label: "Introducida"
+                    };
+                  }
+                  return { 
+                    icon: null, 
+                    className: "bg-lime-100 text-lime-800",
+                    label: bird.establishment_status_colombia
+                  };
+                };
+                const config = getStatusConfig();
+                return (
+                  <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1.5 ${config.className}`}>
+                    {config.icon}
+                    {config.label}
+                  </span>
+                );
+              })()}
               <span className="bg-forest-100 text-forest-800 px-3 py-1 rounded-full text-sm">
                 {bird.conservation_status} - {bird.ecological_importance?.conservation_status?.description || 'Sin información'}
               </span>
