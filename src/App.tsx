@@ -19,6 +19,7 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import About from "./pages/About";
 import ObservationDetail from "./pages/observations/ObservationDetail";
+import Learn from "./pages/learn/Learn";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/sightings/new" element={<NewSighting />} />
               <Route path="/observations/:id" element={<ObservationDetail />} />
               <Route path="/about" element={<About />} />
+              <Route path="/learn" element={<Learn />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
