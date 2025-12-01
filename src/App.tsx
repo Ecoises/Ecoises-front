@@ -20,6 +20,7 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import About from "./pages/About";
 import ObservationDetail from "./pages/observations/ObservationDetail";
 import Learn from "./pages/learn/Learn";
+import CourseDetail from "./pages/learn/CourseDetail";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/observations/:id" element={<ObservationDetail />} />
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
+              <Route path="/learn/:id" element={<CourseDetail />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
