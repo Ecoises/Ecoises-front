@@ -24,7 +24,7 @@ const birdsData = [
     },
     ecological_importance: {
       conservation_status: {
-        status: "LC",
+        status: "Le",
         description: "Preocupación Menor"
       },
       establishment_in_colombia: {
@@ -122,7 +122,7 @@ const birdsData = [
     },
     ecological_importance: {
       conservation_status: {
-        status: "LC",
+        status: "ne",
         description: "Preocupación Menor - La especie tiene poblaciones saludables"
       },
       establishment_in_colombia: {
@@ -134,7 +134,7 @@ const birdsData = [
     habitat: "Áreas abiertas y sotobosques de tierras bajas",
     diet: "Semillas, frutas, insectos",
     behavior: "Forrajea en el suelo, común en áreas urbanas y rurales",
-    conservation_status: "LC",
+    conservation_status: "ne",
     is_native: true,
     is_endemic: false,
     establishment_status_colombia: "nativa",
