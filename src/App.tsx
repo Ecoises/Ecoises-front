@@ -11,7 +11,6 @@ import SpeciesDetail from "./pages/species/SpeciesDetail";
 import Map from "./pages/tools/Map";
 import Species from "./pages/species/Species";
 import Sightings from "./pages/sightings/Sightings";
-import NewSighting from "./pages/sightings/NewSighting";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import Login from "./pages/auth/Login";
@@ -21,6 +20,8 @@ import About from "./pages/About";
 import ObservationDetail from "./pages/observations/ObservationDetail";
 import Learn from "./pages/learn/Learn";
 import CourseDetail from "./pages/learn/CourseDetail";
+import EducatorDashboard from "./pages/educator/EducatorDashboard";
+import LessonEditor from "./pages/educator/LessonEditor";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -68,11 +69,14 @@ const App = () => (
               <Route path="/species/:id" element={<SpeciesDetail />} />
               <Route path="/map" element={<Map />} />
               <Route path="/sightings" element={<Sightings />} />
-              <Route path="/sightings/new" element={<NewSighting />} />
               <Route path="/observations/:id" element={<ObservationDetail />} />
               <Route path="/about" element={<About />} />
               <Route path="/learn" element={<Learn />} />
               <Route path="/learn/:id" element={<CourseDetail />} />
+              {/* Educator Routes */}
+              <Route path="/educator" element={<EducatorDashboard />} />
+              <Route path="/educator/new" element={<LessonEditor />} />
+              <Route path="/educator/edit/:id" element={<LessonEditor />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
