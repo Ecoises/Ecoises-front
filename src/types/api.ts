@@ -57,3 +57,36 @@ export interface INatResponse {
   per_page: number;
   results: INatResult[];
 }
+
+export interface TaxonPhoto {
+  url: string;
+  attribution?: string;
+}
+
+export interface Taxon {
+  id: number;
+  scientific_name: string;
+  common_name: string | null;
+  class: string | null;
+  family: string | null;
+  order_name: string | null;
+  rank: string | null;
+  conservation_status: string | null; // e.g., "LC", "NT", "VU", "EN"
+  establishment_status_colombia?: string | null; // e.g., "native", "endemic", "introduced"
+  is_native: boolean;
+  is_endemic: boolean;
+  observation_count: number;
+  default_photo: TaxonPhoto | null;
+  wikipedia_url?: string | null;
+}
+
+export interface ExploreResponse {
+  success: boolean;
+  data: Taxon[];
+  pagination: {
+    total: number;
+    per_page: number;
+    current_page: number;
+    last_page: number;
+  };
+}

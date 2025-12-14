@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
-import Explorer from "./pages/tools/Explorer";
+import Explorer from "./pages/species/Explorer";
 import Identify from "./pages/tools/Identify";
 import SpeciesDetail from "./pages/species/SpeciesDetail";
 import Map from "./pages/tools/Map";

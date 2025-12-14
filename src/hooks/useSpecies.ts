@@ -1,108 +1,46 @@
-import { useState, useEffect } from 'react';
-import { taxonService } from '../api/services/TaxonService';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/axios';
+import { ExploreResponse } from '@/types/api';
 
-const useSpecies = (placeId = 12731) => {
-  const [species, setSpecies] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    perPage: 12,
-    total: 0,
-    totalPages: 1
+interface UseSpeciesParams {
+  page?: number;
+  per_page?: number;
+  q?: string;
+  rank?: string;
+  native?: boolean;
+  endemic?: boolean;
+  threatened?: boolean;
+}
+
+export const useSpecies = (params: UseSpeciesParams = {}) => {
+  return useQuery({
+    queryKey: ['species', params],
+    queryFn: async () => {
+      // Clean params: remove undefined or empty strings
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(([_, v]) => v !== undefined && v !== '' && v !== 'Todas' && v !== 'Todos' && v !== 'all' && v !== false)
+      );
+
+      const { data } = await api.get<ExploreResponse>('/api/taxa/explore/colombia', {
+        params: cleanParams,
+      });
+      return data;
+    },
+    placeholderData: (previousData) => previousData, // Maintain data while fetching new page
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
-
-  const fetchSpecies = async (params = {}) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await taxonService.getSpeciesByPlace(placeId, {
-        page: pagination.page,
-        per_page: pagination.perPage,
-        ...params
-      });
-      
-      setSpecies(response.data || []);
-      
-      if (response.meta?.pagination) {
-        setPagination(prev => ({
-          ...prev,
-          page: response.meta.pagination.current_page,
-          total: response.meta.pagination.total,
-          totalPages: response.meta.pagination.last_page
-        }));
-      }
-      
-      return response;
-    } catch (err: any) {
-      console.error('Error fetching species:', err);
-      setError(err.message || 'Error al cargar las especies');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const searchSpecies = async (query: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await taxonService.searchTaxa(query, {
-        per_page: pagination.perPage
-      });
-      
-      setSpecies(response.data || []);
-      
-      if (response.meta?.pagination) {
-        setPagination(prev => ({
-          ...prev,
-          page: 1,
-          total: response.meta.pagination.total,
-          totalPages: response.meta.pagination.last_page
-        }));
-      }
-      
-      return response;
-    } catch (err: any) {
-      console.error('Error searching species:', err);
-      setError(err.message || 'Error al buscar especies');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSpecies();
-  }, [pagination.page, pagination.perPage]);
-
-  const changePage = (page: number) => {
-    setPagination(prev => ({
-      ...prev,
-      page
-    }));
-  };
-
-  const changePerPage = (perPage: number) => {
-    setPagination(prev => ({
-      ...prev,
-      perPage,
-      page: 1 // Reset to first page when changing items per page
-    }));
-  };
-
-  return {
-    species,
-    loading,
-    error,
-    pagination,
-    fetchSpecies,
-    searchSpecies,
-    changePage,
-    changePerPage
-  };
 };
 
-export default useSpecies;
+export const useSpeciesDetail = (id: string, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: ['species', id],
+    queryFn: async () => {
+      const { data } = await api.get<{ data: any }>(`/api/taxa/${id}`, {
+        params: { enrich: 1 } // Request enriched data, sending 1 to pass strict boolean validation
+      });
+      return data.data;
+    },
+    enabled: options?.enabled !== false && !!id,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+  });
+};

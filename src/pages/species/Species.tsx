@@ -5,7 +5,7 @@ import { Search, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
@@ -14,8 +14,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import useSpecies from "@/hooks/useSpecies";
-import { Taxon } from "@/api/services/TaxonService";
+import { useSpecies } from "@/hooks/useSpecies";
+import { Taxon } from "@/types/api";
 
 
 
@@ -38,14 +38,14 @@ const getConservationStatusColor = (status: string) => {
 
 const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
   const imageUrl = species.default_photo?.url || 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?auto=format&fit=crop&w=600&h=400';
-  
+
   return (
     <Link to={`/species/${species.id}`}>
       <Card className="overflow-hidden card-hover h-full">
         <div className="relative h-48">
           <img
             src={imageUrl}
-            alt={species.common_name || species.name}
+            alt={species.common_name || species.scientific_name}
             className="w-full h-full object-cover"
             onError={(e) => {
               e.currentTarget.src = 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?auto=format&fit=crop&w=600&h=400';
@@ -54,12 +54,10 @@ const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
         </div>
         <div className="p-4">
           <h3 className="font-heading font-bold text-forest-900 text-lg mb-1">
-            aaaa
-            {species.common_name || species.name}
+            {species.common_name || species.scientific_name}
           </h3>
           <p className="text-forest-700 text-sm italic">
-            ss
-            {species.scientific_name || species.name}
+            {species.scientific_name}
           </p>
         </div>
       </Card>
@@ -70,36 +68,48 @@ const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
 const Species = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtersVisible, setFiltersVisible] = useState(false);
-  const { species, loading, error, pagination, fetchSpecies, searchSpecies, changePage, changePerPage } = useSpecies();
-  
-  // Update items per page to 6
-  useEffect(() => {
-    changePerPage(6);
-  }, []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Filter species locally based on search term
-  const filteredSpecies = species.filter((speciesItem) => {
-    if (!searchTerm) return true;
-    const matchesSearch =
-      (speciesItem.common_name || speciesItem.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (speciesItem.scientific_name || speciesItem.name || '').toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1); // Reset to page 1 on search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const { data, isLoading: loading, isError, error: queryError } = useSpecies({
+    page: currentPage,
+    per_page: itemsPerPage,
+    q: debouncedSearch
   });
+
+  const species = data?.data || [];
+  const paginationData = data?.pagination || { total: 0, per_page: itemsPerPage, current_page: 1, last_page: 1 };
 
   const toggleFilters = () => setFiltersVisible(!filtersVisible);
 
   const handlePageChange = (page: number) => {
-    changePage(page);
+    setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSearch = async (value: string) => {
+  const handleSearch = (value: string) => {
     setSearchTerm(value);
-    if (value.trim()) {
-      await searchSpecies(value);
-    } else {
-      await fetchSpecies();
-    }
+  };
+
+  const error = isError ? String(queryError) : null;
+  const pagination = {
+    page: paginationData.current_page,
+    totalPages: paginationData.last_page
+  };
+
+  // Dummy fetchSpecies for retry button (just generic invalidation or reload)
+  const fetchSpecies = () => {
+    window.location.reload();
   };
 
   return (
@@ -192,13 +202,13 @@ const Species = () => {
                 <SpeciesCard key={speciesItem.id} species={speciesItem} />
               ))}
             </div>
-            
+
             {pagination.totalPages > 1 && (
               <div className="mt-8 flex justify-center">
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
-                      <PaginationPrevious 
+                      <PaginationPrevious
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
@@ -207,7 +217,7 @@ const Species = () => {
                         className={pagination.page === 1 ? "pointer-events-none opacity-50" : ""}
                       />
                     </PaginationItem>
-                    
+
                     {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                       let pageNum;
                       if (pagination.totalPages <= 5) {
@@ -219,7 +229,7 @@ const Species = () => {
                       } else {
                         pageNum = pagination.page - 2 + i;
                       }
-                      
+
                       return (
                         <PaginationItem key={pageNum}>
                           <PaginationLink
@@ -235,15 +245,15 @@ const Species = () => {
                         </PaginationItem>
                       );
                     })}
-                    
+
                     {pagination.totalPages > 5 && pagination.page < pagination.totalPages - 2 && (
                       <PaginationItem>
                         <PaginationEllipsis />
                       </PaginationItem>
                     )}
-                    
+
                     <PaginationItem>
-                      <PaginationNext 
+                      <PaginationNext
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
