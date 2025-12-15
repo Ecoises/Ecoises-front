@@ -21,7 +21,13 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
         Object.entries(params).filter(([_, v]) => v !== undefined && v !== '' && v !== 'Todas' && v !== 'Todos' && v !== 'all' && v !== false)
       );
 
-      const { data } = await api.get<ExploreResponse>('/api/taxa/explore/colombia', {
+      // Si hay un término de búsqueda ('q'), usamos el endpoint de búsqueda global
+      // Si no, usamos el endpoint de exploración de Colombia
+      const endpoint = cleanParams.q
+        ? '/api/taxa/search'
+        : '/api/taxa/explore/colombia';
+
+      const { data } = await api.get<ExploreResponse>(endpoint, {
         params: cleanParams,
       });
       return data;

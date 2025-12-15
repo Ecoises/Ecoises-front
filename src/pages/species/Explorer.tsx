@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Filter, X, Loader2 } from "lucide-react";
+import { Search, Filter, X, Loader2, Pin, ShieldX, Music, MapPin, Star, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -18,54 +17,100 @@ import { useSpecies } from "@/hooks/useSpecies";
 import { Taxon } from "@/types/api";
 
 const classes = ["Todas", "Aves", "Mammalia", "Reptilia", "Amphibia", "Insecta"];
-// Simplificamos los estados de conservación soportados por la API por ahora
-// La API soporta 'threatened' (amenazada), pero no filtrar por LC específico fácilmente en búsqueda simple
 const conservationStatuses = [
   { value: "Todos", label: "Todos" },
   { value: "threatened", label: "Amenazadas (VU, EN, CR)" },
-  // { value: "LC", label: "LC - Preocupación Menor" },
 ];
 
-const SpeciesCard = ({ species }: { species: Taxon }) => (
-  <Link to={`/species/${species.id}`}>
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full cursor-pointer flex flex-col group">
-      <div className="relative h-48 bg-gray-100 overflow-hidden">
-        {species.default_photo?.url ? (
-          <img
-            src={species.default_photo.url.replace("square", "medium")}
-            alt={species.common_name || species.scientific_name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            loading="lazy"
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            No image
-          </div>
-        )}
-        <div className="absolute top-3 right-3">
-          <Badge className="bg-red-500 text-white">
-            {species.conservation_status}
-          </Badge>
-        </div>
-      </div>
-      <div className="p-4 flex-grow">
-        <h3 className="font-bold text-forest-900 text-lg mb-1 line-clamp-2">
-          {species.common_name || species.scientific_name}
-        </h3>
-        <p className="text-forest-700 text-sm italic">{species.scientific_name}</p>
+const SpeciesCard = ({ species }: { species: Taxon }) => {
+  // Configuración de estado de conservación (Misma lógica que SpeciesDetail)
+  const getConservationConfig = (s: string | null | undefined | { status: string }) => {
+    if (!s) return null;
+    let status = typeof s === 'object' && s !== null ? s.status : s;
+    status = String(status).toUpperCase();
 
-        <div className="mt-2 flex gap-1 flex-wrap">
-          {species.is_endemic && (
-            <span className="text-xs bg-lime-100 text-lime-800 px-2 py-0.5 rounded-full">Endémica</span>
+    switch (status) {
+      case 'EX': return { label: 'EX', className: 'bg-gray-900 text-white' };
+      case 'EW': return { label: 'EW', className: 'bg-purple-100 text-purple-800' };
+      case 'CR': return { label: 'CR', className: 'bg-red-100 text-red-800' };
+      case 'EN': return { label: 'EN', className: 'bg-orange-100 text-orange-800' };
+      case 'VU': return { label: 'VU', className: 'bg-yellow-100 text-yellow-800' };
+      case 'NT': return { label: 'NT', className: 'bg-lime-100 text-lime-800' };
+      case 'LC': return { label: 'LC', className: 'bg-green-100 text-green-800' };
+      case 'DD': return { label: 'DD', className: 'bg-gray-100 text-gray-800' };
+      case 'NE': return null; // No mostrar si es NE
+      default: return null;
+    }
+  };
+
+  // Configuración de estado de establecimiento
+  const getEstablishmentConfig = () => {
+    if (species.is_endemic) {
+      return {
+        icon: <Sparkles className="h-3.5 w-3.5" />,
+        className: "bg-lime-800 text-white",
+        label: "Endémica"
+      };
+    }
+    if (species.is_native) {
+      return {
+        icon: <Star className="h-3.5 w-3.5" />,
+        className: "bg-lime-300 text-forest-900",
+        label: "Nativa"
+      };
+    }
+    return null;
+  };
+
+  const conservationConfig = getConservationConfig(species.conservation_status) || getConservationConfig((species as any).conservation_status_details);
+  const establishmentConfig = getEstablishmentConfig();
+
+  return (
+    <Link to={`/species/${species.id}`}>
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full cursor-pointer flex flex-col group">
+        <div className="relative h-48 bg-gray-100 overflow-hidden">
+          {species.default_photo?.url ? (
+            <img
+              src={species.default_photo.url.replace("square", "medium")}
+              alt={species.common_name || species.scientific_name}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-400">
+              No image
+            </div>
           )}
-          {species.is_native && (
-            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Nativa</span>
+
+          {/* Badge: Estado de Conservación (Top Right) */}
+          {conservationConfig && (
+            <div className="absolute top-2 right-2">
+              <Badge className={`${conservationConfig.className} border-0 shadow-sm`}>
+                {conservationConfig.label}
+              </Badge>
+            </div>
+          )}
+
+          {/* Badge: Establecimiento (Top Left) */}
+          {establishmentConfig && (
+            <div className="absolute top-2 left-2">
+              <Badge className={`${establishmentConfig.className} border-0 shadow-sm gap-1 pl-2 pr-2.5`}>
+                {establishmentConfig.icon}
+                <span>{establishmentConfig.label}</span>
+              </Badge>
+            </div>
           )}
         </div>
-      </div>
-    </Card>
-  </Link>
-);
+        <div className="p-4 flex-grow">
+          <h3 className="font-bold text-forest-900 text-lg mb-1 line-clamp-2">
+            {species.common_name || species.scientific_name}
+          </h3>
+          <p className="text-forest-700 text-sm italic">{species.scientific_name}</p>
+        </div>
+      </Card>
+    </Link>
+  );
+};
 
 export default function Explorer() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -77,31 +122,16 @@ export default function Explorer() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Debounce search term
-  useState(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500);
-    return () => clearTimeout(timer);
-  }); // Note: This useEffect pattern is slightly wrong in useState initializer ?? 
-  // No, I need useEffect properly.
-
-  // Correct implementation of debounce in hook or simple effect
-  // Let's just pass searchTerm directly if no debounce hook, or use useEffect to update a derived state.
-  // Actually, useSpecies creates a key. If I type fast, it will blast requests.
-  // I will assume simple useEffect for now.
-
-  // Correction:
-  /*
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
     }, 500);
     return () => clearTimeout(handler);
   }, [searchTerm]);
-  */
-  // But since I am editing the file, I will just put it in the body.
 
   const ITEMS_PER_PAGE = 24;
 
-  const { data, isLoading, isError, error } = useSpecies({
+  const { data, isLoading, isError, error, isFetching } = useSpecies({
     page: currentPage,
     per_page: ITEMS_PER_PAGE,
     q: searchTerm, // Using direct search term for responsiveness, ideally debounce
@@ -136,6 +166,7 @@ export default function Explorer() {
         <h1 className="text-4xl font-bold text-forest-950 mb-2">Explorador de Especies</h1>
         <p className="text-forest-700 text-lg">Descubre la biodiversidad de Colombia</p>
       </div>
+
 
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
@@ -260,13 +291,35 @@ export default function Explorer() {
         </Card>
       )}
 
+      <div className="flex flex-wrap gap-4 justify-center">
+        <Button variant="outline" className="gap-2 rounded-full">
+          <Pin className="h-4 w-4" />
+          Especes locales
+        </Button>
+        <Button variant="outline" className="gap-2 rounded-full">
+          <ShieldX className="h-4 w-4" />
+          Sepecies Amenazadas
+        </Button>
+        <Button variant="outline" className="gap-2 rounded-full">
+          <Music className="h-4 w-4" />
+          Listen to Call
+        </Button>
+        <Button variant="outline" className="gap-2 rounded-full">
+          <MapPin className="h-4 w-4" />
+          View on Map
+        </Button>
+      </div>
+
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-forest-900">
+          <h2 className="text-2xl font-bold text-forest-900 flex items-center gap-2">
             {isLoading ? "Buscando especies..." : (
               pagination.total > 0
                 ? `${pagination.total} Especie${pagination.total !== 1 ? "s" : ""} encontrada${pagination.total !== 1 ? "s" : ""}`
                 : "No se encontraron especies"
+            )}
+            {isFetching && !isLoading && (
+              <Loader2 className="h-5 w-5 text-lime-600 animate-spin" />
             )}
           </h2>
         </div>
@@ -288,7 +341,7 @@ export default function Explorer() {
           </Card>
         ) : speciesList.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-300 ${isFetching ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
               {speciesList.map(species => (
                 <SpeciesCard key={species.id} species={species} />
               ))}

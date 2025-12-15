@@ -137,15 +137,15 @@ const SpeciesDetail = () => {
                   if (status === "native" || status === "nativa") {
                     return {
                       icon: <Star className="h-3.5 w-3.5" />,
-                      className: "bg-lime-200 text-forest-800",
+                      className: "bg-lime-300 text-forest-900",
                       label: "Nativa"
                     };
                   }
                   if (status === "endemic" || status === "edemica" || status === "endémica" || status === "endemica") {
                     return {
                       icon: <Sparkles className="h-3.5 w-3.5" />,
-                      className: "bg-yellow-100 text-yellow-800",
-                      label: "Endémica"
+                      className: "bg-lime-800 text-white",
+                      label: "Endémica de Colombia"
                     };
                   }
                   if (status === "introduced" || status === "introducida") {
@@ -232,7 +232,7 @@ const SpeciesDetail = () => {
                 Taxonomía
               </TabsTrigger>
               <TabsTrigger value="habitat" className="rounded-lg data-[state=active]:bg-white">
-                Habitat
+                + Info
               </TabsTrigger>
               <TabsTrigger value="atribution" className="rounded-lg data-[state=active]:bg-white">
                 Atribución
