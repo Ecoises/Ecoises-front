@@ -10,6 +10,7 @@ interface UseSpeciesParams {
   native?: boolean;
   endemic?: boolean;
   threatened?: boolean;
+  order_by?: string;
 }
 
 export const useSpecies = (params: UseSpeciesParams = {}) => {

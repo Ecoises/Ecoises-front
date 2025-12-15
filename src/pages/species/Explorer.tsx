@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Filter, X, Loader2, Pin, ShieldX, Music, MapPin, Star, Sparkles } from "lucide-react";
+import { Search, Filter, X, Loader2, Pin, ShieldX, Music, MapPin, Star, Sparkles, Shuffle, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -120,6 +120,7 @@ export default function Explorer() {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [sortBy, setSortBy] = useState("observations_count");
 
   // Debounce search term
   useEffect(() => {
@@ -139,6 +140,7 @@ export default function Explorer() {
     native: nativeFilter === 'native',
     endemic: nativeFilter === 'endemic',
     threatened: selectedConservationStatus === 'threatened',
+    order_by: sortBy,
   });
 
   const speciesList = data?.data || [];
@@ -153,6 +155,7 @@ export default function Explorer() {
     setSelectedConservationStatus("Todos");
     setNativeFilter("all");
     setCurrentPage(1);
+    setSortBy("observations_count");
   };
 
   const handlePageChange = (page: number) => {
@@ -287,26 +290,77 @@ export default function Explorer() {
                 </button>
               </div>
             </div>
+
+            <div className="md:col-span-2 border-t pt-4 mt-2">
+              <h3 className="font-semibold text-forest-900 mb-3 text-lg">Ordenamiento</h3>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${sortBy === "observations_count"
+                    ? "bg-lime-500 text-white shadow-md"
+                    : "bg-lime-50 text-forest-700 hover:bg-lime-100"
+                    }`}
+                  onClick={() => {
+                    setSortBy("observations_count");
+                    setCurrentPage(1);
+                  }}
+                >
+                  <Trophy className="h-4 w-4" />
+                  Más Populares
+                </button>
+                <button
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${sortBy === "random"
+                    ? "bg-purple-600 text-white shadow-md"
+                    : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                    }`}
+                  onClick={() => {
+                    setSortBy("random");
+                    setCurrentPage(1);
+                  }}
+                >
+                  <Shuffle className="h-4 w-4" />
+                  Modo Descubrimiento
+                </button>
+              </div>
+            </div>
           </div>
         </Card>
       )}
 
       <div className="flex flex-wrap gap-4 justify-center">
-        <Button variant="outline" className="gap-2 rounded-full">
-          <Pin className="h-4 w-4" />
-          Especes locales
+        <Button
+          variant={sortBy === 'random' ? 'default' : 'outline'}
+          className={`gap-2 rounded-full ${sortBy === 'random' ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
+          onClick={() => {
+            setSortBy(sortBy === 'random' ? 'observations_count' : 'random');
+            setCurrentPage(1);
+          }}
+        >
+          {sortBy === 'random' ? <Trophy className="h-4 w-4" /> : <Shuffle className="h-4 w-4" />}
+          {sortBy === 'random' ? "Volver a Populares" : "Modo Descubrimiento"}
         </Button>
-        <Button variant="outline" className="gap-2 rounded-full">
+
+        <Button
+          variant={nativeFilter === 'native' ? 'default' : 'outline'}
+          className={`gap-2 rounded-full ${nativeFilter === 'native' ? 'bg-lime-600' : ''}`}
+          onClick={() => {
+            setNativeFilter(nativeFilter === 'native' ? 'all' : 'native');
+            setCurrentPage(1);
+          }}
+        >
+          <Star className="h-4 w-4" />
+          {nativeFilter === 'native' ? "Todas" : "Solo Nativas"}
+        </Button>
+
+        <Button
+          variant={selectedConservationStatus === 'threatened' ? 'default' : 'outline'}
+          className={`gap-2 rounded-full ${selectedConservationStatus === 'threatened' ? 'bg-orange-600 hover:bg-orange-700' : ''}`}
+          onClick={() => {
+            setSelectedConservationStatus(selectedConservationStatus === 'threatened' ? 'Todos' : 'threatened');
+            setCurrentPage(1);
+          }}
+        >
           <ShieldX className="h-4 w-4" />
-          Sepecies Amenazadas
-        </Button>
-        <Button variant="outline" className="gap-2 rounded-full">
-          <Music className="h-4 w-4" />
-          Listen to Call
-        </Button>
-        <Button variant="outline" className="gap-2 rounded-full">
-          <MapPin className="h-4 w-4" />
-          View on Map
+          {selectedConservationStatus === 'threatened' ? "Todas" : "Amenazadas"}
         </Button>
       </div>
 

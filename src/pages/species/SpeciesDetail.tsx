@@ -71,6 +71,9 @@ const SpeciesDetail = () => {
   const gallery = species.gallery || (species.default_photo ? [species.default_photo] : []);
   const defaultPhoto = species.default_photo || (gallery.length > 0 ? gallery[0] : null);
 
+  // Determinar la foto activa para mostrar su atribución correcta
+  const activePhotoData = gallery.find(img => getHighResUrl(img.url || img.medium_url) === activeImage) || defaultPhoto;
+
   return (
     <div className="animate-fade-in">
       <div className="mb-4">
@@ -89,10 +92,10 @@ const SpeciesDetail = () => {
               alt={species.common_name}
               className="w-full aspect-[4/3] md:aspect-[4/4] object-cover bg-gray-100"
             />
-            {defaultPhoto?.attribution && (
+            {activePhotoData?.attribution && (
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
                 <p className="text-xs text-white font-medium">
-                  {defaultPhoto.attribution}
+                  {activePhotoData.attribution}
                 </p>
               </div>
             )}
@@ -240,44 +243,44 @@ const SpeciesDetail = () => {
             </TabsList>
 
             <TabsContent value="info" className="animate-fade-in mt-4">
-  <Card className="border-lime-200 p-4">
-    <div className="space-y-4">
-      
-      
-      {/* Nuevo Contenedor de Lista */}
-      <div className="space-y-1">
-        {[
-          { level: 0, label: 'Reino', value: species.kingdom },
-          { level: 1, label: 'Filo', value: species.phylum },
-          { level: 2, label: 'Clase', value: species.class },
-          { level: 3, label: 'Orden', value: species.order_name },
-          { level: 4, label: 'Familia', value: species.family },
-          { level: 5, label: 'Género', value: species.genus, italic: true },
-          { level: 6, label: 'Especie', value: species.scientific_name, italic: true }
-        ].filter(i => i.value).map((item) => (
-          <div 
-            key={item.label} 
-            // Indentación basada en el nivel: pl-4 para el nivel 0, pl-6 para el nivel 1, etc.
-            className={`flex items-start ${item.level > 0 ? `pl-${(item.level * 4)}` : ''} text-gray-700`}
-          >
-            
-            {/* Icono simple: Usar un punto (Circle) o guion para un estilo limpio */}
-            <Circle className="h-2 w-2 mt-2 mr-2 flex-shrink-0 text-lime-600 fill-lime-600" />
-            
-            {/* Contenido */}
-            <div className="flex-1">
-              <span className="font-medium text-forest-700 mr-2">{item.label}:</span>
-              <span className={`${item.italic ? 'italic' : ''} text-forest-900 font-normal`}>
-                {item.value}
-              </span>
-            </div>
-            
-          </div>
-        ))}
-      </div>
-    </div>
-  </Card>
-</TabsContent>
+              <Card className="border-lime-200 p-4">
+                <div className="space-y-4">
+
+
+                  {/* Nuevo Contenedor de Lista */}
+                  <div className="space-y-1">
+                    {[
+                      { level: 0, label: 'Reino', value: species.kingdom },
+                      { level: 1, label: 'Filo', value: species.phylum },
+                      { level: 2, label: 'Clase', value: species.class },
+                      { level: 3, label: 'Orden', value: species.order_name },
+                      { level: 4, label: 'Familia', value: species.family },
+                      { level: 5, label: 'Género', value: species.genus, italic: true },
+                      { level: 6, label: 'Especie', value: species.scientific_name, italic: true }
+                    ].filter(i => i.value).map((item) => (
+                      <div
+                        key={item.label}
+                        // Indentación basada en el nivel: pl-4 para el nivel 0, pl-6 para el nivel 1, etc.
+                        className={`flex items-start ${item.level > 0 ? `pl-${(item.level * 4)}` : ''} text-gray-700`}
+                      >
+
+                        {/* Icono simple: Usar un punto (Circle) o guion para un estilo limpio */}
+                        <Circle className="h-2 w-2 mt-2 mr-2 flex-shrink-0 text-lime-600 fill-lime-600" />
+
+                        {/* Contenido */}
+                        <div className="flex-1">
+                          <span className="font-medium text-forest-700 mr-2">{item.label}:</span>
+                          <span className={`${item.italic ? 'italic' : ''} text-forest-900 font-normal`}>
+                            {item.value}
+                          </span>
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            </TabsContent>
 
             <TabsContent value="habitat" className="animate-fade-in mt-4">
               <Card className="border-lime-200 p-4">
