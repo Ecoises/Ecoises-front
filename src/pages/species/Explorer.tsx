@@ -112,7 +112,7 @@ export default function Explorer() {
   });
 
   const speciesList = data?.data || [];
-  const pagination = data?.pagination || { total: 0, last_page: 1, current_page: 1 };
+  const pagination = data?.meta?.pagination || data?.pagination || { total: 0, last_page: 1, current_page: 1 };
   const totalPages = pagination.last_page;
 
   const toggleFilters = () => setFiltersVisible(!filtersVisible);

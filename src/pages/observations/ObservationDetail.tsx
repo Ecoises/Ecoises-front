@@ -373,14 +373,15 @@ const ObservationDetail = () => {
               )}
             </div>
             
-            {observation.notes && (
+            
               <div className="mt-6">
                 <h3 className="font-medium text-forest-900 mb-2">Field Notes</h3>
                 <div className="bg-lime-50 p-3 rounded-lg">
-                  <p className="text-forest-700 text-sm italic">{observation.notes}</p>
+                  <p className="text-forest-700 text-sm italic"><audio src="/audio/prueba_timestamps.mp3" controls />
+                  </p>
                 </div>
               </div>
-            )}
+          
           </Card>
         </div>
       </div>

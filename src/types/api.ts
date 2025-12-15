@@ -83,7 +83,18 @@ export interface Taxon {
 export interface ExploreResponse {
   success: boolean;
   data: Taxon[];
-  pagination: {
+  meta?: {
+    pagination?: {
+      total: number;
+      per_page: number;
+      current_page: number;
+      last_page: number;
+    };
+    [key: string]: any;
+  };
+  // Keeping this optional just in case we have mixed responses during transition, 
+  // but ideally it should be removed or deprecated if backend consistently sends meta.
+  pagination?: {
     total: number;
     per_page: number;
     current_page: number;
