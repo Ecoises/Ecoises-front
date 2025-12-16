@@ -1,86 +1,50 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Camera, 
-  MapPin, 
-  Users, 
-  Bird, 
-  Github, 
-  Linkedin, 
+import {
+  Camera,
+  MapPin,
+  Users,
+  Bird,
   Mail,
   ArrowRight,
-  Play,
-  Star,
-  Globe
+  Database,
+  Leaf,
+  Globe,
+  Search,
+  BookOpen
 } from "lucide-react";
 
 const LandingPage = () => {
-  const teamMembers = [
-    {
-      name: "María González",
-      role: "Fundadora & CEO",
-      bio: "Bióloga especializada en ornitología con 10 años de experiencia en conservación.",
-      avatar: "/placeholder.svg",
-      github: "mariagonzalez",
-      linkedin: "maria-gonzalez"
-    },
-    {
-      name: "Carlos Ruiz",
-      role: "CTO",
-      bio: "Desarrollador full-stack apasionado por la tecnología aplicada a la conservación.",
-      avatar: "/placeholder.svg",
-      github: "carlosruiz",
-      linkedin: "carlos-ruiz"
-    },
-    {
-      name: "Ana Morales",
-      role: "Científica de Datos",
-      bio: "Especialista en machine learning e inteligencia artificial para reconocimiento de especies.",
-      avatar: "/placeholder.svg",
-      github: "anamorales",
-      linkedin: "ana-morales"
-    },
-    {
-      name: "Diego López",
-      role: "Diseñador UX/UI",
-      bio: "Diseñador enfocado en crear experiencias intuitivas para la observación de aves.",
-      avatar: "/placeholder.svg",
-      github: "diegolopez",
-      linkedin: "diego-lopez"
-    }
-  ];
-
   const features = [
     {
+      icon: <Search className="h-12 w-12 text-primary" />,
+      title: "Exploración de Especies",
+      description: "Accede a una base de datos completa con información científica detallada de miles de especies de aves y su estado de conservación."
+    },
+    {
       icon: <Camera className="h-12 w-12 text-primary" />,
-      title: "Identificación por IA",
-      description: "Identifica especies de aves instantáneamente usando fotografías y nuestra avanzada tecnología de inteligencia artificial."
+      title: "Registro de Observaciones",
+      description: "Documenta tus avistamientos con fotografías, ubicación geográfica y contribuye al conocimiento científico global."
     },
     {
       icon: <MapPin className="h-12 w-12 text-primary" />,
-      title: "Mapeo Geográfico",
-      description: "Registra la ubicación exacta de tus avistamientos y contribuye a mapas globales de biodiversidad."
+      title: "Mapeo de Distribución",
+      description: "Visualiza patrones de distribución geográfica de especies y descubre áreas de alta biodiversidad en tiempo real."
     },
     {
       icon: <Users className="h-12 w-12 text-primary" />,
-      title: "Comunidad Global",
-      description: "Conecta con otros observadores de aves, comparte experiencias y aprende de expertos en ornitología."
-    },
-    {
-      icon: <Bird className="h-12 w-12 text-primary" />,
-      title: "Base de Datos Completa",
-      description: "Accede a información detallada de miles de especies de aves con datos científicos actualizados."
+      title: "Ciencia Ciudadana",
+      description: "Únete a una comunidad global de observadores y científicos comprometidos con la conservación de la biodiversidad."
     }
   ];
 
   const stats = [
-    { number: "50K+", label: "Usuarios activos" },
-    { number: "200K+", label: "Aves identificadas" },
-    { number: "1,500+", label: "Especies catalogadas" },
-    { number: "95%", label: "Precisión en identificación" }
+    { number: "15,000+", label: "Especies documentadas" },
+    { number: "2.5M+", label: "Observaciones registradas" },
+    { number: "180+", label: "Países con datos" },
+    { number: "50K+", label: "Contribuidores activos" }
   ];
 
   return (
@@ -95,10 +59,9 @@ const LandingPage = () => {
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-muted-foreground hover:text-foreground">Características</a>
-              <a href="#team" className="text-muted-foreground hover:text-foreground">Equipo</a>
               <a href="#contact" className="text-muted-foreground hover:text-foreground">Contacto</a>
               <Link to="/login">
-                <Button>Probar App</Button>
+                <Button>Acceder</Button>
               </Link>
             </div>
           </div>
@@ -112,34 +75,37 @@ const LandingPage = () => {
             <div className="space-y-8">
               <div className="space-y-4">
                 <Badge variant="secondary" className="w-fit">
-                  <Star className="h-3 w-3 mr-1" />
-                  Tecnología de vanguardia
+                  <Leaf className="h-3 w-3 mr-1" />
+                  Plataforma Científica de Biodiversidad
                 </Badge>
                 <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">
-                  La revolución en la
-                  <span className="text-primary block">observación de aves</span>
+                  Explora y Documenta la
+                  <span className="text-primary block">Biodiversidad del Planeta</span>
                 </h1>
                 <p className="text-xl text-muted-foreground max-w-lg">
-                  Identifica, registra y explora el mundo de las aves con inteligencia artificial avanzada y una comunidad global de observadores.
+                  Contribuye al conocimiento científico global registrando observaciones de especies,
+                  explorando patrones de distribución y participando en la conservación de la biodiversidad.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/app">
                   <Button size="lg" className="gap-2">
-                    Comenzar gratis
-                    <ArrowRight className="h-4 w-4" />
+                    <Search className="h-4 w-4" />
+                    Explorar Especies
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="gap-2">
-                  <Play className="h-4 w-4" />
-                  Ver demo
-                </Button>
+                <Link to="/app">
+                  <Button size="lg" variant="outline" className="gap-2">
+                    <Camera className="h-4 w-4" />
+                    Registrar Observación
+                  </Button>
+                </Link>
               </div>
             </div>
             <div className="flex justify-center lg:justify-end">
               <img
                 src="/images/ilustracion.svg"
-                alt="Ecoises - Observación de aves"
+                alt="Ecoises - Sistema de Biodiversidad"
                 className="max-w-md lg:max-w-lg w-full h-auto"
               />
             </div>
@@ -168,11 +134,11 @@ const LandingPage = () => {
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold">
-              Características revolucionarias
+              Herramientas para la Ciencia y Conservación
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Ecoises combina tecnología de vanguardia con la pasión por la observación de aves
-              para crear una experiencia única e innovadora.
+              Ecoises combina tecnología avanzada con ciencia ciudadana para crear
+              una plataforma integral de documentación y estudio de la biodiversidad.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -191,82 +157,42 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section id="team" className="py-20 bg-muted/50">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold">
-              Conoce nuestro equipo
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Un equipo multidisciplinario de biólogos, desarrolladores y diseñadores 
-              unidos por la pasión por las aves y la tecnología.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member, index) => (
-              <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                <CardContent className="p-8 text-center space-y-4">
-                  <Avatar className="h-24 w-24 mx-auto">
-                    <AvatarImage src={member.avatar} alt={member.name} />
-                    <AvatarFallback className="text-lg">
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">{member.name}</h3>
-                    <Badge variant="secondary">{member.role}</Badge>
-                    <p className="text-sm text-muted-foreground">{member.bio}</p>
-                  </div>
-                  <div className="flex justify-center space-x-3">
-                    <a href={`https://github.com/${member.github}`} className="text-muted-foreground hover:text-primary">
-                      <Github className="h-4 w-4" />
-                    </a>
-                    <a href={`https://linkedin.com/in/${member.linkedin}`} className="text-muted-foreground hover:text-primary">
-                      <Linkedin className="h-4 w-4" />
-                    </a>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Contact Section */}
-      <section id="contact" className="py-20">
+      <section id="contact" className="py-20 bg-muted/50">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="max-w-4xl mx-auto border-0 shadow-2xl">
             <CardHeader className="text-center pb-8">
               <CardTitle className="text-3xl lg:text-4xl font-bold mb-4">
-                ¿Listo para comenzar?
+                Únete a la Comunidad Científica
               </CardTitle>
               <p className="text-xl text-muted-foreground">
-                Únete a nuestra comunidad global de observadores de aves y contribuye 
-                a la conservación de la biodiversidad.
+                Contribuye al conocimiento global de la biodiversidad. Cada observación
+                cuenta para la ciencia y la conservación de nuestro planeta.
               </p>
             </CardHeader>
             <CardContent className="text-center space-y-8">
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Link to="/app">
                   <Button size="lg" className="gap-2">
-                    <Globe className="h-4 w-4" />
-                    Probar Ecoises gratis
+                    <Database className="h-4 w-4" />
+                    Explorar Plataforma
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="gap-2">
-                  <Mail className="h-4 w-4" />
-                  Contáctanos
-                </Button>
+                <Link to="/app">
+                  <Button size="lg" variant="outline" className="gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Guía de Inicio
+                  </Button>
+                </Link>
               </div>
               <div className="flex flex-col sm:flex-row justify-center items-center gap-6 text-muted-foreground">
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4" />
-                  <span>contacto@Ecoises.com</span>
+                  <span>contacto@ecoises.com</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Github className="h-4 w-4" />
-                  <span>github.com/Ecoises</span>
+                  <Globe className="h-4 w-4" />
+                  <span>Plataforma Global de Biodiversidad</span>
                 </div>
               </div>
             </CardContent>

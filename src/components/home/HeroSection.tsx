@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 
 const HeroSection = () => {
   const images = [
-
     "/images/hero-img-1.png",
     "/images/hero-img.png",
     "/images/hero-img-2.png",
     "/images/hero-img-4.png",
+    "/images/hero-img-6.png",
   ];
 
   const [current, setCurrent] = useState(0);
