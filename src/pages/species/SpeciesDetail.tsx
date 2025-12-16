@@ -9,12 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
-import { useSpeciesDetail } from "@/hooks/useSpecies"
+import { useSpeciesDetail, useRelatedSpecies } from "@/hooks/useSpecies"
+import SpeciesDistributionMap from "@/components/maps/SpeciesDistributionMap"
 
 
 const SpeciesDetail = () => {
   const { id } = useParams<{ id: string }>()
   const { data: species, isLoading, isError } = useSpeciesDetail(id!, { enabled: !!id });
+  const { data: relatedSpecies, isLoading: isLoadingRelated } = useRelatedSpecies(id!, { enabled: !!id });
   const [activeImage, setActiveImage] = useState("")
 
   // Helper to force high-resolution URL for iNaturalist images
@@ -101,7 +103,7 @@ const SpeciesDetail = () => {
             )}
           </Card>
 
-          {/* Gallery thumbnails */}
+          {/* Gallery thubnails */}
           {gallery.length > 0 && (
             <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
               {gallery.map((item: any, index: number) => {
@@ -319,50 +321,76 @@ const SpeciesDetail = () => {
         </div>
       </div>
 
-      <div className="mt-12 mb-8">
-        <h2 className="text-2xl font-bold text-forest-950 mb-6">Mapa de Distribución</h2>
-      </div>
+      {/* Two-column layout: Map and Similar Species */}
+      <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left Column: Distribution Map */}
+        <div>
+          <h2 className="text-2xl font-bold text-forest-950 mb-4">Mapa de Distribución</h2>
+          <div className="h-[400px] w-full relative">
+            {/* Get external_id from api_references for iNaturalist */}
+            {(() => {
+              const externalId = species?.api_references?.find(
+                (ref: any) => ref.api_source === 'inaturalist'
+              )?.external_id || species?.id;
 
-      {/* Map on desktop - appears below image */}
-      <div className="lg:block">
-        <div className="space-y-4">
+              return (
+                <SpeciesDistributionMap
+                  taxonId={externalId}
+                  speciesName={species.common_name || species.scientific_name}
+                  center={[4.5709, -74.2973]} // Colombia center
+                  zoom={6}
+                />
+              );
+            })()}
+          </div>
+        </div>
 
-          <div className="h-[300px] w-full relative bg-gradient-to-br from-blue-100 to-green-100 rounded-xl overflow-hidden border border-lime-200">
-            {/* Map Background Pattern */}
-            <div className="absolute inset-0 opacity-20">
-              <svg width="100%" height="100%" className="absolute inset-0">
-                <defs>
-                  <pattern id="grid-desktop" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#059669" strokeWidth="1" />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#grid-desktop)" />
-              </svg>
-            </div>
-
-            {/* Map Title */}
-            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-forest-900">Avistamientos de {species.common_name || species.scientific_name}</h3>
-            </div>
-
-            {/* Sample markers */}
-            <div className="absolute top-1/3 left-1/4 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
-              <MapPin className="w-3 h-3 text-white" />
-            </div>
-            <div className="absolute top-2/3 left-2/3 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
-              <MapPin className="w-3 h-3 text-white" />
-            </div>
-            <div className="absolute top-1/2 left-1/2 w-6 h-6 bg-lime-500 rounded-full flex items-center justify-center shadow-lg">
-              <MapPin className="w-3 h-3 text-white" />
-            </div>
-
-            {/* Legend */}
-            <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm">
-              <div className="flex items-center gap-2 text-xs">
-                <div className="w-3 h-3 bg-lime-500 rounded-full"></div>
-                <span className="text-forest-700">Avistamientos</span>
+        {/* Right Column: Similar Species */}
+        <div>
+          <h2 className="text-2xl font-bold text-forest-950 mb-4">Especies Similares</h2>
+          <div className="space-y-4">
+            {isLoadingRelated ? (
+              <div className="flex justify-center items-center h-32">
+                <Loader2 className="h-6 w-6 animate-spin text-lime-600" />
               </div>
-            </div>
+            ) : relatedSpecies && relatedSpecies.length > 0 ? (
+              relatedSpecies.map((similar: any, index: number) => {
+                const similarPhoto = similar.default_photo?.url || similar.default_photo?.medium_url;
+                return (
+                  <Link key={index} to={`/species/${similar.id}`}>
+                    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group mb-1">
+                      <div className="flex gap-4">
+                        <div className="w-32 h-32 flex-shrink-0 overflow-hidden bg-gray-100">
+                          {similarPhoto ? (
+                            <img
+                              src={similarPhoto}
+                              alt={similar.common_name || similar.scientific_name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <TreePine className="h-12 w-12" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 py-3 pr-4 flex flex-col justify-center">
+                          <h3 className="font-semibold text-forest-950 text-lg mb-1 group-hover:text-lime-600 transition-colors">
+                            {similar.common_name || similar.scientific_name}
+                          </h3>
+                          <p className="text-forest-700 italic text-sm">
+                            {similar.scientific_name}
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                );
+              })
+            ) : (
+              <p className="text-forest-700 italic text-center py-8">
+                No se encontraron especies similares
+              </p>
+            )}
           </div>
         </div>
       </div>

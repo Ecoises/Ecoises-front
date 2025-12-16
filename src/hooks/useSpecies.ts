@@ -14,6 +14,8 @@ interface UseSpeciesParams {
 }
 
 export const useSpecies = (params: UseSpeciesParams = {}) => {
+  const isRandom = params.order_by === 'random';
+
   return useQuery({
     queryKey: ['species', params],
     queryFn: async () => {
@@ -33,8 +35,11 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
       });
       return data;
     },
-    placeholderData: (previousData) => previousData, // Maintain data while fetching new page
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    placeholderData: (previousData) => previousData,
+    // Si es random, NO cachear y siempre refetch
+    staleTime: isRandom ? 0 : 5 * 60 * 1000,
+    gcTime: isRandom ? 0 : 5 * 60 * 1000,
+    refetchOnMount: isRandom ? 'always' : true,
   });
 };
 
@@ -45,6 +50,18 @@ export const useSpeciesDetail = (id: string, options?: { enabled?: boolean }) =>
       const { data } = await api.get<{ data: any }>(`/api/taxa/${id}`, {
         params: { enrich: 1 } // Request enriched data, sending 1 to pass strict boolean validation
       });
+      return data.data;
+    },
+    enabled: options?.enabled !== false && !!id,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+  });
+};
+
+export const useRelatedSpecies = (id: string, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: ['related-species', id],
+    queryFn: async () => {
+      const { data } = await api.get<{ data: any[] }>(`/api/taxa/${id}/related`);
       return data.data;
     },
     enabled: options?.enabled !== false && !!id,

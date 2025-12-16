@@ -14,6 +14,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useSpecies } from "@/hooks/useSpecies";
+import { useQueryClient } from "@tanstack/react-query";
 import { Taxon } from "@/types/api";
 
 const classes = ["Todas", "Aves", "Mammalia", "Reptilia", "Amphibia", "Insecta"];
@@ -121,6 +122,7 @@ export default function Explorer() {
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortBy, setSortBy] = useState("observations_count");
+  const queryClient = useQueryClient();
 
   // Debounce search term
   useEffect(() => {
@@ -313,6 +315,7 @@ export default function Explorer() {
                     : "bg-purple-50 text-purple-700 hover:bg-purple-100"
                     }`}
                   onClick={() => {
+                    queryClient.invalidateQueries({ queryKey: ['species'] });
                     setSortBy("random");
                     setCurrentPage(1);
                   }}
@@ -331,6 +334,7 @@ export default function Explorer() {
           variant={sortBy === 'random' ? 'default' : 'outline'}
           className={`gap-2 rounded-full ${sortBy === 'random' ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
           onClick={() => {
+            queryClient.invalidateQueries({ queryKey: ['species'] });
             setSortBy(sortBy === 'random' ? 'observations_count' : 'random');
             setCurrentPage(1);
           }}
