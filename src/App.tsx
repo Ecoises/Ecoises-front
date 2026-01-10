@@ -20,6 +20,8 @@ import About from "./pages/About";
 import ObservationDetail from "./pages/observations/ObservationDetail";
 import Learn from "./pages/learn/Learn";
 import CourseDetail from "./pages/learn/CourseDetail";
+import ArticleDetail from "./pages/learn/ArticleDetail";
+import LessonPlayer from "./pages/learn/LessonPlayer";
 import EducatorDashboard from "./pages/educator/EducatorDashboard";
 import LessonEditor from "./pages/educator/LessonEditor";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -56,7 +58,7 @@ const App = () => (
                 <ResetPassword />
               </PublicRoute>
             } />
-            
+
             <Route element={
               <ProtectedRoute>
                 <Layout />
@@ -71,8 +73,12 @@ const App = () => (
               <Route path="/sightings" element={<Sightings />} />
               <Route path="/observations/:id" element={<ObservationDetail />} />
               <Route path="/about" element={<About />} />
+
               <Route path="/learn" element={<Learn />} />
-              <Route path="/learn/:id" element={<CourseDetail />} />
+              <Route path="/learn/course/:slug" element={<CourseDetail />} />
+              <Route path="/learn/article/:slug" element={<ArticleDetail />} />
+              <Route path="/learn/course/:courseSlug/lesson/:lessonId" element={<LessonPlayer />} />
+
               {/* Educator Routes */}
               <Route path="/educator" element={<EducatorDashboard />} />
               <Route path="/educator/new" element={<LessonEditor />} />

@@ -1,313 +1,254 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { getEducationalContent, EducationalContent, startContent } from "@/api/services/educationalContentService";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, CheckCircle2, Clock, BookOpen, Play } from "lucide-react";
-
-interface CourseModule {
-  id: string;
-  title: string;
-  lessons: string[];
-  duration: string;
-}
-
-interface Educator {
-  name: string;
-  avatar: string;
-  verified: boolean;
-}
-
-interface CourseData {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  duration: string;
-  level: string;
-  category: string;
-  educator: Educator;
-  fullDescription: string;
-  modules: CourseModule[];
-}
-
-const coursesData: Record<string, CourseData> = {
-  "1": {
-    id: "1",
-    title: "Introducción a la Observación de Aves",
-    description: "Aprende los conceptos básicos para identificar aves en tu entorno y comenzar tu viaje en el birdwatching.",
-    image: "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=1200&h=600",
-    duration: "2 horas",
-    level: "Principiante",
-    category: "Fundamentos",
-    educator: {
-      name: "María Rodríguez",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&h=200",
-      verified: true
-    },
-    fullDescription: "Este curso te introducirá al fascinante mundo de la observación de aves. Aprenderás a identificar especies comunes, entender sus comportamientos básicos y desarrollar las habilidades necesarias para convertirte en un observador competente. Perfecto para quienes se inician en el birdwatching.",
-    modules: [
-      {
-        id: "m1",
-        title: "Fundamentos del Birdwatching",
-        lessons: [
-          "¿Qué es la observación de aves?",
-          "Equipamiento básico necesario",
-          "Ética del observador de aves"
-        ],
-        duration: "30 min"
-      },
-      {
-        id: "m2",
-        title: "Identificación Básica",
-        lessons: [
-          "Características principales de las aves",
-          "Formas y siluetas",
-          "Colores y patrones",
-          "Comportamiento y hábitat"
-        ],
-        duration: "45 min"
-      },
-      {
-        id: "m3",
-        title: "Práctica de Campo",
-        lessons: [
-          "Mejores momentos para observar",
-          "Técnicas de observación",
-          "Registro de avistamientos"
-        ],
-        duration: "45 min"
-      }
-    ]
-  },
-  "2": {
-    id: "2",
-    title: "Identificación por Cantos y Llamados",
-    description: "Desarrolla tu oído para reconocer las diferentes especies de aves por sus vocalizaciones.",
-    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1200&h=600",
-    duration: "3 horas",
-    level: "Intermedio",
-    category: "Técnicas",
-    educator: {
-      name: "Carlos Mendoza",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&h=200",
-      verified: true
-    },
-    fullDescription: "Aprende a identificar aves por sus vocalizaciones. Este curso te enseñará las técnicas para reconocer cantos y llamados, entender sus patrones y desarrollar tu memoria auditiva para convertirte en un experto en identificación sonora.",
-    modules: [
-      {
-        id: "m1",
-        title: "Introducción a las Vocalizaciones",
-        lessons: [
-          "Tipos de vocalizaciones aviares",
-          "Anatomía del canto",
-          "Diferencias entre cantos y llamados"
-        ],
-        duration: "40 min"
-      },
-      {
-        id: "m2",
-        title: "Técnicas de Reconocimiento",
-        lessons: [
-          "Patrones sonoros comunes",
-          "Memoria auditiva",
-          "Uso de aplicaciones de identificación"
-        ],
-        duration: "50 min"
-      },
-      {
-        id: "m3",
-        title: "Especies Comunes de Colombia",
-        lessons: [
-          "Cantos de aves urbanas",
-          "Vocalizaciones de bosque",
-          "Práctica con grabaciones reales"
-        ],
-        duration: "90 min"
-      }
-    ]
-  }
-};
+import { Clock, Tag, ChevronLeft, BookOpen, Trophy, PlayCircle, CheckCircle2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const CourseDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  
-  const course = id ? coursesData[id] : null;
+  const [content, setContent] = useState<EducationalContent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState(false);
 
-  if (!course) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="p-8 text-center">
-          <h2 className="text-2xl font-bold text-forest-900 mb-2">Curso no encontrado</h2>
-          <p className="text-forest-700 mb-4">El curso que buscas no existe</p>
-          <Button onClick={() => navigate("/learn")}>
-            Volver a Cursos
-          </Button>
-        </Card>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const fetchContent = async () => {
+      if (!slug) return;
+      try {
+        const data = await getEducationalContent(slug);
+        setContent(data);
+      } catch (error) {
+        console.error("Error fetching course:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContent();
+  }, [slug]);
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case "Principiante":
-        return "bg-green-100 text-green-800";
-      case "Intermedio":
-        return "bg-yellow-100 text-yellow-800";
-      case "Avanzado":
-        return "bg-orange-100 text-orange-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+  const handleStartContinue = async () => {
+    if (!content) return;
+    setStarting(true);
+    try {
+      if (!content.enrollment) {
+        await startContent(content.slug);
+      }
+      // Navigate to the player with the first lesson or the last accessed one
+      // Ideally, we'd find the first incomplete lesson
+      let targetLessonId;
+      if (content.lessons && content.lessons.length > 0) {
+        // Find first incomplete
+        const firstIncomplete = content.lessons.find(l => {
+          const progress = content.lesson_progress?.[l.id];
+          return !progress || progress.status !== 'completed';
+        });
+        targetLessonId = firstIncomplete ? firstIncomplete.id : content.lessons[0].id;
+      }
+
+      if (targetLessonId) {
+        navigate(`/learn/course/${content.slug}/lesson/${targetLessonId}`);
+      } else {
+        // If no lessons, just stay or show alert (should not happen for valid course)
+        console.warn("No lessons found for this course.");
+      }
+
+    } catch (error) {
+      console.error("Error starting content:", error);
+    } finally {
+      setStarting(false);
     }
   };
 
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Back Button */}
-      <Button 
-        variant="ghost" 
-        onClick={() => navigate("/learn")}
-        className="gap-2"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Volver a Cursos
-      </Button>
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
+  }
 
-      {/* Hero Section with Cover Image */}
-      <div className="relative h-64 md:h-96 rounded-2xl overflow-hidden">
-        <img
-          src={course.image}
-          alt={course.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-          <Badge className={`${getLevelColor(course.level)} mb-3`}>
-            {course.level}
-          </Badge>
-          <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-2">
-            {course.title}
-          </h1>
-          <div className="flex items-center gap-4 text-white/90 text-sm">
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              <span>{course.duration}</span>
+  if (!content) {
+    return <div className="min-h-screen flex items-center justify-center">Curso no encontrado</div>;
+  }
+
+  const imageUrl = content.thumbnail_url
+    ? (content.thumbnail_url.startsWith('http') ? content.thumbnail_url : `${import.meta.env.VITE_APP_API_URL || 'http://localhost:8000'}/storage/${content.thumbnail_url}`)
+    : "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&h=400";
+
+  const totalLessons = content.lessons?.length || 0;
+  const isEnrolled = !!content.enrollment;
+  const progressPercentage = content.enrollment?.progress_percentage || 0;
+
+  return (
+    <div className="min-h-screen bg-background pb-12">
+      <nav className="bg-background/80 backdrop-blur-xl border-b border-border/50">
+        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
+          <Link to="/learn">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ChevronLeft className="w-4 h-4" />
+              Volver al Centro de Aprendizaje
+            </Button>
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <div className="relative bg-muted/30 pt-12 pb-20">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+            <div className="flex-1 space-y-6">
+              <div className="flex gap-3">
+                {content.categories?.map(cat => (
+                  <span key={cat.id} className="px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
+                    {cat.name}
+                  </span>
+                ))}
+              </div>
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground leading-tight">
+                {content.title}
+              </h1>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                {content.description}
+              </p>
+
+              <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span>{content.estimated_duration} min</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  <span>{totalLessons} lecciones</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  <span className="capitalize">{content.difficulty_level}</span>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <Button size="lg" onClick={handleStartContinue} disabled={starting} className="text-lg px-8 py-6 rounded-xl shadow-lg shadow-primary/20">
+                  {starting ? "Cargando..." : (isEnrolled ? "Continuar Aprendiendo" : "Comenzar Gratis")}
+                </Button>
+                {isEnrolled && (
+                  <div className="mt-4 max-w-xs">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span>Tu progreso</span>
+                      <span>{Math.round(progressPercentage)}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-green-500 transition-all duration-500"
+                        style={{ width: `${progressPercentage}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <span>•</span>
-            <div className="flex items-center gap-1">
-              <BookOpen className="h-4 w-4" />
-              <span>{course.category}</span>
+
+            <div className="w-full md:w-1/3 aspect-video md:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative group">
+              <img src={imageUrl} alt={content.title} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <PlayCircle className="w-16 h-16 text-white" />
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Educator Info */}
-          <Card className="p-6 border-lime-200">
-            <h2 className="text-lg font-heading font-bold text-forest-900 mb-4">
-              Educador
-            </h2>
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={course.educator.avatar} alt={course.educator.name} />
-                <AvatarFallback>{course.educator.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-forest-900">
-                    {course.educator.name}
-                  </h3>
-                  {course.educator.verified && (
-                    <CheckCircle2 className="h-5 w-5 text-blue-500" />
-                  )}
-                </div>
-                <p className="text-sm text-forest-700">Educador Verificado</p>
+      <div className="container mx-auto px-6 -mt-10 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            {/* About Content - Using articleDetails content or standard description if needed */}
+            <div className="glass-card p-8 rounded-2xl bg-white space-y-4">
+              <h3 className="font-display text-2xl font-bold">Acerca de este curso</h3>
+              <div className="prose text-muted-foreground" dangerouslySetInnerHTML={{ __html: content.article_details?.content_text || content.description }} />
+            </div>
+
+            {/* Lessons List */}
+            <div className="glass-card p-8 rounded-2xl bg-white">
+              <h3 className="font-display text-2xl font-bold mb-6">Contenido del Curso</h3>
+              <div className="space-y-4">
+                {content.lessons?.map((lesson, index) => {
+                  const lessonProgress = content.lesson_progress?.[lesson.id];
+                  const isCompleted = lessonProgress?.status === 'completed';
+                  const isLocked = !isEnrolled && index > 0; // Simple logic: if not enrolled, only first preview? Actually usually lock if previous not done, but here we keep simple.
+                  // Better logic: Locked if previous lesson not completed AND not enrolled? 
+                  // Or generally, if Enrolled, strict sequence? 
+                  // Let's assume linear progression for enrolled users.
+
+                  return (
+                    <div key={lesson.id} className={cn(
+                      "flex items-center gap-4 p-4 rounded-xl border transition-all hover:bg-muted/50",
+                      isCompleted ? "border-green-200 bg-green-50/50" : "border-border"
+                    )}>
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0",
+                        isCompleted ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                      )}>
+                        {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-foreground">{lesson.title}</h4>
+                        <p className="text-sm text-muted-foreground">{lesson.estimated_duration} min</p>
+                      </div>
+                      {isCompleted && (
+                        <div className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                          Completado
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </Card>
+          </div>
 
-          {/* Course Description */}
-          <Card className="p-6 border-lime-200">
-            <h2 className="text-lg font-heading font-bold text-forest-900 mb-3">
-              Acerca de este curso
-            </h2>
-            <p className="text-forest-700 leading-relaxed">
-              {course.fullDescription}
-            </p>
-          </Card>
+          <div className="space-y-6">
+            {/* Author Card */}
+            {content.author && (
+              <div className="glass-card p-6 text-center border rounded-xl bg-white">
+                <img
+                  src={content.author.avatar
+                    ? (content.author.avatar.startsWith('http')
+                      ? content.author.avatar
+                      : `${import.meta.env.VITE_APP_API_URL || 'http://localhost:8000'}/storage/${content.author.avatar}`)
+                    : '/placeholder-avatar.png'}
+                  alt={content.author.full_name}
+                  className="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-accent/50 object-cover"
+                />
+                <h3 className="font-display font-semibold text-foreground mb-1">{content.author.full_name}</h3>
+                <p className="text-sm text-muted-foreground mb-4">Educador</p>
+              </div>
+            )}
 
-          {/* Course Content */}
-          <Card className="p-6 border-lime-200">
-            <h2 className="text-lg font-heading font-bold text-forest-900 mb-4">
-              Contenido del Curso
-            </h2>
-            <div className="space-y-4">
-              {course.modules.map((module, index) => (
-                <div key={module.id} className="border-b border-lime-100 last:border-0 pb-4 last:pb-0">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-bold text-forest-900">
-                      Módulo {index + 1}: {module.title}
-                    </h3>
-                    <span className="text-sm text-forest-600 flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {module.duration}
-                    </span>
+            {/* Course Details Sidebox */}
+            {content.course_details && (
+              <div className="glass-card p-6 border rounded-xl bg-white space-y-6">
+                {content.course_details.goals && (
+                  <div>
+                    <h4 className="font-semibold mb-3">Lo que aprenderás</h4>
+                    <ul className="space-y-2">
+                      {content.course_details.goals.map((goal, i) => (
+                        <li key={i} className="flex gap-2 text-sm text-muted-foreground">
+                          <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                          <span>{goal}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul className="space-y-2">
-                    {module.lessons.map((lesson, lessonIndex) => (
-                      <li key={lessonIndex} className="flex items-start gap-2 text-sm text-forest-700">
-                        <Play className="h-4 w-4 text-forest-500 mt-0.5 flex-shrink-0" />
-                        <span>{lesson}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+                )}
 
-        {/* Sidebar with Action */}
-        <div className="lg:col-span-1">
-          <Card className="p-6 border-lime-200 sticky top-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-heading font-bold text-2xl text-forest-900 mb-2">
-                  Comienza Ahora
-                </h3>
-                <p className="text-sm text-forest-700">
-                  Inicia tu aprendizaje con este curso completo
-                </p>
-              </div>
-              
-              <div className="space-y-3 py-4 border-y border-lime-100">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-forest-700">Duración</span>
-                  <span className="font-medium text-forest-900">{course.duration}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-forest-700">Nivel</span>
-                  <span className="font-medium text-forest-900">{course.level}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-forest-700">Módulos</span>
-                  <span className="font-medium text-forest-900">{course.modules.length}</span>
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-3">
+                    <Trophy className="w-5 h-5 text-yellow-500" />
+                    <div>
+                      <p className="font-bold text-foreground">{content.course_details.completion_points} Puntos</p>
+                      <p className="text-xs text-muted-foreground">al completar el curso</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <Button 
-                className="w-full gap-2 bg-forest-600 hover:bg-forest-700 text-white"
-                size="lg"
-              >
-                <Play className="h-5 w-5" />
-                Comenzar Curso
-              </Button>
-            </div>
-          </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>

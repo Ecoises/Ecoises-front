@@ -86,4 +86,17 @@
   @apply bg-primary/50;
 }
 
+/* Lesson content image styles */
+.lesson-content img {
+  @apply max-w-full h-auto rounded-lg shadow-md my-6 mx-auto block;
+}
+
+.lesson-content figure {
+  @apply my-8 text-center;
+}
+
+.lesson-content figcaption {
+  @apply text-sm text-muted-foreground italic mt-2 px-4;
+}
+
 }

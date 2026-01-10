@@ -36,8 +36,16 @@ const CourseCard = ({ course }: { course: EducationalContent }) => {
     ? (course.thumbnail_url.startsWith('http') ? course.thumbnail_url : `${import.meta.env.VITE_APP_API_URL || 'http://localhost:8000'}/storage/${course.thumbnail_url}`)
     : "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&h=400"; // Generic nature image
 
+  const getDetailLink = (content: EducationalContent) => {
+    return content.content_type === 'article'
+      ? `/learn/article/${content.slug}`
+      : `/learn/course/${content.slug}`;
+  };
+
+  const linkTo = getDetailLink(course);
+
   return (
-    <Link to={`/learn/${course.id}`}>
+    <Link to={linkTo}>
       <Card className="overflow-hidden card-hover h-full transition-all duration-300 flex flex-col">
         <div className="relative h-48 flex-shrink-0">
           <img
