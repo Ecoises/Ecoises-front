@@ -49,11 +49,11 @@ export const navItems = [
 ];
 
 export const mobileNavItems = [
-  { icon: Home, label: "Home", to: "/app" },
-  { icon: Search, label: "Search", to: "/app/explorer" },
-  { icon: Plus, label: "Add Sighting", to: "/app/sightings/new" },
-  { icon: Map, label: "Map", to: "/app/map" },
-  { icon: User, label: "Profile", to: "/app/profile" },
+  { icon: Home, label: "Home", to: "/home" },
+  { icon: Search, label: "Search", to: "/explorer" },
+  { icon: Plus, label: "Add Sighting", to: "/sightings/new" },
+  { icon: Map, label: "Map", to: "/map" },
+  { icon: User, label: "Profile", to: "/profile" },
 ];
 
 interface SidebarProps {
@@ -77,15 +77,30 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
       {/* Ajustado: calcula la altura restante después del navbar superior */}
       <div className="h-[calc(100vh-4rem)] overflow-auto p-4 flex flex-col">
         <nav className="flex-1 space-y-1">
-          {navItems.map((item) => (
-            <NavItem
-              key={item.to}
-              icon={item.icon}
-              label={item.label}
-              to={item.to}
-              active={location.pathname === item.to}
-            />
-          ))}
+          {navItems.map((item) => {
+            const isSpeciesDetail = item.to === '/explorer' && location.pathname.startsWith('/species/');
+            const isSpeciesGuideSimple = item.to === '/species' && location.pathname === '/species';
+            // Special case overrides
+            let isActive = false;
+
+            if (item.to === '/species') {
+              isActive = isSpeciesGuideSimple;
+            } else if (item.to === '/explorer') {
+              isActive = location.pathname === item.to || isSpeciesDetail;
+            } else {
+              isActive = location.pathname === item.to || (item.to !== '/' && item.to !== '/home' && location.pathname.startsWith(item.to + '/'));
+            }
+
+            return (
+              <NavItem
+                key={item.to}
+                icon={item.icon}
+                label={item.label}
+                to={item.to}
+                active={isActive}
+              />
+            );
+          })}
         </nav>
 
         {/* Footer / Menú inferior */}

@@ -7,9 +7,10 @@ import { cn } from "@/lib/utils";
 interface DragDropProps {
     activity: Activity;
     onComplete: (correct: boolean, points: number, badge?: string) => void;
+    isCompleted?: boolean;
 }
 
-export const DragDrop = ({ activity, onComplete }: DragDropProps) => {
+export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDropProps) => {
     const [items, setItems] = useState(() =>
         [...(activity.pairs || [])].sort(() => Math.random() - 0.5)
     );
@@ -22,6 +23,7 @@ export const DragDrop = ({ activity, onComplete }: DragDropProps) => {
     const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
     const handleDragStart = (e: React.DragEvent, itemId: string) => {
+        if (isCompleted) return;
         e.dataTransfer.setData("text/plain", itemId);
         setDraggedItem(itemId);
     };
@@ -31,10 +33,12 @@ export const DragDrop = ({ activity, onComplete }: DragDropProps) => {
     };
 
     const handleDragOver = (e: React.DragEvent) => {
+        if (isCompleted) return;
         e.preventDefault();
     };
 
     const handleDrop = (e: React.DragEvent, targetId: string) => {
+        if (isCompleted) return;
         e.preventDefault();
         const itemId = e.dataTransfer.getData("text/plain");
 
@@ -83,14 +87,22 @@ export const DragDrop = ({ activity, onComplete }: DragDropProps) => {
 
     return (
         <div className="glass-card p-6 space-y-6">
-            <div className="flex items-start gap-3">
-                <div className="p-2 bg-blue-100 rounded-xl">
-                    <GripVertical className="w-5 h-5 text-blue-600" />
+            <div className="flex items-center justify-between">
+                <div className="flex items-start gap-3">
+                    <div className="p-2 bg-blue-100 rounded-xl">
+                        <GripVertical className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wide">Arrastrar y Soltar</span>
+                        <h4 className="font-display font-semibold text-foreground mt-1">{activity.instruction}</h4>
+                    </div>
                 </div>
-                <div>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Arrastrar y Soltar</span>
-                    <h4 className="font-display font-semibold text-foreground mt-1">{activity.instruction}</h4>
-                </div>
+                {isCompleted && (
+                    <div className="flex items-center gap-2 text-success text-sm font-medium bg-success/10 px-3 py-1.5 rounded-full">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Completada
+                    </div>
+                )}
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -103,12 +115,13 @@ export const DragDrop = ({ activity, onComplete }: DragDropProps) => {
                             return (
                                 <div
                                     key={pair.id}
-                                    draggable={!showResult && !isPlaced}
+                                    draggable={!showResult && !isPlaced && !isCompleted}
                                     onDragStart={(e) => handleDragStart(e, pair.id)}
                                     onDragEnd={handleDragEnd}
                                     className={cn(
                                         "p-3 rounded-xl border-2 transition-all duration-300 flex items-center gap-2",
-                                        !showResult && !isPlaced && "border-border/50 bg-secondary/50 cursor-grab active:cursor-grabbing hover:border-blue-300",
+                                        !showResult && !isPlaced && !isCompleted && "border-border/50 bg-secondary/50 cursor-grab active:cursor-grabbing hover:border-blue-300",
+                                        !showResult && !isPlaced && isCompleted && "border-border/50 bg-secondary/20 cursor-default opacity-50",
                                         !showResult && isPlaced && "border-blue-200 bg-blue-50 opacity-50",
                                         showResult && "cursor-default",
                                         draggedItem === pair.id && "opacity-50 scale-95"
@@ -142,7 +155,8 @@ export const DragDrop = ({ activity, onComplete }: DragDropProps) => {
                                         !showResult && !placedItem && "border-border/50 bg-background/50",
                                         !showResult && placedItem && "border-blue-300 bg-blue-50",
                                         isCorrectPlacement && "border-green-500 bg-green-50",
-                                        isWrongPlacement && "border-red-500 bg-red-50"
+                                        isWrongPlacement && "border-red-500 bg-red-50",
+                                        isCompleted && "opacity-80"
                                     )}
                                 >
                                     <div className="flex items-center justify-between">
@@ -187,7 +201,7 @@ export const DragDrop = ({ activity, onComplete }: DragDropProps) => {
                         Intentar de nuevo
                     </Button>
                 )}
-                {!showResult && (
+                {!showResult && !isCompleted && (
                     <Button
                         variant="default"
                         onClick={handleSubmit}

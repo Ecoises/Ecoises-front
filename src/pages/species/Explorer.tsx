@@ -67,8 +67,8 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
   const establishmentConfig = getEstablishmentConfig();
 
   return (
-    <Link to={`/species/${species.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full cursor-pointer flex flex-col group">
+    <Link to={`/species/${species.id}`} className="w-full block h-full">
+      <Card className="w-full overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full cursor-pointer flex flex-col group">
         <div className="relative h-48 bg-gray-100 overflow-hidden">
           {species.default_photo?.url ? (
             <img

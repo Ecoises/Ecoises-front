@@ -11,33 +11,47 @@ import { cn } from "@/lib/utils";
 interface ActivitiesSectionProps {
     activities: Activity[];
     lessonTitle: string;
+    completedActivities?: number[]; // IDs of activities already completed
+    onActivityComplete?: () => void;
 }
 
-export const ActivitiesSection = ({ activities, lessonTitle }: ActivitiesSectionProps) => {
+export const ActivitiesSection = ({ activities, lessonTitle, completedActivities = [], onActivityComplete }: ActivitiesSectionProps) => {
     const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
-    const [completedActivities, setCompletedActivities] = useState<Set<number>>(new Set());
+    const [localCompletedActivities, setLocalCompletedActivities] = useState<Set<number>>(new Set());
     const [totalPoints, setTotalPoints] = useState(0);
     const [earnedBadges, setEarnedBadges] = useState<string[]>([]);
     const [showReward, setShowReward] = useState(false);
     const [lastReward, setLastReward] = useState({ points: 0, badge: "" });
 
     const handleActivityComplete = async (index: number, correct: boolean, points: number, badge?: string) => {
-        // Record attempt in backend (silent fail is ok, or handle error)
+        const activity = activities[index];
+        const isAlreadyCompleted = completedActivities.includes(activity.id);
+
+        // Record attempt in backend
         try {
-            const activityId = activities[index].id;
-            await import("@/api/services/educationalContentService").then(m => m.attemptActivity(activityId, correct, points));
+            const response = await import("@/api/services/educationalContentService").then(m =>
+                m.attemptActivity(activity.id, correct, points)
+            );
+
+            // Check if points were actually awarded (backend returns this info)
+            const pointsAwarded = response.points_awarded || 0;
+
+            if (correct && !isAlreadyCompleted) {
+                setLocalCompletedActivities(prev => new Set([...prev, index]));
+                setTotalPoints(prev => prev + pointsAwarded);
+                if (badge && pointsAwarded > 0) {
+                    setEarnedBadges(prev => [...prev, badge]);
+                }
+                setLastReward({ points: pointsAwarded, badge: badge || "" });
+                setShowReward(true);
+
+                // Notify parent to refresh data
+                if (onActivityComplete) {
+                    onActivityComplete();
+                }
+            }
         } catch (e) {
             console.error("Failed to record activity attempt", e);
-        }
-
-        if (correct) {
-            setCompletedActivities(prev => new Set([...prev, index]));
-            setTotalPoints(prev => prev + points);
-            if (badge) {
-                setEarnedBadges(prev => [...prev, badge]);
-            }
-            setLastReward({ points, badge: badge || "" });
-            setShowReward(true);
         }
     };
 
@@ -50,12 +64,15 @@ export const ActivitiesSection = ({ activities, lessonTitle }: ActivitiesSection
     };
 
     const renderActivity = (activity: Activity, index: number) => {
+        const isCompleted = completedActivities.includes(activity.id) || localCompletedActivities.has(index);
+
         switch (activity.activity_type) {
             case "quiz_multiple":
                 return (
                     <QuizMultiple
                         activity={activity}
                         onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
+                        isCompleted={isCompleted}
                     />
                 );
             case "quiz_true_false":
@@ -63,6 +80,7 @@ export const ActivitiesSection = ({ activities, lessonTitle }: ActivitiesSection
                     <QuizTrueFalse
                         activity={activity}
                         onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
+                        isCompleted={isCompleted}
                     />
                 );
             case "drag_drop":
@@ -70,6 +88,7 @@ export const ActivitiesSection = ({ activities, lessonTitle }: ActivitiesSection
                     <DragDrop
                         activity={activity}
                         onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
+                        isCompleted={isCompleted}
                     />
                 );
             case "matching":
@@ -77,6 +96,7 @@ export const ActivitiesSection = ({ activities, lessonTitle }: ActivitiesSection
                     <Matching
                         activity={activity}
                         onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
+                        isCompleted={isCompleted}
                     />
                 );
             default:
@@ -110,25 +130,31 @@ export const ActivitiesSection = ({ activities, lessonTitle }: ActivitiesSection
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     {/* Activity Progress */}
                     <div className="flex items-center gap-3">
-                        {activities.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => (completedActivities.has(index) || index <= completedActivities.size) && setCurrentActivityIndex(index)}
-                                disabled={!(completedActivities.has(index) || index <= completedActivities.size)}
-                                className={cn(
-                                    "w-10 h-10 rounded-xl flex items-center justify-center font-medium transition-all duration-300",
-                                    completedActivities.has(index) && "bg-green-100 text-green-700",
-                                    currentActivityIndex === index && !completedActivities.has(index) && "bg-blue-100 text-blue-700 border-2 border-blue-200",
-                                    currentActivityIndex !== index && !completedActivities.has(index) && "bg-gray-100 text-gray-400"
-                                )}
-                            >
-                                {completedActivities.has(index) ? (
-                                    <CheckCircle2 className="w-5 h-5" />
-                                ) : (
-                                    index + 1
-                                )}
-                            </button>
-                        ))}
+                        {activities.map((activity, index) => {
+                            const isCompleted = completedActivities.includes(activity.id) || localCompletedActivities.has(index);
+                            const isUnlocked = index === 0 || completedActivities.includes(activities[index - 1].id) || localCompletedActivities.has(index - 1);
+
+                            return (
+                                <button
+                                    key={index}
+                                    onClick={() => isUnlocked && setCurrentActivityIndex(index)}
+                                    disabled={!isUnlocked}
+                                    className={cn(
+                                        "w-10 h-10 rounded-xl flex items-center justify-center font-medium transition-all duration-300",
+                                        isCompleted && "bg-green-100 text-green-700",
+                                        currentActivityIndex === index && !isCompleted && "bg-blue-100 text-blue-700 border-2 border-blue-200",
+                                        currentActivityIndex !== index && !isCompleted && "bg-gray-100 text-gray-400",
+                                        !isUnlocked && "opacity-50 cursor-not-allowed"
+                                    )}
+                                >
+                                    {isCompleted ? (
+                                        <CheckCircle2 className="w-5 h-5" />
+                                    ) : (
+                                        index + 1
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Stats */}
@@ -153,7 +179,7 @@ export const ActivitiesSection = ({ activities, lessonTitle }: ActivitiesSection
             </div>
 
             {/* Navigation hint */}
-            {completedActivities.has(currentActivityIndex) && currentActivityIndex < activities.length - 1 && (
+            {(completedActivities.includes(currentActivity.id) || localCompletedActivities.has(currentActivityIndex)) && currentActivityIndex < activities.length - 1 && (
                 <div className="mt-4 text-center">
                     <button
                         onClick={() => setCurrentActivityIndex(prev => prev + 1)}
@@ -166,7 +192,7 @@ export const ActivitiesSection = ({ activities, lessonTitle }: ActivitiesSection
             )}
 
             {/* Completion Message */}
-            {completedActivities.size === activities.length && (
+            {activities.length > 0 && activities.every((a, i) => completedActivities.includes(a.id) || localCompletedActivities.has(i)) && (
                 <div className="mt-8 glass-card p-6 border-green-200 bg-green-50 text-center animate-fade-in rounded-xl">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                         <CheckCircle2 className="w-8 h-8 text-green-600" />

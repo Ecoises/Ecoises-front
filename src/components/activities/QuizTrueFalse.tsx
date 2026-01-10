@@ -7,9 +7,10 @@ import { cn } from "@/lib/utils";
 interface QuizTrueFalseProps {
     activity: Activity;
     onComplete: (correct: boolean, points: number, badge?: string) => void;
+    isCompleted?: boolean;
 }
 
-export const QuizTrueFalse = ({ activity, onComplete }: QuizTrueFalseProps) => {
+export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: QuizTrueFalseProps) => {
     const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
@@ -18,7 +19,7 @@ export const QuizTrueFalse = ({ activity, onComplete }: QuizTrueFalseProps) => {
     const [startX, setStartX] = useState(0);
 
     const handleAnswer = (answer: boolean) => {
-        if (showResult) return;
+        if (showResult || isCompleted) return;
         setSelectedAnswer(answer);
 
         // Backend might send "true"/"false" strings or booleans
@@ -42,19 +43,19 @@ export const QuizTrueFalse = ({ activity, onComplete }: QuizTrueFalseProps) => {
 
     // Touch/Mouse drag handlers
     const handleDragStart = (clientX: number) => {
-        if (showResult) return;
+        if (showResult || isCompleted) return;
         setIsDragging(true);
         setStartX(clientX);
     };
 
     const handleDragMove = (clientX: number) => {
-        if (!isDragging || showResult) return;
+        if (!isDragging || showResult || isCompleted) return;
         const delta = clientX - startX;
         setDragX(Math.max(-150, Math.min(150, delta)));
     };
 
     const handleDragEnd = () => {
-        if (!isDragging || showResult) return;
+        if (!isDragging || showResult || isCompleted) return;
         setIsDragging(false);
 
         if (dragX > 80) {
@@ -76,14 +77,22 @@ export const QuizTrueFalse = ({ activity, onComplete }: QuizTrueFalseProps) => {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-start gap-3">
-                <div className="p-2 bg-yellow-100 rounded-xl"> {/* Using yellow-100 as proxy for accent/20 */}
-                    <HelpCircle className="w-5 h-5 text-yellow-600" />
+            <div className="flex items-center justify-between">
+                <div className="flex items-start gap-3">
+                    <div className="p-2 bg-yellow-100 rounded-xl">
+                        <HelpCircle className="w-5 h-5 text-yellow-600" />
+                    </div>
+                    <div>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wide">Verdadero o Falso</span>
+                        <p className="text-sm text-muted-foreground mt-1">Desliza la tarjeta o usa los botones</p>
+                    </div>
                 </div>
-                <div>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Verdadero o Falso</span>
-                    <p className="text-sm text-muted-foreground mt-1">Desliza la tarjeta o usa los botones</p>
-                </div>
+                {isCompleted && (
+                    <div className="flex items-center gap-2 text-success text-sm font-medium bg-success/10 px-3 py-1.5 rounded-full">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Completada
+                    </div>
+                )}
             </div>
 
             {/* Swipeable Card Container */}
@@ -118,7 +127,8 @@ export const QuizTrueFalse = ({ activity, onComplete }: QuizTrueFalseProps) => {
                         "glass-card p-6 w-full max-w-md cursor-grab active:cursor-grabbing select-none transition-shadow duration-200 bg-white border shadow-sm rounded-xl",
                         isDragging && "shadow-2xl",
                         showResult && isCorrect && "border-green-500 bg-green-50",
-                        showResult && !isCorrect && "border-red-500 bg-red-50"
+                        showResult && !isCorrect && "border-red-500 bg-red-50",
+                        isCompleted && "opacity-80 cursor-default"
                     )}
                     style={{
                         transform: showResult
@@ -188,13 +198,13 @@ export const QuizTrueFalse = ({ activity, onComplete }: QuizTrueFalseProps) => {
             <div className="flex justify-center gap-6">
                 <button
                     onClick={() => handleAnswer(false)}
-                    disabled={showResult}
+                    disabled={showResult || isCompleted}
                     className={cn(
                         "w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-2xl transition-all duration-300",
-                        !showResult && "border-red-200 text-red-500 hover:border-red-500 hover:bg-red-50 hover:scale-110",
+                        !showResult && !isCompleted && "border-red-200 text-red-500 hover:border-red-500 hover:bg-red-50 hover:scale-110",
                         showResult && selectedAnswer === false && !isCorrect && "border-red-500 bg-red-100 text-red-500",
-                        showResult && selectedAnswer === false && isCorrect && "border-green-500 bg-green-100 text-green-500", // Should be logically impossible for V/F but handling
-                        showResult && selectedAnswer !== false && "border-muted text-muted-foreground opacity-50",
+                        showResult && selectedAnswer === false && isCorrect && "border-green-500 bg-green-100 text-green-500",
+                        (showResult || isCompleted) && selectedAnswer !== false && "border-muted text-muted-foreground opacity-50",
                         showResult && (activity.is_true === "false" || activity.is_true === false) && selectedAnswer !== false && "border-green-500 text-green-500 opacity-50"
                     )}
                 >
@@ -202,13 +212,13 @@ export const QuizTrueFalse = ({ activity, onComplete }: QuizTrueFalseProps) => {
                 </button>
                 <button
                     onClick={() => handleAnswer(true)}
-                    disabled={showResult}
+                    disabled={showResult || isCompleted}
                     className={cn(
                         "w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-2xl transition-all duration-300",
-                        !showResult && "border-green-200 text-green-500 hover:border-green-500 hover:bg-green-50 hover:scale-110",
+                        !showResult && !isCompleted && "border-green-200 text-green-500 hover:border-green-500 hover:bg-green-50 hover:scale-110",
                         showResult && selectedAnswer === true && isCorrect && "border-green-500 bg-green-100 text-green-500",
                         showResult && selectedAnswer === true && !isCorrect && "border-red-500 bg-red-100 text-red-500",
-                        showResult && selectedAnswer !== true && "border-muted text-muted-foreground opacity-50",
+                        (showResult || isCompleted) && selectedAnswer !== true && "border-muted text-muted-foreground opacity-50",
                         showResult && (activity.is_true === "true" || activity.is_true === true) && selectedAnswer !== true && "border-green-500 text-green-500 opacity-50"
                     )}
                 >

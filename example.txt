@@ -1,1359 +1,1234 @@
-ejemplo de contenido de lesiones
-import { Play, Pause, Volume2, SkipBack, SkipForward, Clock, Calendar, Tag } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import authorAvatar from "@/assets/author-avatar.jpg";
-import articleImage from "@/assets/article-frog.jpg";
-import { ActivitiesSection } from "@/components/activities/ActivitiesSection";
-import { lessonActivitiesData } from "@/data/lessonActivities";
+pages 
 
-interface ArticleViewProps {
-  lessonId?: number;
-  onBackToCourse?: () => void;
+import { useEffect, useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { 
+  Clock, 
+  Tag, 
+  ChevronLeft, 
+  BookOpen, 
+  Trophy, 
+  PlayCircle, 
+  CheckCircle2,
+  Users,
+  Star,
+  Award
+} from "lucide-react";
+import { CourseProgress } from "@/components/learn/CourseProgress";
+import { LessonCard } from "@/components/learn/LessonCard";
+
+// Types - these would come from your API service
+interface Lesson {
+  id: number;
+  title: string;
+  estimated_duration: number;
 }
 
-export const ArticleView = ({ lessonId = 1, onBackToCourse }: ArticleViewProps) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(35);
-  
-  const lessonActivities = lessonActivitiesData.find(la => la.lessonId === lessonId)?.activities || [];
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Author {
+  full_name: string;
+  avatar?: string;
+}
+
+interface CourseDetails {
+  goals?: string[];
+  completion_points?: number;
+}
+
+interface ArticleDetails {
+  content_text?: string;
+}
+
+interface EducationalContent {
+  slug: string;
+  title: string;
+  description: string;
+  thumbnail_url?: string;
+  estimated_duration: number;
+  difficulty_level: string;
+  categories?: Category[];
+  lessons?: Lesson[];
+  author?: Author;
+  course_details?: CourseDetails;
+  article_details?: ArticleDetails;
+  enrollment?: {
+    progress_percentage: number;
+  };
+  lesson_progress?: Record<number, { status: string }>;
+}
+
+// Mock data for demo purposes
+const mockCourse: EducationalContent = {
+  slug: "biodiversidad-ecosistemas",
+  title: "Biodiversidad y Ecosistemas: Una Guía Completa",
+  description: "Aprende sobre la increíble diversidad de vida en nuestro planeta, cómo funcionan los ecosistemas y qué podemos hacer para protegerlos.",
+  thumbnail_url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&h=400",
+  estimated_duration: 120,
+  difficulty_level: "intermedio",
+  categories: [
+    { id: 1, name: "Ecología" },
+    { id: 2, name: "Conservación" }
+  ],
+  lessons: [
+    { id: 1, title: "Introducción a la Biodiversidad", estimated_duration: 15 },
+    { id: 2, title: "Tipos de Ecosistemas", estimated_duration: 20 },
+    { id: 3, title: "Cadenas Alimenticias", estimated_duration: 18 },
+    { id: 4, title: "Impacto Humano", estimated_duration: 25 },
+    { id: 5, title: "Conservación y Sostenibilidad", estimated_duration: 22 },
+    { id: 6, title: "Proyecto Final", estimated_duration: 20 },
+  ],
+  author: {
+    full_name: "Dra. María García",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop"
+  },
+  course_details: {
+    goals: [
+      "Comprender qué es la biodiversidad y su importancia",
+      "Identificar los diferentes tipos de ecosistemas",
+      "Analizar el impacto de las actividades humanas",
+      "Desarrollar estrategias de conservación"
+    ],
+    completion_points: 500
+  },
+  enrollment: {
+    progress_percentage: 35
+  },
+  lesson_progress: {
+    1: { status: "completed" },
+    2: { status: "completed" }
+  }
+};
+
+const CourseDetail = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const [content, setContent] = useState<EducationalContent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState(false);
+
+  useEffect(() => {
+    // Simulating API call - replace with actual API call
+    const fetchContent = async () => {
+      try {
+        // const data = await getEducationalContent(slug);
+        // setContent(data);
+        
+        // Using mock data for demo
+        setTimeout(() => {
+          setContent(mockCourse);
+          setLoading(false);
+        }, 500);
+      } catch (error) {
+        console.error("Error fetching course:", error);
+        setLoading(false);
+      }
+    };
+    fetchContent();
+  }, [slug]);
+
+  const handleStartContinue = async () => {
+    if (!content) return;
+    setStarting(true);
+    try {
+      let targetLessonId;
+      if (content.lessons && content.lessons.length > 0) {
+        const firstIncomplete = content.lessons.find(l => {
+          const progress = content.lesson_progress?.[l.id];
+          return !progress || progress.status !== "completed";
+        });
+        targetLessonId = firstIncomplete ? firstIncomplete.id : content.lessons[0].id;
+      }
+
+      if (targetLessonId) {
+        navigate(`/learn/course/${content.slug}/lesson/${targetLessonId}`);
+      }
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
+  if (!content) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <BookOpen className="w-16 h-16 text-muted-foreground" />
+        <p className="text-xl text-muted-foreground">Curso no encontrado</p>
+        <Link to="/learn">
+          <Button variant="outline">Volver al Centro de Aprendizaje</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const imageUrl = content.thumbnail_url || "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&h=400";
+  const totalLessons = content.lessons?.length || 0;
+  const isEnrolled = !!content.enrollment;
+  const progressPercentage = content.enrollment?.progress_percentage || 0;
+  const completedLessons = Object.values(content.lesson_progress || {}).filter(
+    p => p.status === "completed"
+  ).length;
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Navigation */}
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <Button variant="ghost" size="sm" className="gap-2" onClick={onBackToCourse}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Volver al Curso
-          </Button>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">Lección 3 de 6</span>
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <div 
-                  key={i} 
-                  className={`w-8 h-1 rounded-full ${i <= 3 ? 'bg-accent' : 'bg-secondary'}`} 
-                />
-              ))}
-            </div>
-          </div>
+      {/* Navigation */}
+      <motion.nav
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50"
+      >
+        <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <Link to="/learn">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Volver al Centro de Aprendizaje</span>
+              <span className="sm:hidden">Volver</span>
+            </Button>
+          </Link>
         </div>
-      </nav>
+      </motion.nav>
 
-      <div className="container mx-auto px-6 py-12">
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Main Content */}
-          <article className="flex-1 max-w-3xl mx-auto lg:mx-0">
-            {/* Article Header */}
-            <header className="mb-12 animate-fade-in">
-              <div className="flex gap-3 mb-6">
-                <span className="px-3 py-1 text-xs font-medium bg-primary/80 rounded-full text-primary-foreground">
-                  Biodiversidad
-                </span>
-                <span className="px-3 py-1 text-xs font-medium bg-secondary rounded-full text-secondary-foreground">
-                  Anfibios
-                </span>
-              </div>
-              
-              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
-                Especies Endémicas del Amazonas: Un Viaje por la Diversidad
-              </h1>
-              
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                Descubre las especies únicas que habitan exclusivamente en la cuenca amazónica y comprende por qué su conservación es crucial para el equilibrio global.
-              </p>
-            </header>
-
-            {/* Article Body */}
-            <div className="prose-biodiversity animate-slide-up" style={{ animationDelay: "200ms" }}>
-              <p>
-                La cuenca amazónica alberga aproximadamente el 10% de todas las especies conocidas en el planeta. Esta inmensa biodiversidad incluye miles de especies que no se encuentran en ningún otro lugar de la Tierra: las llamadas especies endémicas.
-              </p>
-
-              <p>
-                El concepto de endemismo es fundamental para comprender la importancia de conservar hábitats específicos. Una especie endémica es aquella cuya distribución está restringida a un área geográfica particular, ya sea un continente, un país, una isla o incluso un microhábitat.
-              </p>
-
-              <h2>Los Anfibios: Joyas del Bosque Húmedo</h2>
-
-              <p>
-                Entre las criaturas más fascinantes del Amazonas se encuentran las ranas venenosas de la familia Dendrobatidae. Estos pequeños anfibios, con sus colores vibrantes que van desde el azul eléctrico hasta el naranja intenso, son un ejemplo perfecto de cómo la evolución ha moldeado estrategias de supervivencia únicas.
-              </p>
-
-              <img 
-                src={articleImage}
-                alt="Rana dardo venenoso en su hábitat natural"
-              />
-
-              <blockquote>
-                "Cada especie que perdemos es como arrancar una página de un libro que nunca podremos volver a leer. La biodiversidad amazónica es nuestra biblioteca viva más valiosa."
-                <footer className="mt-2 text-sm not-italic">— Dr. Thomas Lovejoy, Biólogo</footer>
-              </blockquote>
-
-              <p>
-                Los colores brillantes de estas ranas son un ejemplo de aposematismo: una señal de advertencia para los depredadores que indica su toxicidad. Los pueblos indígenas han utilizado durante siglos las secreciones de estas ranas para envenenar las puntas de sus dardos de caza.
-              </p>
-
-              <h2>Mamíferos Únicos del Dosel</h2>
-
-              <p>
-                El dosel amazónico —la capa superior del bosque— es hogar de numerosas especies de primates endémicos. El tití león dorado, el mono araña de cara roja y el uakarí calvo son solo algunos ejemplos de primates que dependen exclusivamente de estos ecosistemas.
-              </p>
-
-              <p>
-                Estos primates juegan roles ecológicos cruciales como dispersores de semillas. Al alimentarse de frutos y desplazarse por el bosque, contribuyen a la regeneración natural del ecosistema, creando un ciclo virtuoso de interdependencia.
-              </p>
-
-              <h3>El Desafío de la Conservación</h3>
-
-              <p>
-                La deforestación y el cambio climático representan las mayores amenazas para estas especies endémicas. Se estima que el Amazonas ha perdido aproximadamente el 17% de su cobertura forestal en las últimas cinco décadas, poniendo en riesgo a innumerables especies que aún no hemos catalogado.
-              </p>
-
-              <p>
-                La investigación científica continúa descubriendo nuevas especies cada año, lo que nos recuerda cuánto nos queda por aprender de este ecosistema extraordinario. Proteger el Amazonas no es solo preservar árboles; es salvaguardar millones de años de evolución y las posibles soluciones que estas especies podrían ofrecer a desafíos futuros.
-              </p>
-            </div>
-
-            {/* Gamified Activities Section */}
-            {lessonActivities.length > 0 && (
-              <ActivitiesSection 
-                activities={lessonActivities}
-                lessonTitle="Especies Endémicas del Amazonas"
-              />
-            )}
-
-            {/* Article Footer */}
-            <footer className="mt-16 pt-8 border-t border-border/50">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <Button variant="outline" size="lg">
-                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Lección Anterior
-                </Button>
-                <Button variant="hero" size="lg">
-                  Siguiente Lección
-                  <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Button>
-              </div>
-            </footer>
-          </article>
-
-          {/* Sticky Sidebar */}
-          <aside className="lg:w-80 shrink-0">
-            <div className="lg:sticky lg:top-24 space-y-6">
-              {/* Author Card */}
-              <div className="glass-card p-6 text-center">
-                <img 
-                  src={authorAvatar}
-                  alt="Dra. Elena Martínez"
-                  className="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-accent/50 object-cover"
-                />
-                <h3 className="font-display font-semibold text-foreground mb-1">Dra. Elena Martínez</h3>
-                <p className="text-sm text-muted-foreground mb-4">Bióloga y Conservacionista</p>
-                <Button variant="outline" size="sm" className="w-full">
-                  Ver Perfil
-                </Button>
-              </div>
-
-              {/* Reading Info */}
-              <div className="glass-card p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-accent" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Tiempo de lectura</p>
-                    <p className="font-medium text-foreground">15 min</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Publicado</p>
-                    <p className="font-medium text-foreground">20 Dic 2024</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Tag className="w-5 h-5 text-muted-foreground" />
-                  <div className="flex flex-wrap gap-2">
-                    <span className="text-xs px-2 py-1 bg-secondary rounded-full text-secondary-foreground">Ecología</span>
-                    <span className="text-xs px-2 py-1 bg-secondary rounded-full text-secondary-foreground">Fauna</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Audio Player */}
-              <div className="glass-card p-6 border-accent/30">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-accent/20 rounded-lg">
-                    <Volume2 className="w-5 h-5 text-accent" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">Escuchar Artículo</p>
-                    <p className="text-xs text-muted-foreground">Versión narrada disponible</p>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="mb-4">
-                  <div className="relative h-1.5 bg-secondary rounded-full overflow-hidden cursor-pointer">
-                    <div 
-                      className="absolute inset-y-0 left-0 bg-accent rounded-full"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                    <span>5:15</span>
-                    <span>15:00</span>
-                  </div>
-                </div>
-
-                {/* Controls */}
-                <div className="flex items-center justify-center gap-4">
-                  <button className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-                    <SkipBack className="w-5 h-5" />
-                  </button>
-                  <button 
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="p-4 bg-accent text-accent-foreground rounded-full hover:shadow-glow-accent transition-all hover:scale-105"
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16 relative">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-6 order-2 lg:order-1"
+            >
+              {/* Categories */}
+              <div className="flex flex-wrap gap-2">
+                {content.categories?.map(cat => (
+                  <motion.span
+                    key={cat.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="px-3 py-1.5 text-xs font-semibold bg-primary/10 text-primary rounded-full"
                   >
-                    {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
-                  </button>
-                  <button className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-                    <SkipForward className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-pagina para actividades 
-
-import { useState } from "react";
-import { Activity } from "@/types/activities";
-import { QuizMultiple, QuizTrueFalse } from "./QuizActivities";
-import { DragDrop } from "./DragDropActivity";
-import { Matching } from "./MatchingActivity";
-import { RewardModal } from "./RewardModal";
-import { Gamepad2, ChevronRight, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-interface ActivitiesSectionProps {
-  activities: Activity[];
-  lessonTitle: string;
-}
-
-export const ActivitiesSection = ({ activities, lessonTitle }: ActivitiesSectionProps) => {
-  const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
-  const [completedActivities, setCompletedActivities] = useState<Set<number>>(new Set());
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [earnedBadges, setEarnedBadges] = useState<string[]>([]);
-  const [showReward, setShowReward] = useState(false);
-  const [lastReward, setLastReward] = useState({ points: 0, badge: "" });
-
-  const handleActivityComplete = (index: number, correct: boolean, points: number, badge?: string) => {
-    if (correct) {
-      setCompletedActivities(prev => new Set([...prev, index]));
-      setTotalPoints(prev => prev + points);
-      if (badge) {
-        setEarnedBadges(prev => [...prev, badge]);
-      }
-      setLastReward({ points, badge: badge || "" });
-      setShowReward(true);
-    }
-  };
-
-  const handleRewardClose = () => {
-    setShowReward(false);
-    // Move to next activity if available
-    if (currentActivityIndex < activities.length - 1) {
-      setCurrentActivityIndex(prev => prev + 1);
-    }
-  };
-
-  const renderActivity = (activity: Activity, index: number) => {
-    switch (activity.type) {
-      case "quiz_multiple":
-        return (
-          <QuizMultiple
-            activity={activity}
-            onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
-          />
-        );
-      case "quiz_true_false":
-        return (
-          <QuizTrueFalse
-            activity={activity}
-            onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
-          />
-        );
-      case "drag_drop":
-        return (
-          <DragDrop
-            activity={activity}
-            onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
-          />
-        );
-      case "matching":
-        return (
-          <Matching
-            activity={activity}
-            onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
-  const currentActivity = activities[currentActivityIndex];
-
-  return (
-    <section className="mt-16 pt-8 border-t border-border/50">
-      {/* Section Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-gradient-to-br from-accent/30 to-accent/10 rounded-2xl">
-          <Gamepad2 className="w-6 h-6 text-accent" />
-        </div>
-        <div>
-          <h3 className="font-display text-2xl font-bold text-foreground">
-            Actividades de la Lección
-          </h3>
-          <p className="text-muted-foreground">
-            Pon a prueba lo que has aprendido
-          </p>
-        </div>
-      </div>
-
-      {/* Progress & Stats */}
-      <div className="glass-card p-4 mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          {/* Activity Progress */}
-          <div className="flex items-center gap-3">
-            {activities.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => !completedActivities.has(currentActivityIndex) || setCurrentActivityIndex(index)}
-                className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center font-medium transition-all duration-300",
-                  completedActivities.has(index) && "bg-primary/20 text-primary",
-                  currentActivityIndex === index && !completedActivities.has(index) && "bg-accent/20 text-accent border-2 border-accent",
-                  currentActivityIndex !== index && !completedActivities.has(index) && "bg-secondary text-muted-foreground"
-                )}
-              >
-                {completedActivities.has(index) ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : (
-                  index + 1
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Stats */}
-          <div className="flex items-center gap-4">
-            {earnedBadges.length > 0 && (
-              <div className="flex items-center gap-1 px-3 py-1.5 bg-accent/10 rounded-full">
-                {earnedBadges.map((badge, i) => (
-                  <span key={i} className="text-xl">{badge}</span>
+                    {cat.name}
+                  </motion.span>
                 ))}
               </div>
-            )}
-            <div className="px-4 py-2 bg-primary/10 rounded-full">
-              <span className="text-sm font-medium text-primary">{totalPoints} pts</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Current Activity */}
-      <div className="animate-fade-in" key={currentActivityIndex}>
-        {renderActivity(currentActivity, currentActivityIndex)}
-      </div>
+              {/* Title */}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
+                {content.title}
+              </h1>
 
-      {/* Navigation hint */}
-      {completedActivities.has(currentActivityIndex) && currentActivityIndex < activities.length - 1 && (
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => setCurrentActivityIndex(prev => prev + 1)}
-            className="inline-flex items-center gap-2 text-accent hover:text-accent/80 transition-colors"
-          >
-            <span>Siguiente actividad</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+              {/* Description */}
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                {content.description}
+              </p>
 
-      {/* Completion Message */}
-      {completedActivities.size === activities.length && (
-        <div className="mt-8 glass-card p-6 border-primary/30 text-center animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/20 rounded-full mb-4">
-            <CheckCircle2 className="w-8 h-8 text-primary" />
-          </div>
-          <h4 className="font-display text-xl font-bold text-foreground mb-2">
-            ¡Lección Completada!
-          </h4>
-          <p className="text-muted-foreground mb-4">
-            Has completado todas las actividades de esta lección
-          </p>
-          <div className="flex items-center justify-center gap-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{totalPoints}</p>
-              <p className="text-xs text-muted-foreground">Puntos totales</p>
-            </div>
-            {earnedBadges.length > 0 && (
-              <div className="text-center">
-                <div className="flex justify-center gap-1 text-2xl">
-                  {earnedBadges.map((badge, i) => (
-                    <span key={i}>{badge}</span>
-                  ))}
+              {/* Stats */}
+              <div className="flex flex-wrap gap-4 sm:gap-6 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <span>{content.estimated_duration} min</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Insignias ganadas</p>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  <span>{totalLessons} lecciones</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Tag className="w-4 h-4 text-primary" />
+                  <span className="capitalize">{content.difficulty_level}</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Users className="w-4 h-4 text-primary" />
+                  <span>1.2k estudiantes</span>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* Reward Modal */}
-      <RewardModal
-        isOpen={showReward}
-        onClose={handleRewardClose}
-        points={lastReward.points}
-        badge={lastReward.badge}
-        totalPoints={totalPoints}
-      />
-    </section>
-  );
-};
-
-
-import { useState, useCallback } from "react";
-import { CheckCircle2, GripVertical, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { DragDropActivity } from "@/types/activities";
-import { cn } from "@/lib/utils";
-
-interface DragDropProps {
-  activity: DragDropActivity;
-  onComplete: (correct: boolean, points: number, badge?: string) => void;
-}
-
-export const DragDrop = ({ activity, onComplete }: DragDropProps) => {
-  const [items, setItems] = useState(() => 
-    [...activity.pairs].sort(() => Math.random() - 0.5).map(p => ({ ...p, placed: false, targetId: "" }))
-  );
-  const [targets] = useState(() => 
-    [...activity.pairs].sort(() => Math.random() - 0.5).map(p => ({ id: p.id, target: p.target, elementId: "" }))
-  );
-  const [placements, setPlacements] = useState<Record<string, string>>({});
-  const [showResult, setShowResult] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [draggedItem, setDraggedItem] = useState<string | null>(null);
-
-  const handleDragStart = (e: React.DragEvent, itemId: string) => {
-    e.dataTransfer.setData("text/plain", itemId);
-    setDraggedItem(itemId);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedItem(null);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  const handleDrop = (e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    const itemId = e.dataTransfer.getData("text/plain");
-    
-    setPlacements(prev => {
-      const newPlacements = { ...prev };
-      // Remove item from previous target
-      Object.keys(newPlacements).forEach(key => {
-        if (newPlacements[key] === itemId) {
-          delete newPlacements[key];
-        }
-      });
-      // Place in new target
-      newPlacements[targetId] = itemId;
-      return newPlacements;
-    });
-    setDraggedItem(null);
-  };
-
-  const handleSubmit = () => {
-    // Check if all placements are correct
-    let allCorrect = true;
-    activity.pairs.forEach(pair => {
-      const placedItemId = placements[pair.id];
-      if (placedItemId !== pair.id) {
-        allCorrect = false;
-      }
-    });
-
-    setIsCorrect(allCorrect);
-    setShowResult(true);
-    
-    if (allCorrect) {
-      setTimeout(() => onComplete(true, activity.points, activity.badge), 1500);
-    }
-  };
-
-  const handleRetry = () => {
-    setPlacements({});
-    setShowResult(false);
-    setIsCorrect(false);
-  };
-
-  const getItemById = (id: string) => activity.pairs.find(p => p.id === id);
-
-  const allPlaced = Object.keys(placements).length === activity.pairs.length;
-
-  return (
-    <div className="glass-card p-6 space-y-6">
-      <div className="flex items-start gap-3">
-        <div className="p-2 bg-accent/20 rounded-xl">
-          <GripVertical className="w-5 h-5 text-accent" />
-        </div>
-        <div>
-          <span className="text-xs text-muted-foreground uppercase tracking-wide">Arrastrar y Soltar</span>
-          <h4 className="font-display font-semibold text-foreground mt-1">{activity.instruction}</h4>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Items to drag */}
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground font-medium">Elementos:</p>
-          <div className="space-y-2">
-            {activity.pairs.map((pair) => {
-              const isPlaced = Object.values(placements).includes(pair.id);
-              return (
-                <div
-                  key={pair.id}
-                  draggable={!showResult && !isPlaced}
-                  onDragStart={(e) => handleDragStart(e, pair.id)}
-                  onDragEnd={handleDragEnd}
-                  className={cn(
-                    "p-3 rounded-xl border-2 transition-all duration-300 flex items-center gap-2",
-                    !showResult && !isPlaced && "border-border/50 bg-secondary/50 cursor-grab active:cursor-grabbing hover:border-accent/50",
-                    !showResult && isPlaced && "border-primary/30 bg-primary/10 opacity-50",
-                    showResult && "cursor-default",
-                    draggedItem === pair.id && "opacity-50 scale-95"
-                  )}
+              {/* CTA */}
+              <div className="pt-4 space-y-4">
+                <Button
+                  size="lg"
+                  onClick={handleStartContinue}
+                  disabled={starting}
+                  className="w-full sm:w-auto text-lg px-8 py-6 rounded-xl shadow-lg shadow-primary/25 gradient-primary hover:opacity-90 transition-all duration-300"
                 >
-                  <GripVertical className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{pair.element}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                  <PlayCircle className="w-5 h-5 mr-2" />
+                  {starting ? "Cargando..." : isEnrolled ? "Continuar Aprendiendo" : "Comenzar Gratis"}
+                </Button>
 
-        {/* Targets */}
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground font-medium">Destinos:</p>
-          <div className="space-y-2">
-            {targets.map((target) => {
-              const placedItemId = placements[target.id];
-              const placedItem = placedItemId ? getItemById(placedItemId) : null;
-              const isCorrectPlacement = showResult && placedItemId === target.id;
-              const isWrongPlacement = showResult && placedItemId && placedItemId !== target.id;
+                {isEnrolled && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-sm"
+                  >
+                    <CourseProgress progress={progressPercentage} />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {completedLessons} de {totalLessons} lecciones completadas
+                    </p>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
 
-              return (
-                <div
-                  key={target.id}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, target.id)}
-                  className={cn(
-                    "p-3 rounded-xl border-2 border-dashed min-h-[52px] transition-all duration-300",
-                    !showResult && !placedItem && "border-border/50 bg-background/50",
-                    !showResult && placedItem && "border-accent/50 bg-accent/10",
-                    isCorrectPlacement && "border-primary bg-primary/20",
-                    isWrongPlacement && "border-destructive bg-destructive/10"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{target.target}</span>
-                    {placedItem && (
-                      <span className={cn(
-                        "text-sm font-medium flex items-center gap-2",
-                        isCorrectPlacement && "text-primary",
-                        isWrongPlacement && "text-destructive",
-                        !showResult && "text-accent"
-                      )}>
-                        <ArrowRight className="w-4 h-4" />
-                        {placedItem.element}
-                        {isCorrectPlacement && <CheckCircle2 className="w-4 h-4" />}
-                      </span>
-                    )}
+            {/* Image */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="order-1 lg:order-2"
+            >
+              <div className="relative aspect-video lg:aspect-[4/3] rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl group">
+                <img
+                  src={imageUrl}
+                  alt={content.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-background/20 backdrop-blur-lg flex items-center justify-center">
+                    <PlayCircle className="w-8 h-8 sm:w-10 sm:h-10 text-background" />
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {showResult && (
-        <div className={cn(
-          "p-4 rounded-xl",
-          isCorrect ? "bg-primary/10 border border-primary/30" : "bg-destructive/10 border border-destructive/30"
-        )}>
-          <p className={cn(
-            "text-sm",
-            isCorrect ? "text-primary" : "text-destructive"
-          )}>
-            {isCorrect ? activity.feedback : "Algunas ubicaciones no son correctas. ¡Inténtalo de nuevo!"}
-          </p>
-        </div>
-      )}
-
-      <div className="flex justify-end gap-3">
-        {showResult && !isCorrect && (
-          <Button variant="outline" onClick={handleRetry}>
-            Intentar de nuevo
-          </Button>
-        )}
-        {!showResult && (
-          <Button 
-            variant="accent" 
-            onClick={handleSubmit}
-            disabled={!allPlaced}
-          >
-            Comprobar respuesta
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-};
-
-import { useState } from "react";
-import { CheckCircle2, Link2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { MatchingActivity } from "@/types/activities";
-import { cn } from "@/lib/utils";
-
-interface MatchingProps {
-  activity: MatchingActivity;
-  onComplete: (correct: boolean, points: number, badge?: string) => void;
-}
-
-export const Matching = ({ activity, onComplete }: MatchingProps) => {
-  const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
-  const [connections, setConnections] = useState<Record<string, string>>({});
-  const [showResult, setShowResult] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-
-  const [shuffledTerms] = useState(() => 
-    [...activity.pairs].sort(() => Math.random() - 0.5)
-  );
-  const [shuffledMatches] = useState(() => 
-    [...activity.pairs].sort(() => Math.random() - 0.5)
-  );
-
-  const handleTermClick = (termId: string) => {
-    if (showResult) return;
-    
-    // If already connected, disconnect
-    if (connections[termId]) {
-      setConnections(prev => {
-        const newConnections = { ...prev };
-        delete newConnections[termId];
-        return newConnections;
-      });
-      return;
-    }
-    
-    setSelectedTerm(termId);
-  };
-
-  const handleMatchClick = (matchId: string) => {
-    if (showResult || !selectedTerm) return;
-    
-    // Check if this match is already used
-    const existingTerm = Object.keys(connections).find(t => connections[t] === matchId);
-    if (existingTerm) {
-      setConnections(prev => {
-        const newConnections = { ...prev };
-        delete newConnections[existingTerm];
-        return newConnections;
-      });
-    }
-    
-    setConnections(prev => ({
-      ...prev,
-      [selectedTerm]: matchId
-    }));
-    setSelectedTerm(null);
-  };
-
-  const handleSubmit = () => {
-    let allCorrect = true;
-    activity.pairs.forEach(pair => {
-      if (connections[pair.id] !== pair.id) {
-        allCorrect = false;
-      }
-    });
-
-    setIsCorrect(allCorrect);
-    setShowResult(true);
-    
-    if (allCorrect) {
-      setTimeout(() => onComplete(true, activity.points, activity.badge), 1500);
-    }
-  };
-
-  const handleRetry = () => {
-    setConnections({});
-    setSelectedTerm(null);
-    setShowResult(false);
-    setIsCorrect(false);
-  };
-
-  const allConnected = Object.keys(connections).length === activity.pairs.length;
-
-  const getConnectionColor = (termId: string) => {
-    const colors = [
-      "bg-accent text-accent-foreground",
-      "bg-primary text-primary-foreground",
-      "bg-[hsl(280,70%,50%)] text-white",
-      "bg-[hsl(180,70%,40%)] text-white"
-    ];
-    const index = Object.keys(connections).indexOf(termId);
-    return index >= 0 ? colors[index % colors.length] : "";
-  };
-
-  return (
-    <div className="glass-card p-6 space-y-6">
-      <div className="flex items-start gap-3">
-        <div className="p-2 bg-primary/20 rounded-xl">
-          <Link2 className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <span className="text-xs text-muted-foreground uppercase tracking-wide">Emparejamiento</span>
-          <h4 className="font-display font-semibold text-foreground mt-1">{activity.instruction}</h4>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Terms */}
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground font-medium">Términos:</p>
-          <div className="space-y-2">
-            {shuffledTerms.map((pair) => {
-              const isConnected = !!connections[pair.id];
-              const isSelected = selectedTerm === pair.id;
-              const isCorrectMatch = showResult && connections[pair.id] === pair.id;
-              const isWrongMatch = showResult && connections[pair.id] && connections[pair.id] !== pair.id;
-
-              return (
-                <button
-                  key={pair.id}
-                  onClick={() => handleTermClick(pair.id)}
-                  disabled={showResult}
-                  className={cn(
-                    "w-full text-left p-3 rounded-xl border-2 transition-all duration-300 flex items-center justify-between",
-                    !showResult && !isConnected && !isSelected && "border-border/50 hover:border-accent/50",
-                    !showResult && isSelected && "border-accent bg-accent/20",
-                    !showResult && isConnected && "border-accent/50",
-                    isCorrectMatch && "border-primary bg-primary/20",
-                    isWrongMatch && "border-destructive bg-destructive/10",
-                    showResult && "cursor-default"
-                  )}
-                >
-                  <span className={cn(
-                    "text-foreground",
-                    isCorrectMatch && "text-primary font-medium"
-                  )}>
-                    {pair.term}
-                  </span>
-                  {isConnected && (
-                    <span className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
-                      !showResult && getConnectionColor(pair.id),
-                      isCorrectMatch && "bg-primary text-primary-foreground",
-                      isWrongMatch && "bg-destructive text-destructive-foreground"
-                    )}>
-                      {isCorrectMatch ? <CheckCircle2 className="w-4 h-4" /> : Object.keys(connections).indexOf(pair.id) + 1}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Matches */}
-        <div className="space-y-3">
-          <p className="text-sm text-muted-foreground font-medium">Definiciones:</p>
-          <div className="space-y-2">
-            {shuffledMatches.map((pair) => {
-              const connectedTermId = Object.keys(connections).find(t => connections[t] === pair.id);
-              const isConnected = !!connectedTermId;
-              const isCorrectMatch = showResult && connectedTermId === pair.id;
-              const isWrongMatch = showResult && connectedTermId && connectedTermId !== pair.id;
-
-              return (
-                <button
-                  key={pair.id}
-                  onClick={() => handleMatchClick(pair.id)}
-                  disabled={showResult || !selectedTerm}
-                  className={cn(
-                    "w-full text-left p-3 rounded-xl border-2 transition-all duration-300 flex items-center gap-3",
-                    !showResult && !isConnected && selectedTerm && "border-border/50 hover:border-accent/50 cursor-pointer",
-                    !showResult && !isConnected && !selectedTerm && "border-border/50 cursor-default",
-                    !showResult && isConnected && "border-accent/50",
-                    isCorrectMatch && "border-primary bg-primary/20",
-                    isWrongMatch && "border-destructive bg-destructive/10",
-                    showResult && "cursor-default"
-                  )}
-                >
-                  {isConnected && connectedTermId && (
-                    <span className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
-                      !showResult && getConnectionColor(connectedTermId),
-                      isCorrectMatch && "bg-primary text-primary-foreground",
-                      isWrongMatch && "bg-destructive text-destructive-foreground"
-                    )}>
-                      {isCorrectMatch ? <CheckCircle2 className="w-4 h-4" /> : Object.keys(connections).indexOf(connectedTermId) + 1}
-                    </span>
-                  )}
-                  <span className={cn(
-                    "text-foreground text-sm",
-                    isCorrectMatch && "text-primary font-medium"
-                  )}>
-                    {pair.match}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {showResult && (
-        <div className={cn(
-          "p-4 rounded-xl",
-          isCorrect ? "bg-primary/10 border border-primary/30" : "bg-destructive/10 border border-destructive/30"
-        )}>
-          <p className={cn(
-            "text-sm",
-            isCorrect ? "text-primary" : "text-destructive"
-          )}>
-            {isCorrect ? activity.feedback : "Algunas conexiones no son correctas. ¡Inténtalo de nuevo!"}
-          </p>
-        </div>
-      )}
-
-      <div className="flex justify-end gap-3">
-        {showResult && !isCorrect && (
-          <Button variant="outline" onClick={handleRetry}>
-            Intentar de nuevo
-          </Button>
-        )}
-        {!showResult && (
-          <Button 
-            variant="accent" 
-            onClick={handleSubmit}
-            disabled={!allConnected}
-          >
-            Comprobar respuesta
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-};
-
-
-import { useState } from "react";
-import { CheckCircle2, XCircle, HelpCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { QuizMultipleActivity, QuizTrueFalseActivity } from "@/types/activities";
-import { cn } from "@/lib/utils";
-
-interface QuizMultipleProps {
-  activity: QuizMultipleActivity;
-  onComplete: (correct: boolean, points: number, badge?: string) => void;
-}
-
-export const QuizMultiple = ({ activity, onComplete }: QuizMultipleProps) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-
-  const handleSubmit = () => {
-    if (!selectedOption) return;
-    const option = activity.options.find(o => o.id === selectedOption);
-    const correct = option?.isCorrect ?? false;
-    setIsCorrect(correct);
-    setShowResult(true);
-    
-    if (correct) {
-      setTimeout(() => onComplete(true, activity.points, activity.badge), 1500);
-    }
-  };
-
-  const handleRetry = () => {
-    setSelectedOption(null);
-    setShowResult(false);
-    setIsCorrect(false);
-  };
-
-  const selectedFeedback = activity.options.find(o => o.id === selectedOption)?.feedback;
-
-  return (
-    <div className="glass-card p-6 space-y-6">
-      <div className="flex items-start gap-3">
-        <div className="p-2 bg-primary/20 rounded-xl">
-          <HelpCircle className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <span className="text-xs text-muted-foreground uppercase tracking-wide">Selección Múltiple</span>
-          <h4 className="font-display font-semibold text-foreground mt-1">{activity.question}</h4>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {activity.options.map((option) => (
-          <button
-            key={option.id}
-            onClick={() => !showResult && setSelectedOption(option.id)}
-            disabled={showResult}
-            className={cn(
-              "w-full text-left p-4 rounded-xl border-2 transition-all duration-300",
-              !showResult && selectedOption === option.id && "border-accent bg-accent/10",
-              !showResult && selectedOption !== option.id && "border-border/50 hover:border-accent/50 hover:bg-secondary/50",
-              showResult && option.isCorrect && "border-primary bg-primary/20",
-              showResult && !option.isCorrect && selectedOption === option.id && "border-destructive bg-destructive/10",
-              showResult && "cursor-default"
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <span className={cn(
-                "text-foreground",
-                showResult && option.isCorrect && "text-primary font-medium"
-              )}>
-                {option.text}
-              </span>
-              {showResult && option.isCorrect && <CheckCircle2 className="w-5 h-5 text-primary" />}
-              {showResult && !option.isCorrect && selectedOption === option.id && <XCircle className="w-5 h-5 text-destructive" />}
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {showResult && selectedFeedback && (
-        <div className={cn(
-          "p-4 rounded-xl",
-          isCorrect ? "bg-primary/10 border border-primary/30" : "bg-destructive/10 border border-destructive/30"
-        )}>
-          <p className={cn(
-            "text-sm",
-            isCorrect ? "text-primary" : "text-destructive"
-          )}>
-            {selectedFeedback}
-          </p>
-        </div>
-      )}
-
-      <div className="flex justify-end gap-3">
-        {showResult && !isCorrect && (
-          <Button variant="outline" onClick={handleRetry}>
-            Intentar de nuevo
-          </Button>
-        )}
-        {!showResult && (
-          <Button 
-            variant="accent" 
-            onClick={handleSubmit}
-            disabled={!selectedOption}
-          >
-            Comprobar respuesta
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-};
-
-interface QuizTrueFalseProps {
-  activity: QuizTrueFalseActivity;
-  onComplete: (correct: boolean, points: number, badge?: string) => void;
-}
-
-export const QuizTrueFalse = ({ activity, onComplete }: QuizTrueFalseProps) => {
-  const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
-  const [showResult, setShowResult] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [dragX, setDragX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-
-  const handleAnswer = (answer: boolean) => {
-    if (showResult) return;
-    setSelectedAnswer(answer);
-    const correct = answer === activity.answer;
-    setIsCorrect(correct);
-    setShowResult(true);
-    
-    if (correct) {
-      setTimeout(() => onComplete(true, activity.points, activity.badge), 1500);
-    }
-  };
-
-  const handleRetry = () => {
-    setSelectedAnswer(null);
-    setShowResult(false);
-    setIsCorrect(false);
-    setDragX(0);
-  };
-
-  // Touch/Mouse drag handlers
-  const handleDragStart = (clientX: number) => {
-    if (showResult) return;
-    setIsDragging(true);
-    setStartX(clientX);
-  };
-
-  const handleDragMove = (clientX: number) => {
-    if (!isDragging || showResult) return;
-    const delta = clientX - startX;
-    setDragX(Math.max(-150, Math.min(150, delta)));
-  };
-
-  const handleDragEnd = () => {
-    if (!isDragging || showResult) return;
-    setIsDragging(false);
-    
-    if (dragX > 80) {
-      // Swiped right = Verdadero
-      handleAnswer(true);
-    } else if (dragX < -80) {
-      // Swiped left = Falso
-      handleAnswer(false);
-    } else {
-      setDragX(0);
-    }
-  };
-
-  // Calculate visual effects based on drag
-  const rotation = dragX / 10;
-  const opacity = Math.abs(dragX) / 150;
-  const showVerdadero = dragX > 30;
-  const showFalso = dragX < -30;
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start gap-3">
-        <div className="p-2 bg-accent/20 rounded-xl">
-          <HelpCircle className="w-5 h-5 text-accent" />
-        </div>
-        <div>
-          <span className="text-xs text-muted-foreground uppercase tracking-wide">Verdadero o Falso</span>
-          <p className="text-sm text-muted-foreground mt-1">Desliza la tarjeta o usa los botones</p>
-        </div>
-      </div>
-
-      {/* Swipeable Card Container */}
-      <div className="relative flex items-center justify-center min-h-[280px]">
-        {/* Background indicators */}
-        <div 
-          className={cn(
-            "absolute left-4 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200",
-            showFalso ? "bg-destructive/30 scale-110" : "bg-destructive/10"
-          )}
-        >
-          <span className={cn(
-            "text-2xl font-bold transition-colors",
-            showFalso ? "text-destructive" : "text-destructive/40"
-          )}>F</span>
-        </div>
-        <div 
-          className={cn(
-            "absolute right-4 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200",
-            showVerdadero ? "bg-primary/30 scale-110" : "bg-primary/10"
-          )}
-        >
-          <span className={cn(
-            "text-2xl font-bold transition-colors",
-            showVerdadero ? "text-primary" : "text-primary/40"
-          )}>V</span>
-        </div>
-
-        {/* Swipeable Card */}
-        <div
-          className={cn(
-            "glass-card p-6 w-full max-w-md cursor-grab active:cursor-grabbing select-none transition-shadow duration-200",
-            isDragging && "shadow-2xl",
-            showResult && isCorrect && "border-primary/50 bg-primary/5",
-            showResult && !isCorrect && "border-destructive/50 bg-destructive/5"
-          )}
-          style={{
-            transform: showResult 
-              ? `translateX(${isCorrect === (activity.answer === true) ? (activity.answer ? 50 : -50) : 0}px)` 
-              : `translateX(${dragX}px) rotate(${rotation}deg)`,
-            transition: isDragging ? 'none' : 'transform 0.3s ease-out'
-          }}
-          onMouseDown={(e) => handleDragStart(e.clientX)}
-          onMouseMove={(e) => handleDragMove(e.clientX)}
-          onMouseUp={handleDragEnd}
-          onMouseLeave={() => isDragging && handleDragEnd()}
-          onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
-          onTouchMove={(e) => handleDragMove(e.touches[0].clientX)}
-          onTouchEnd={handleDragEnd}
-        >
-          {/* Swipe indicators on card */}
-          <div 
-            className={cn(
-              "absolute top-4 right-4 px-3 py-1 rounded-lg border-2 font-bold text-sm transition-opacity",
-              "border-primary text-primary",
-              showVerdadero && !showResult ? "opacity-100" : "opacity-0"
-            )}
-          >
-            VERDADERO
-          </div>
-          <div 
-            className={cn(
-              "absolute top-4 left-4 px-3 py-1 rounded-lg border-2 font-bold text-sm transition-opacity",
-              "border-destructive text-destructive",
-              showFalso && !showResult ? "opacity-100" : "opacity-0"
-            )}
-          >
-            FALSO
-          </div>
-
-          {/* Card content */}
-          <div className="py-8 px-4 text-center">
-            <h4 className="font-display text-xl font-semibold text-foreground leading-relaxed">
-              {activity.statement}
-            </h4>
-          </div>
-
-          {/* Result indicator */}
-          {showResult && (
-            <div className={cn(
-              "absolute inset-0 flex items-center justify-center bg-background/80 rounded-2xl animate-fade-in"
-            )}>
-              <div className="text-center">
-                {isCorrect ? (
-                  <CheckCircle2 className="w-16 h-16 text-primary mx-auto mb-2" />
-                ) : (
-                  <XCircle className="w-16 h-16 text-destructive mx-auto mb-2" />
-                )}
-                <p className={cn(
-                  "font-bold text-lg",
-                  isCorrect ? "text-primary" : "text-destructive"
-                )}>
-                  {isCorrect ? "¡Correcto!" : "Incorrecto"}
-                </p>
+                
+                {/* Rating badge */}
+                <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-background/90 backdrop-blur-sm flex items-center gap-1">
+                  <Star className="w-4 h-4 text-warning fill-warning" />
+                  <span className="text-sm font-semibold">4.8</span>
+                </div>
               </div>
-            </div>
-          )}
+            </motion.div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* V/F Buttons */}
-      <div className="flex justify-center gap-6">
-        <button
-          onClick={() => handleAnswer(false)}
-          disabled={showResult}
-          className={cn(
-            "w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-2xl transition-all duration-300",
-            !showResult && "border-destructive/50 text-destructive hover:border-destructive hover:bg-destructive/10 hover:scale-110",
-            showResult && selectedAnswer === false && !isCorrect && "border-destructive bg-destructive/20 text-destructive",
-            showResult && selectedAnswer === false && isCorrect && "border-primary bg-primary/20 text-primary",
-            showResult && selectedAnswer !== false && "border-muted text-muted-foreground opacity-50",
-            showResult && activity.answer === false && selectedAnswer !== false && "border-primary/50 text-primary/50"
-          )}
-        >
-          F
-        </button>
-        <button
-          onClick={() => handleAnswer(true)}
-          disabled={showResult}
-          className={cn(
-            "w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-2xl transition-all duration-300",
-            !showResult && "border-primary/50 text-primary hover:border-primary hover:bg-primary/10 hover:scale-110",
-            showResult && selectedAnswer === true && isCorrect && "border-primary bg-primary/20 text-primary",
-            showResult && selectedAnswer === true && !isCorrect && "border-destructive bg-destructive/20 text-destructive",
-            showResult && selectedAnswer !== true && "border-muted text-muted-foreground opacity-50",
-            showResult && activity.answer === true && selectedAnswer !== true && "border-primary/50 text-primary/50"
-          )}
-        >
-          V
-        </button>
-      </div>
+      {/* Main Content */}
+      <section className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Course Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* About */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="glass-card p-6 sm:p-8 rounded-2xl"
+            >
+              <h3 className="text-xl sm:text-2xl font-bold mb-4">Acerca de este curso</h3>
+              <div 
+                className="prose prose-sm sm:prose text-muted-foreground max-w-none"
+                dangerouslySetInnerHTML={{ 
+                  __html: content.article_details?.content_text || content.description 
+                }} 
+              />
+            </motion.div>
 
-      {/* Feedback */}
-      {showResult && (
-        <div className={cn(
-          "p-4 rounded-xl animate-fade-in",
-          isCorrect ? "bg-primary/10 border border-primary/30" : "bg-destructive/10 border border-destructive/30"
-        )}>
-          <p className={cn(
-            "text-sm",
-            isCorrect ? "text-primary" : "text-destructive"
-          )}>
-            {activity.explanation}
-          </p>
+            {/* Lessons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="glass-card p-6 sm:p-8 rounded-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl sm:text-2xl font-bold">Contenido del Curso</h3>
+                <span className="text-sm text-muted-foreground">
+                  {totalLessons} lecciones • {content.estimated_duration} min
+                </span>
+              </div>
+              <div className="space-y-3">
+                {content.lessons?.map((lesson, index) => {
+                  const lessonProgress = content.lesson_progress?.[lesson.id];
+                  const isCompleted = lessonProgress?.status === "completed";
+                  const isLocked = !isEnrolled && index > 0;
+
+                  return (
+                    <LessonCard
+                      key={lesson.id}
+                      index={index}
+                      title={lesson.title}
+                      duration={lesson.estimated_duration}
+                      isCompleted={isCompleted}
+                      isLocked={isLocked}
+                      onClick={() => navigate(`/learn/course/${content.slug}/lesson/${lesson.id}`)}
+                    />
+                  );
+                })}
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right Column - Sidebar */}
+          <div className="space-y-6">
+            {/* Author Card */}
+            {content.author && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="glass-card p-6 rounded-2xl text-center"
+              >
+                <div className="relative inline-block mb-4">
+                  <img
+                    src={content.author.avatar || "/placeholder-avatar.png"}
+                    alt={content.author.full_name}
+                    className="w-20 h-20 rounded-full object-cover ring-4 ring-primary/20"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                </div>
+                <h4 className="font-semibold text-foreground">{content.author.full_name}</h4>
+                <p className="text-sm text-muted-foreground mb-4">Educador Verificado</p>
+                <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+                  <div className="text-center">
+                    <p className="font-bold text-foreground">12</p>
+                    <p className="text-xs">Cursos</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-bold text-foreground">5.2k</p>
+                    <p className="text-xs">Estudiantes</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Goals Card */}
+            {content.course_details?.goals && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="glass-card p-6 rounded-2xl"
+              >
+                <h4 className="font-semibold mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-primary" />
+                  Lo que aprenderás
+                </h4>
+                <ul className="space-y-3">
+                  {content.course_details.goals.map((goal, i) => (
+                    <li key={i} className="flex gap-3 text-sm text-muted-foreground">
+                      <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                      <span>{goal}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            )}
+
+            {/* Points Card */}
+            {content.course_details?.completion_points && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="gradient-primary p-6 rounded-2xl text-primary-foreground"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                    <Trophy className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{content.course_details.completion_points}</p>
+                    <p className="text-sm opacity-90">Puntos al completar</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
-      )}
-
-      {/* Retry button */}
-      {showResult && !isCorrect && (
-        <div className="flex justify-center">
-          <Button variant="outline" onClick={handleRetry}>
-            Intentar de nuevo
-          </Button>
-        </div>
-      )}
+      </section>
     </div>
   );
 };
+
+export default CourseDetail;
 
 
 import { useEffect, useState } from "react";
-import { Trophy, Star, Sparkles, X } from "lucide-react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { 
+  ChevronLeft, 
+  ChevronRight,
+  CheckCircle2, 
+  Menu, 
+  X,
+  BookOpen,
+  ArrowRight
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CourseSidebar } from "@/components/learn/CourseSidebar";
+import { VideoPlayer } from "@/components/learn/VideoPlayer";
+import { CourseProgress } from "@/components/learn/CourseProgress";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface RewardModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  points: number;
-  badge?: string;
-  totalPoints: number;
+// Types
+interface Activity {
+  id: number;
+  title: string;
+  type: string;
 }
 
-export const RewardModal = ({ isOpen, onClose, points, badge, totalPoints }: RewardModalProps) => {
-  const [showContent, setShowContent] = useState(false);
-  const [showPoints, setShowPoints] = useState(false);
-  const [showBadge, setShowBadge] = useState(false);
+interface Reference {
+  id: number;
+  title: string;
+  url: string;
+}
+
+interface Lesson {
+  id: number;
+  title: string;
+  estimated_duration: number;
+  content_text?: string;
+  media_url?: string;
+  activities?: Activity[];
+  references?: Reference[];
+}
+
+interface EducationalContent {
+  slug: string;
+  title: string;
+  lessons?: Lesson[];
+  enrollment?: {
+    progress_percentage: number;
+  };
+  lesson_progress?: Record<number, { status: string }>;
+}
+
+// Mock data
+const mockCourse: EducationalContent = {
+  slug: "biodiversidad-ecosistemas",
+  title: "Biodiversidad y Ecosistemas",
+  lessons: [
+    { 
+      id: 1, 
+      title: "Introducción a la Biodiversidad", 
+      estimated_duration: 15,
+      content_text: `
+        <h2>¿Qué es la Biodiversidad?</h2>
+        <p>La biodiversidad, o diversidad biológica, se refiere a la variedad de formas de vida que existen en nuestro planeta. Esta incluye todos los seres vivos, desde las bacterias más pequeñas hasta los animales más grandes, así como los ecosistemas en los que habitan.</p>
+        
+        <h3>Niveles de Biodiversidad</h3>
+        <p>La biodiversidad se puede estudiar en tres niveles principales:</p>
+        <ul>
+          <li><strong>Diversidad genética:</strong> La variación de genes dentro de una especie.</li>
+          <li><strong>Diversidad de especies:</strong> La variedad de especies en un área determinada.</li>
+          <li><strong>Diversidad de ecosistemas:</strong> La variedad de ecosistemas en una región.</li>
+        </ul>
+        
+        <h3>Importancia de la Biodiversidad</h3>
+        <p>La biodiversidad es esencial para el funcionamiento de los ecosistemas y proporciona numerosos servicios que benefician a la humanidad, incluyendo:</p>
+        <ul>
+          <li>Producción de oxígeno y purificación del aire</li>
+          <li>Regulación del clima</li>
+          <li>Provisión de alimentos y medicinas</li>
+          <li>Control natural de plagas</li>
+          <li>Polinización de cultivos</li>
+        </ul>
+      `,
+      media_url: "https://example.com/video1.mp4",
+      activities: [
+        { id: 1, title: "Quiz: Conceptos básicos", type: "quiz" }
+      ],
+      references: [
+        { id: 1, title: "WWF - What is Biodiversity?", url: "https://wwf.org" }
+      ]
+    },
+    { 
+      id: 2, 
+      title: "Tipos de Ecosistemas", 
+      estimated_duration: 20,
+      content_text: "<p>Contenido sobre tipos de ecosistemas...</p>"
+    },
+    { 
+      id: 3, 
+      title: "Cadenas Alimenticias", 
+      estimated_duration: 18,
+      content_text: "<p>Contenido sobre cadenas alimenticias...</p>"
+    },
+    { 
+      id: 4, 
+      title: "Impacto Humano", 
+      estimated_duration: 25,
+      content_text: "<p>Contenido sobre impacto humano...</p>"
+    },
+    { 
+      id: 5, 
+      title: "Conservación y Sostenibilidad", 
+      estimated_duration: 22,
+      content_text: "<p>Contenido sobre conservación...</p>"
+    },
+  ],
+  enrollment: {
+    progress_percentage: 35
+  },
+  lesson_progress: {
+    1: { status: "completed" },
+    2: { status: "completed" }
+  }
+};
+
+const LessonPlayer = () => {
+  const { courseSlug, lessonId } = useParams<{ courseSlug: string; lessonId: string }>();
+  const navigate = useNavigate();
+  const [course, setCourse] = useState<EducationalContent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      setShowContent(true);
-      setShowPoints(true);
-      setShowBadge(true);
-    }
-  }, [isOpen]);
+    const fetchContent = async () => {
+      try {
+        // Replace with actual API call
+        setTimeout(() => {
+          setCourse(mockCourse);
+          setLoading(false);
+        }, 500);
+      } catch (error) {
+        console.error("Error fetching course:", error);
+        setLoading(false);
+      }
+    };
+    fetchContent();
+  }, [courseSlug]);
 
-  if (!isOpen) return null;
+  // Close sidebar on larger screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <BookOpen className="w-16 h-16 text-muted-foreground" />
+        <p className="text-xl text-muted-foreground">Curso no encontrado</p>
+      </div>
+    );
+  }
+
+  const currentLesson = course.lessons?.find(l => l.id === Number(lessonId));
+  const currentLessonIndex = course.lessons?.findIndex(l => l.id === Number(lessonId)) ?? -1;
+  const nextLesson = course.lessons?.[currentLessonIndex + 1];
+  const previousLesson = course.lessons?.[currentLessonIndex - 1];
+
+  if (!currentLesson) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <BookOpen className="w-16 h-16 text-muted-foreground" />
+        <p className="text-xl text-muted-foreground">Lección no encontrada</p>
+        <Link to={`/learn/course/${courseSlug}`}>
+          <Button variant="outline">Volver al curso</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const handleLessonComplete = async () => {
+    setCompleting(true);
+    try {
+      // await completeLesson(currentLesson.id);
+      // Simulating completion
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (nextLesson) {
+        navigate(`/learn/course/${courseSlug}/lesson/${nextLesson.id}`);
+      } else {
+        navigate(`/learn/course/${courseSlug}`);
+      }
+    } catch (error) {
+      console.error("Error completing lesson:", error);
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  const isLessonCompleted = (id: number) => {
+    return course.lesson_progress?.[id]?.status === "completed";
+  };
+
+  const isCurrentLessonCompleted = isLessonCompleted(currentLesson.id);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-background/80 backdrop-blur-md"
-        onClick={onClose}
-      />
-      
-      {/* Confetti-like particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 2}s`,
-              animationDuration: `${3 + Math.random() * 2}s`
-            }}
+    <div className="h-screen flex flex-col overflow-hidden bg-background">
+      {/* Top Header */}
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="h-14 sm:h-16 border-b border-border flex items-center justify-between px-4 bg-background/95 backdrop-blur-sm z-30 shrink-0"
+      >
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden shrink-0"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            <Sparkles 
-              className="w-4 h-4 text-accent opacity-60" 
-              style={{ transform: `rotate(${Math.random() * 360}deg)` }}
+            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
+          
+          <Link to={`/learn/course/${courseSlug}`} className="shrink-0">
+            <Button variant="ghost" size="sm" className="gap-1 sm:gap-2">
+              <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Volver</span>
+            </Button>
+          </Link>
+
+          <div className="hidden md:block h-6 w-px bg-border" />
+
+          <h1 className="font-semibold text-sm sm:text-base truncate hidden md:block max-w-[300px] lg:max-w-md">
+            {course.title}
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Lección {currentLessonIndex + 1} de {course.lessons?.length}</span>
+          </div>
+          <div className="hidden md:block w-32">
+            <CourseProgress 
+              progress={course.enrollment?.progress_percentage || 0} 
+              size="sm" 
+              showLabel={false}
             />
           </div>
-        ))}
+        </div>
+      </motion.header>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <CourseSidebar
+          courseSlug={courseSlug || ""}
+          courseTitle={course.title}
+          lessons={course.lessons || []}
+          currentLessonId={currentLesson.id}
+          lessonProgress={course.lesson_progress || {}}
+          progressPercentage={course.enrollment?.progress_percentage || 0}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-hidden flex flex-col min-w-0">
+          <ScrollArea className="flex-1">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+              {/* Lesson Header */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 sm:mb-8"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <p className="text-sm text-primary font-medium mb-1">
+                      Lección {currentLessonIndex + 1}
+                    </p>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
+                      {currentLesson.title}
+                    </h2>
+                  </div>
+                  {isCurrentLessonCompleted && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-success/10 text-success rounded-full text-sm font-medium self-start sm:self-auto"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Completada
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+
+              {/* Video Player */}
+              {currentLesson.media_url && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="mb-8"
+                >
+                  <VideoPlayer 
+                    mediaUrl={currentLesson.media_url} 
+                    title={currentLesson.title}
+                  />
+                </motion.div>
+              )}
+
+              {/* Lesson Content */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="prose prose-sm sm:prose lg:prose-lg max-w-none mb-8"
+              >
+                <div 
+                  className="text-foreground [&>h2]:text-2xl [&>h2]:font-bold [&>h2]:mt-8 [&>h2]:mb-4 [&>h3]:text-xl [&>h3]:font-semibold [&>h3]:mt-6 [&>h3]:mb-3 [&>p]:text-muted-foreground [&>p]:leading-relaxed [&>p]:mb-4 [&>ul]:space-y-2 [&>ul]:my-4 [&>ul>li]:text-muted-foreground [&>ul>li]:pl-2"
+                  dangerouslySetInnerHTML={{ __html: currentLesson.content_text || "" }}
+                />
+              </motion.div>
+
+              {/* Activities Section */}
+              {currentLesson.activities && currentLesson.activities.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mb-8"
+                >
+                  <h3 className="text-xl font-bold mb-4">Actividades</h3>
+                  <div className="space-y-3">
+                    {currentLesson.activities.map((activity) => (
+                      <div
+                        key={activity.id}
+                        className="p-4 rounded-xl border border-border bg-card hover:border-primary/50 hover:shadow-md transition-all cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{activity.title}</p>
+                            <p className="text-sm text-muted-foreground capitalize">{activity.type}</p>
+                          </div>
+                          <ArrowRight className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* References Section */}
+              {currentLesson.references && currentLesson.references.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="mb-8"
+                >
+                  <h3 className="text-xl font-bold mb-4">Referencias</h3>
+                  <div className="space-y-2">
+                    {currentLesson.references.map((ref) => (
+                      <a
+                        key={ref.id}
+                        href={ref.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                      >
+                        <p className="text-sm text-primary hover:underline">{ref.title}</p>
+                      </a>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Navigation Footer */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-8 border-t border-border"
+              >
+                <div>
+                  {previousLesson && (
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate(`/learn/course/${courseSlug}/lesson/${previousLesson.id}`)}
+                      className="w-full sm:w-auto"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-2" />
+                      Anterior
+                    </Button>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {!isCurrentLessonCompleted && (
+                    <Button
+                      variant="outline"
+                      onClick={handleLessonComplete}
+                      disabled={completing}
+                      className="w-full sm:w-auto"
+                    >
+                      {completing ? (
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"
+                        />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                      )}
+                      Marcar como Completada
+                    </Button>
+                  )}
+                  
+                  {nextLesson && (
+                    <Button
+                      onClick={() => navigate(`/learn/course/${courseSlug}/lesson/${nextLesson.id}`)}
+                      className="w-full sm:w-auto gradient-primary"
+                    >
+                      Siguiente Lección
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  )}
+
+                  {!nextLesson && (
+                    <Button
+                      onClick={() => navigate(`/learn/course/${courseSlug}`)}
+                      className="w-full sm:w-auto gradient-primary"
+                    >
+                      Finalizar Curso
+                      <CheckCircle2 className="w-4 h-4 ml-2" />
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          </ScrollArea>
+        </main>
       </div>
+    </div>
+  );
+};
 
-      {/* Modal */}
-      <div className={cn(
-        "relative z-10 glass-card border-accent/50 p-8 max-w-md w-full mx-4 text-center transition-all duration-500",
-        showContent ? "scale-100 opacity-100" : "scale-90 opacity-0"
-      )}>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+export default LessonPlayer;
 
-        {/* Trophy Icon */}
-        <div className="relative w-24 h-24 mx-auto mb-6">
-          <div className="absolute inset-0 bg-gradient-to-br from-accent to-[hsl(28,85%,40%)] rounded-full blur-xl opacity-50 animate-pulse" />
-          <div className="relative w-full h-full bg-gradient-to-br from-accent to-[hsl(28,85%,50%)] rounded-full flex items-center justify-center">
-            <Trophy className="w-12 h-12 text-accent-foreground" />
-          </div>
+
+compontentes
+
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+interface CourseProgressProps {
+  progress: number;
+  size?: "sm" | "md" | "lg";
+  showLabel?: boolean;
+  className?: string;
+}
+
+export const CourseProgress = ({ 
+  progress, 
+  size = "md", 
+  showLabel = true,
+  className 
+}: CourseProgressProps) => {
+  const heights = {
+    sm: "h-1.5",
+    md: "h-2.5",
+    lg: "h-4",
+  };
+
+  return (
+    <div className={cn("w-full", className)}>
+      {showLabel && (
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-xs font-medium text-muted-foreground">Tu progreso</span>
+          <span className="text-xs font-bold text-primary">{Math.round(progress)}%</span>
         </div>
-
-        {/* Title */}
-        <h2 className="font-display text-3xl font-bold text-foreground mb-2">
-          ¡Felicitaciones!
-        </h2>
-        <p className="text-muted-foreground mb-8">
-          Has completado la actividad correctamente
-        </p>
-
-        {/* Points */}
-        <div className={cn(
-          "transition-all duration-500 mb-6",
-          showPoints ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-        )}>
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-primary/20 rounded-2xl border border-primary/30">
-            <Star className="w-6 h-6 text-primary fill-primary" />
-            <div className="text-left">
-              <span className="text-3xl font-bold text-primary">+{points}</span>
-              <p className="text-xs text-muted-foreground">puntos ganados</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Badge */}
-        {badge && (
-          <div className={cn(
-            "transition-all duration-500 mb-8",
-            showBadge ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-          )}>
-            <div className="inline-flex flex-col items-center gap-2 px-6 py-4 bg-accent/10 rounded-2xl border border-accent/30">
-              <span className="text-5xl">{badge}</span>
-              <p className="text-sm text-accent font-medium">¡Nueva insignia!</p>
-            </div>
-          </div>
-        )}
-
-        {/* Total Points */}
-        <div className="pt-4 border-t border-border/50 mb-6">
-          <p className="text-sm text-muted-foreground">
-            Puntos totales del curso: <span className="font-bold text-foreground">{totalPoints}</span>
-          </p>
-        </div>
-
-        <Button variant="hero" size="lg" onClick={onClose} className="w-full">
-          ¡Continuar!
-        </Button>
+      )}
+      <div className={cn("w-full bg-progress rounded-full overflow-hidden", heights[size])}>
+        <motion.div
+          className={cn("h-full bg-progress-fill rounded-full", heights[size])}
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        />
       </div>
     </div>
   );
 };
 
 
-<p>Los murciélagos de Colombia incluyen especies que se alimentan de frutas, néctar e insectos y cumplen funciones clave para el equilibrio de los ecosistemas. Los murciélagos insectívoros consumen grandes cantidades de insectos voladores, incluidos mosquitos que pueden transmitir enfermedades, lo que tiene un impacto directo en la salud pública¹,². A su vez, los murciélagos frugívoros favorecen la dispersión de semillas y la recuperación de bosques degradados, mientras que los nectarívoros participan en la polinización de numerosas plantas, especialmente en ecosistemas tropicales de montaña.</p><p>No obstante, pese a estos beneficios, la percepción social suele centrarse en su posible papel como portadores de enfermedades. La relación entre murciélagos, insectos transmisores —como los mosquitos del género <em>Anopheles</em>— y las enfermedades humanas es compleja y está fuertemente influenciada por la destrucción de hábitats, la pérdida de barreras ecológicas y el aumento del contacto entre fauna silvestre y personas. En Colombia, además, la investigación y la educación formal han priorizado a los insectos de importancia médica, dejando en segundo plano el rol ecológico de los murciélagos que se alimentan de ellos¹,².</p><p><img src="http://127.0.0.1:8000/storage/vSrO2HbkMq1w3M0qhm0SMXl3yhz2XTAKLe8QnBvI.jpg" alt="El Saccopteryx antioquensis es end&eacute;mico de Colombia. Foto:Mauricio Cardona Ram&iacute;rez" data-id="vSrO2HbkMq1w3M0qhm0SMXl3yhz2XTAKLe8QnBvI.jpg"></p><p>A esto se suma que la pérdida de hábitat, la urbanización, el cierre de cuevas y el uso de plaguicidas reducen los recursos y refugios disponibles para los murciélagos, afectando su capacidad para brindar servicios ecosistémicos. En entornos urbanos, muchas colonias son eliminadas por miedo o desinformación, a pesar de que los murciélagos tropicales son sensibles a cambios de temperatura y humedad en sus refugios, lo que puede alterar su equilibrio energético y fisiológico. Frente a este panorama, las estrategias educativas activas, como las salidas de campo, han demostrado ser eficaces para mejorar la comprensión y promover el cuidado del entorno⁴, por lo que integrar a los murciélagos en estas experiencias puede ayudar a transformarlos de “animales peligrosos” en aliados fundamentales del ecosistema y la agricultura.</p>
+import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
+import { CheckCircle2, Lock, PlayCircle, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { CourseProgress } from "./CourseProgress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+interface Lesson {
+  id: number;
+  title: string;
+  estimated_duration: number;
+}
+
+interface CourseSidebarProps {
+  courseSlug: string;
+  courseTitle: string;
+  lessons: Lesson[];
+  currentLessonId: number;
+  lessonProgress: Record<number, { status: string }>;
+  progressPercentage: number;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const CourseSidebar = ({
+  courseSlug,
+  courseTitle,
+  lessons,
+  currentLessonId,
+  lessonProgress,
+  progressPercentage,
+  isOpen,
+  onClose,
+}: CourseSidebarProps) => {
+  const isLessonCompleted = (lessonId: number) => {
+    return lessonProgress[lessonId]?.status === "completed";
+  };
+
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="p-4 border-b border-sidebar-border bg-sidebar">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-sidebar-foreground text-sm truncate pr-2">
+            {courseTitle}
+          </h3>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 lg:hidden"
+            onClick={onClose}
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+        <CourseProgress progress={progressPercentage} size="sm" />
+      </div>
+
+      {/* Lessons List */}
+      <ScrollArea className="flex-1">
+        <div className="p-2">
+          {lessons.map((lesson, idx) => {
+            const active = lesson.id === currentLessonId;
+            const completed = isLessonCompleted(lesson.id);
+            const locked =
+              !completed &&
+              idx > 0 &&
+              !isLessonCompleted(lessons[idx - 1].id);
+
+            return (
+              <Link
+                key={lesson.id}
+                to={locked ? "#" : `/learn/course/${courseSlug}/lesson/${lesson.id}`}
+                onClick={(e) => {
+                  if (locked) e.preventDefault();
+                  if (!locked && window.innerWidth < 1024) onClose();
+                }}
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-lg mb-1 transition-all duration-200",
+                  active && "bg-sidebar-accent text-sidebar-accent-foreground",
+                  !active && !locked && "hover:bg-sidebar-accent/50",
+                  locked && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                <div className="shrink-0">
+                  {completed ? (
+                    <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-success" />
+                    </div>
+                  ) : locked ? (
+                    <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                      <Lock className="w-3 h-3 text-muted-foreground" />
+                    </div>
+                  ) : active ? (
+                    <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                      <PlayCircle className="w-4 h-4 text-primary-foreground" />
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-xs font-medium">
+                      {idx + 1}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={cn(
+                      "text-sm font-medium truncate",
+                      active ? "text-sidebar-primary" : "text-sidebar-foreground"
+                    )}
+                  >
+                    {lesson.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {lesson.estimated_duration} min
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+            onClick={onClose}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{
+          x: isOpen ? 0 : "-100%",
+        }}
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className={cn(
+          "fixed lg:relative z-50 lg:z-auto",
+          "w-[280px] lg:w-72 h-full",
+          "bg-sidebar border-r border-sidebar-border",
+          "lg:translate-x-0"
+        )}
+      >
+        {sidebarContent}
+      </motion.aside>
+    </>
+  );
+};
+
+
+import { motion } from "framer-motion";
+import { CheckCircle2, Lock, PlayCircle, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface LessonCardProps {
+  index: number;
+  title: string;
+  duration: number;
+  isCompleted: boolean;
+  isLocked: boolean;
+  isActive?: boolean;
+  onClick?: () => void;
+}
+
+export const LessonCard = ({
+  index,
+  title,
+  duration,
+  isCompleted,
+  isLocked,
+  isActive = false,
+  onClick,
+}: LessonCardProps) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      onClick={!isLocked ? onClick : undefined}
+      className={cn(
+        "group flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer",
+        isCompleted && "border-success/30 bg-success/5",
+        isActive && "border-primary bg-primary/5 ring-2 ring-primary/20",
+        isLocked && "opacity-60 cursor-not-allowed",
+        !isCompleted && !isActive && !isLocked && "border-border hover:border-primary/50 hover:bg-muted/50 hover:shadow-md"
+      )}
+    >
+      <div
+        className={cn(
+          "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 transition-all duration-300",
+          isCompleted && "bg-success/20 text-success",
+          isActive && "bg-primary text-primary-foreground",
+          isLocked && "bg-muted text-muted-foreground",
+          !isCompleted && !isActive && !isLocked && "bg-secondary text-secondary-foreground group-hover:bg-primary/10 group-hover:text-primary"
+        )}
+      >
+        {isCompleted ? (
+          <CheckCircle2 className="w-5 h-5" />
+        ) : isLocked ? (
+          <Lock className="w-4 h-4" />
+        ) : isActive ? (
+          <PlayCircle className="w-5 h-5" />
+        ) : (
+          index + 1
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <h4
+          className={cn(
+            "font-medium text-foreground truncate transition-colors",
+            isActive && "text-primary",
+            isLocked && "text-muted-foreground"
+          )}
+        >
+          {title}
+        </h4>
+        <div className="flex items-center gap-2 mt-1">
+          <Clock className="w-3 h-3 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">{duration} min</span>
+        </div>
+      </div>
+
+      {isCompleted && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="px-2.5 py-1 bg-success/10 text-success text-xs font-medium rounded-full"
+        >
+          Completado
+        </motion.div>
+      )}
+
+      {!isLocked && !isCompleted && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <PlayCircle className="w-5 h-5 text-primary" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+};

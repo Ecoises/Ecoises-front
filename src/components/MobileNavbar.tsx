@@ -6,17 +6,27 @@ interface MobileNavbarProps {
   // No necesitamos props adicionales ahora
 }
 
-const MobileNavbar = ({}: MobileNavbarProps) => {
+const MobileNavbar = ({ }: MobileNavbarProps) => {
   const location = useLocation();
-  
+
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
       <div className="flex justify-around items-center">
         {mobileNavItems.map((item, index) => {
           const Icon = item.icon;
-          const active = location.pathname === item.to;
+
+          const isSpeciesDetail = item.to === '/explorer' && location.pathname.startsWith('/species/');
+          let active = false;
+
+          if (item.to === '/explorer') {
+            active = location.pathname === item.to || isSpeciesDetail;
+          } else {
+            // General prefix match (excluding root mismatch)
+            active = location.pathname === item.to || (item.to !== '/' && item.to !== '/home' && location.pathname.startsWith(item.to + '/'));
+          }
+
           const isCenter = index === Math.floor(mobileNavItems.length / 2);
-          
+
           return (
             <Link
               key={item.to}
@@ -28,8 +38,8 @@ const MobileNavbar = ({}: MobileNavbarProps) => {
             >
               <div className={cn(
                 "flex items-center justify-center rounded-lg",
-                isCenter 
-                  ? "bg-lime-500 p-4 shadow-lg" 
+                isCenter
+                  ? "bg-lime-500 p-4 shadow-lg"
                   : "p-2",
                 active && !isCenter ? "text-lime-600" : isCenter ? "text-white" : "text-forest-700"
               )}>

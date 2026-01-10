@@ -7,15 +7,16 @@ import { cn } from "@/lib/utils";
 interface QuizMultipleProps {
     activity: Activity;
     onComplete: (correct: boolean, points: number, badge?: string) => void;
+    isCompleted?: boolean;
 }
 
-export const QuizMultiple = ({ activity, onComplete }: QuizMultipleProps) => {
+export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: QuizMultipleProps) => {
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
 
     const handleOptionSelect = (optionId: string) => {
-        if (showResult) return; // Already answered
+        if (showResult || isCompleted) return; // Already answered or completed
 
         setSelectedOption(optionId);
         const option = activity.options?.find(o => o.id === optionId);
@@ -41,14 +42,22 @@ export const QuizMultiple = ({ activity, onComplete }: QuizMultipleProps) => {
 
     return (
         <div className="glass-card p-6 space-y-6">
-            <div className="flex items-start gap-3">
-                <div className="p-2 bg-primary/20 rounded-xl">
-                    <HelpCircle className="w-5 h-5 text-primary" />
+            <div className="flex items-center justify-between">
+                <div className="flex items-start gap-3">
+                    <div className="p-2 bg-primary/20 rounded-xl">
+                        <HelpCircle className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wide">Selección Múltiple</span>
+                        <h4 className="font-display font-semibold text-foreground mt-1">{activity.title}</h4>
+                    </div>
                 </div>
-                <div>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Selección Múltiple</span>
-                    <h4 className="font-display font-semibold text-foreground mt-1">{activity.title}</h4>
-                </div>
+                {isCompleted && (
+                    <div className="flex items-center gap-2 text-success text-sm font-medium bg-success/10 px-3 py-1.5 rounded-full">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Completada
+                    </div>
+                )}
             </div>
 
             <div className="space-y-3">
@@ -56,25 +65,25 @@ export const QuizMultiple = ({ activity, onComplete }: QuizMultipleProps) => {
                     <button
                         key={option.id}
                         onClick={() => handleOptionSelect(option.id)}
-                        disabled={showResult}
+                        disabled={showResult || isCompleted}
                         className={cn(
                             "w-full text-left p-4 rounded-xl border-2 transition-all duration-300",
                             !showResult && selectedOption === option.id && "border-accent bg-accent/10",
-                            !showResult && selectedOption !== option.id && "border-border/50 hover:border-accent/50 hover:bg-secondary/50",
-                            showResult && option.isCorrect && "border-primary bg-primary/20",
+                            !showResult && selectedOption !== option.id && !isCompleted && "border-border/50 hover:border-accent/50 hover:bg-secondary/50",
+                            (showResult || isCompleted) && option.isCorrect && "border-primary bg-primary/20",
                             showResult && !option.isCorrect && selectedOption === option.id && "border-destructive bg-destructive/10",
-                            showResult && selectedOption !== option.id && "opacity-50",
-                            showResult && "cursor-default"
+                            (showResult || isCompleted) && selectedOption !== option.id && !option.isCorrect && "opacity-50",
+                            (showResult || isCompleted) && "cursor-default"
                         )}
                     >
                         <div className="flex items-center justify-between">
                             <span className={cn(
                                 "font-medium",
-                                showResult && option.isCorrect && "text-primary"
+                                (showResult || isCompleted) && option.isCorrect && "text-primary"
                             )}>
                                 {option.text}
                             </span>
-                            {showResult && option.isCorrect && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                            {(showResult || isCompleted) && option.isCorrect && <CheckCircle2 className="w-5 h-5 text-primary" />}
                             {showResult && !option.isCorrect && selectedOption === option.id && <XCircle className="w-5 h-5 text-destructive" />}
                         </div>
                     </button>

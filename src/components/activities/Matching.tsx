@@ -7,9 +7,10 @@ import { cn } from "@/lib/utils";
 interface MatchingProps {
     activity: Activity;
     onComplete: (correct: boolean, points: number, badge?: string) => void;
+    isCompleted?: boolean;
 }
 
-export const Matching = ({ activity, onComplete }: MatchingProps) => {
+export const Matching = ({ activity, onComplete, isCompleted = false }: MatchingProps) => {
     const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
     const [connections, setConnections] = useState<Record<string, string>>({});
     const [showResult, setShowResult] = useState(false);
@@ -23,7 +24,7 @@ export const Matching = ({ activity, onComplete }: MatchingProps) => {
     );
 
     const handleTermClick = (termId: string) => {
-        if (showResult) return;
+        if (showResult || isCompleted) return;
 
         // If already connected, disconnect
         if (connections[termId]) {
@@ -39,7 +40,7 @@ export const Matching = ({ activity, onComplete }: MatchingProps) => {
     };
 
     const handleMatchClick = (matchId: string) => {
-        if (showResult || !selectedTerm) return;
+        if (showResult || !selectedTerm || isCompleted) return;
 
         // Check if this match is already used
         const existingTerm = Object.keys(connections).find(t => connections[t] === matchId);
@@ -97,14 +98,22 @@ export const Matching = ({ activity, onComplete }: MatchingProps) => {
 
     return (
         <div className="glass-card p-6 space-y-6">
-            <div className="flex items-start gap-3">
-                <div className="p-2 bg-purple-100 rounded-xl">
-                    <Link2 className="w-5 h-5 text-purple-600" />
+            <div className="flex items-center justify-between">
+                <div className="flex items-start gap-3">
+                    <div className="p-2 bg-purple-100 rounded-xl">
+                        <Link2 className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wide">Emparejamiento</span>
+                        <h4 className="font-display font-semibold text-foreground mt-1">{activity.instruction}</h4>
+                    </div>
                 </div>
-                <div>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Emparejamiento</span>
-                    <h4 className="font-display font-semibold text-foreground mt-1">{activity.instruction}</h4>
-                </div>
+                {isCompleted && (
+                    <div className="flex items-center gap-2 text-success text-sm font-medium bg-success/10 px-3 py-1.5 rounded-full">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Completada
+                    </div>
+                )}
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -122,15 +131,16 @@ export const Matching = ({ activity, onComplete }: MatchingProps) => {
                                 <button
                                     key={pair.id}
                                     onClick={() => handleTermClick(pair.id)}
-                                    disabled={showResult}
+                                    disabled={showResult || isCompleted}
                                     className={cn(
                                         "w-full text-left p-3 rounded-xl border-2 transition-all duration-300 flex items-center justify-between",
-                                        !showResult && !isConnected && !isSelected && "border-border/50 hover:border-purple-300",
+                                        !showResult && !isConnected && !isSelected && !isCompleted && "border-border/50 hover:border-purple-300",
+                                        !showResult && !isConnected && isCompleted && "border-border/50 opacity-50 cursor-default",
                                         !showResult && isSelected && "border-purple-500 bg-purple-50",
                                         !showResult && isConnected && "border-purple-200",
                                         isCorrectMatch && "border-green-500 bg-green-50",
                                         isWrongMatch && "border-red-500 bg-red-50",
-                                        showResult && "cursor-default"
+                                        (showResult || isCompleted) && "cursor-default"
                                     )}
                                 >
                                     <span className={cn(
@@ -169,15 +179,15 @@ export const Matching = ({ activity, onComplete }: MatchingProps) => {
                                 <button
                                     key={pair.id}
                                     onClick={() => handleMatchClick(pair.id)}
-                                    disabled={showResult || !selectedTerm}
+                                    disabled={showResult || !selectedTerm || isCompleted}
                                     className={cn(
                                         "w-full text-left p-3 rounded-xl border-2 transition-all duration-300 flex items-center gap-3",
-                                        !showResult && !isConnected && selectedTerm && "border-border/50 hover:border-purple-300 cursor-pointer",
-                                        !showResult && !isConnected && !selectedTerm && "border-border/50 cursor-default",
+                                        !showResult && !isConnected && selectedTerm && !isCompleted && "border-border/50 hover:border-purple-300 cursor-pointer",
+                                        !showResult && !isConnected && (!selectedTerm || isCompleted) && "border-border/50 cursor-default",
                                         !showResult && isConnected && "border-purple-200",
                                         isCorrectMatch && "border-green-500 bg-green-50",
                                         isWrongMatch && "border-red-500 bg-red-50",
-                                        showResult && "cursor-default"
+                                        (showResult || isCompleted) && "cursor-default"
                                     )}
                                 >
                                     {isConnected && connectedTermId && (
@@ -223,9 +233,9 @@ export const Matching = ({ activity, onComplete }: MatchingProps) => {
                         Intentar de nuevo
                     </Button>
                 )}
-                {!showResult && (
+                {!showResult && !isCompleted && (
                     <Button
-                        variant="default" // accent > default
+                        variant="default"
                         onClick={handleSubmit}
                         disabled={!allConnected}
                         className="bg-purple-600 hover:bg-purple-700 text-white"

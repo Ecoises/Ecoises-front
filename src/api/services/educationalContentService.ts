@@ -99,6 +99,7 @@ export interface EducationalContent {
     // Progress fields (attached if authenticated)
     enrollment?: Enrollment;
     lesson_progress?: Record<number, LessonProgress>;
+    completed_activities?: number[];
 }
 
 export const getEducationalContents = async (params?: { search?: string; category?: string }) => {

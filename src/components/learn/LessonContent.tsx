@@ -49,7 +49,7 @@ export const LessonContent = ({ htmlContent, className = '' }: LessonContentProp
     return (
         <div
             ref={contentRef}
-            className={`lesson-content prose lg:prose-xl max-w-none dark:prose-invert ${className}`}
+            className={`lesson-content prose prose-sm sm:prose lg:prose-xl max-w-none dark:prose-invert [&>img]:mx-auto [&>img]:max-w-full [&>figure]:mx-auto [&>figure]:max-w-full ${className}`}
             dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
     );

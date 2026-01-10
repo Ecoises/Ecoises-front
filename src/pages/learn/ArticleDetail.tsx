@@ -51,41 +51,33 @@ const ArticleDetail = () => {
                 </div>
             </nav>
 
-            <div className="container mx-auto px-6 py-12">
-                <div className="flex flex-col lg:flex-row gap-12">
-                    <article className="flex-1 max-w-3xl mx-auto lg:mx-0">
-                        <header className="mb-12 animate-fade-in">
-                            <div className="flex gap-3 mb-6">
-                                {content.categories?.map(cat => (
-                                    <span key={cat.id} className="px-3 py-1 text-xs font-medium bg-secondary rounded-full text-secondary-foreground">
-                                        {cat.name}
-                                    </span>
-                                ))}
-                            </div>
+            <div className="container mx-auto px-6 py-8 sm:py-12">
+                {/* Header Section (Title + Image) - Full Width */}
+                <header className="mb-8 lg:mb-12 animate-fade-in max-w-5xl mx-auto">
+                    <div className="flex gap-3 mb-6 flex-wrap">
+                        {content.categories?.map(cat => (
+                            <span key={cat.id} className="px-3 py-1 text-xs font-medium bg-secondary rounded-full text-secondary-foreground">
+                                {cat.name}
+                            </span>
+                        ))}
+                    </div>
 
-                            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
-                                {content.title}
-                            </h1>
+                    <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
+                        {content.title}
+                    </h1>
 
-                            <p className="text-xl text-muted-foreground leading-relaxed">
-                                {content.description}
-                            </p>
-                        </header>
+                    <p className="text-xl text-muted-foreground leading-relaxed mb-8">
+                        {content.description}
+                    </p>
 
-                        <div className="mb-12 rounded-2xl overflow-hidden shadow-lg">
-                            <img src={imageUrl} alt={content.title} className="w-full h-auto object-cover max-h-[500px]" />
-                        </div>
+                    <div className="rounded-2xl overflow-hidden shadow-lg aspect-video lg:aspect-[2/1]">
+                        <img src={imageUrl} alt={content.title} className="w-full h-full object-cover" />
+                    </div>
+                </header>
 
-                        <LessonContent
-                            htmlContent={content.article_details?.content_text || ''}
-                            className="animate-slide-up"
-                        />
-
-                        {/* References */}
-                        <References references={content.article_details?.references} className="animate-slide-up" />
-                    </article>
-
-                    <aside className="lg:w-80 shrink-0">
+                <div className="flex flex-col lg:flex-row gap-12 max-w-5xl mx-auto">
+                    {/* Sidebar - Mobile: First, Desktop: Second (Right) */}
+                    <aside className="lg:w-80 shrink-0 lg:order-2">
                         <div className="lg:sticky lg:top-24 space-y-6">
                             {content.author && (
                                 <div className="glass-card p-6 text-center border rounded-xl bg-white/50">
@@ -139,6 +131,17 @@ const ArticleDetail = () => {
                             )}
                         </div>
                     </aside>
+
+                    {/* Main Content - Mobile: Second, Desktop: First (Left) */}
+                    <article className="flex-1 lg:order-1 min-w-0">
+                        <LessonContent
+                            htmlContent={content.article_details?.content_text || ''}
+                            className="animate-slide-up"
+                        />
+
+                        {/* References */}
+                        <References references={content.article_details?.references} className="animate-slide-up" />
+                    </article>
                 </div>
             </div>
         </div>
