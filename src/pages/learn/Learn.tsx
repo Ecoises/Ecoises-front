@@ -1,139 +1,89 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, X, BookOpen, Clock } from "lucide-react";
+import { Search, Filter, X, BookOpen, Clock, FileText, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { getEducationalContents, EducationalContent } from "@/api/services/educationalContentService";
 
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  duration: string;
-  level: string;
-  category: string;
-}
-
-const courses: Course[] = [
-  {
-    id: "1",
-    title: "Introducción a la Observación de Aves",
-    description: "Aprende los conceptos básicos para identificar aves en tu entorno y comenzar tu viaje en el birdwatching.",
-    image: "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=600&h=400",
-    duration: "2 horas",
-    level: "Principiante",
-    category: "Fundamentos"
-  },
-  {
-    id: "2",
-    title: "Identificación por Cantos y Llamados",
-    description: "Desarrolla tu oído para reconocer las diferentes especies de aves por sus vocalizaciones.",
-    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=600&h=400",
-    duration: "3 horas",
-    level: "Intermedio",
-    category: "Técnicas"
-  },
-  {
-    id: "3",
-    title: "Fotografía de Aves",
-    description: "Técnicas y consejos para capturar imágenes espectaculares de aves en su hábitat natural.",
-    image: "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=600&h=400",
-    duration: "4 horas",
-    level: "Avanzado",
-    category: "Fotografía"
-  },
-  {
-    id: "4",
-    title: "Aves Migratorias de Colombia",
-    description: "Conoce las especies migratorias que visitan Colombia y los mejores momentos para observarlas.",
-    image: "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?auto=format&fit=crop&w=600&h=400",
-    duration: "2.5 horas",
-    level: "Intermedio",
-    category: "Ecología"
-  },
-  {
-    id: "5",
-    title: "Conservación y Hábitats",
-    description: "Entiende la importancia de la conservación de hábitats para la supervivencia de las aves.",
-    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&h=400",
-    duration: "3 horas",
-    level: "Principiante",
-    category: "Conservación"
-  },
-  {
-    id: "6",
-    title: "Aves Endémicas de Colombia",
-    description: "Descubre las especies únicas que solo pueden encontrarse en territorio colombiano.",
-    image: "https://images.unsplash.com/photo-1470093851219-69951fcbb533?auto=format&fit=crop&w=600&h=400",
-    duration: "3.5 horas",
-    level: "Intermedio",
-    category: "Biodiversidad"
-  },
-  {
-    id: "7",
-    title: "Equipamiento para Observación de Aves",
-    description: "Guía completa sobre binoculares, telescopios y otros equipos esenciales para el birdwatching.",
-    image: "https://images.unsplash.com/photo-1516567727245-ad8290f92f3d?auto=format&fit=crop&w=600&h=400",
-    duration: "1.5 horas",
-    level: "Principiante",
-    category: "Fundamentos"
-  },
-  {
-    id: "8",
-    title: "Comportamiento y Etología Aviar",
-    description: "Profundiza en los patrones de comportamiento de las aves y su significado ecológico.",
-    image: "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?auto=format&fit=crop&w=600&h=400",
-    duration: "4 horas",
-    level: "Avanzado",
-    category: "Ecología"
-  }
-];
-
-const CourseCard = ({ course }: { course: Course }) => {
+const CourseCard = ({ course }: { course: EducationalContent }) => {
   const getLevelColor = (level: string) => {
     switch (level) {
-      case "Principiante":
+      case "beginner":
         return "bg-green-100 text-green-800";
-      case "Intermedio":
+      case "intermediate":
         return "bg-yellow-100 text-yellow-800";
-      case "Avanzado":
+      case "advanced":
         return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
+  const getLevelLabel = (level: string) => {
+    switch (level) {
+      case "beginner": return "Principiante";
+      case "intermediate": return "Intermedio";
+      case "advanced": return "Avanzado";
+      default: return level;
+    }
+  };
+
+  const categoryName = course.categories?.[0]?.name || "General";
+  // Fallback image if thumbnail_url is empty
+  const imageUrl = course.thumbnail_url
+    ? (course.thumbnail_url.startsWith('http') ? course.thumbnail_url : `${import.meta.env.VITE_APP_API_URL || 'http://localhost:8000'}/storage/${course.thumbnail_url}`)
+    : "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&h=400"; // Generic nature image
+
   return (
     <Link to={`/learn/${course.id}`}>
-      <Card className="overflow-hidden card-hover h-full transition-all duration-300">
-        <div className="relative h-48">
+      <Card className="overflow-hidden card-hover h-full transition-all duration-300 flex flex-col">
+        <div className="relative h-48 flex-shrink-0">
           <img
-            src={course.image}
+            src={imageUrl}
             alt={course.title}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&h=400";
+            }}
           />
           <div className="absolute top-3 right-3">
-            <Badge className={getLevelColor(course.level)}>
-              {course.level}
+            <Badge className={getLevelColor(course.difficulty_level)}>
+              {getLevelLabel(course.difficulty_level)}
             </Badge>
           </div>
         </div>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-2 text-forest-600 text-xs">
+        <div className="p-4 flex flex-col flex-grow">
+          <div className="flex items-center gap-2 mb-2 text-forest-600 text-xs text-muted-foreground">
             <BookOpen className="h-3 w-3" />
-            <span>{course.category}</span>
+            <span>{categoryName}</span>
             <span className="text-forest-400">•</span>
             <Clock className="h-3 w-3" />
-            <span>{course.duration}</span>
+            <span>{course.estimated_duration} min</span>
           </div>
           <h3 className="font-heading font-bold text-forest-900 text-lg mb-2">
             {course.title}
           </h3>
-          <p className="text-forest-700 text-sm line-clamp-2">
+          <p className="text-forest-700 text-sm line-clamp-2 mb-4 flex-grow">
             {course.description}
           </p>
+
+          <div className="mt-auto pt-2 border-t border-gray-100">
+            <Badge variant="outline" className="gap-1.5 font-normal text-forest-600 border-lime-200 bg-lime-50/50">
+              {course.content_type === 'article' ? (
+                <>
+                  <FileText className="h-3 w-3" />
+                  <span>Artículo</span>
+                </>
+              ) : (
+                <>
+                  <GraduationCap className="h-3 w-3" />
+                  <span>Curso Modular</span>
+                </>
+              )}
+            </Badge>
+          </div>
         </div>
       </Card>
     </Link>
@@ -143,14 +93,33 @@ const CourseCard = ({ course }: { course: Course }) => {
 const Learn = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [contents, setContents] = useState<EducationalContent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredCourses = courses.filter((course) => {
+  useEffect(() => {
+    const fetchContents = async () => {
+      setLoading(true);
+      try {
+        const data = await getEducationalContents();
+        console.log("Datos recibidos:", data); // Debug
+        setContents(data);
+      } catch (error) {
+        console.error("Error fetching educational contents:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContents();
+  }, []);
+
+  const filteredCourses = contents.filter((course) => {
     if (!searchTerm) return true;
     const searchLower = searchTerm.toLowerCase();
     return (
       course.title.toLowerCase().includes(searchLower) ||
-      course.description.toLowerCase().includes(searchLower) ||
-      course.category.toLowerCase().includes(searchLower)
+      course.description.toLowerCase().includes(searchLower)
+      // Category search matches internal structure
     );
   });
 
@@ -161,9 +130,9 @@ const Learn = () => {
       {/* Header */}
       <div>
         <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2">
-          Aprende sobre Aves
+          Centro de Aprendizaje
         </h1>
-        <p className="text-forest-700">Cursos y recursos para convertirte en un experto observador de aves</p>
+        <p className="text-forest-700">Recursos educativos para explorar y conservar la biodiversidad</p>
       </div>
 
       {/* Search and filters */}
@@ -201,11 +170,17 @@ const Learn = () => {
       <div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-heading font-bold text-forest-900">
-            {filteredCourses.length} Cursos Disponibles
+            {loading ? "Cargando..." : `${filteredCourses.length} Recursos Disponibles`}
           </h2>
         </div>
 
-        {filteredCourses.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i} className="h-72 animate-pulse bg-gray-100" />
+            ))}
+          </div>
+        ) : filteredCourses.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredCourses.map((course) => (
               <CourseCard key={course.id} course={course} />
