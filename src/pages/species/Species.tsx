@@ -1,9 +1,9 @@
 import { useState, FC, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Filter, X, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import {
   Pagination,
@@ -17,7 +17,10 @@ import {
 import { useSpecies } from "@/hooks/useSpecies";
 import { Taxon } from "@/types/api";
 
-
+// ... (SpeciesCard component stays same, omitted here for brevity if I could, but need to be precise)
+// I will keep SpeciesCard as is in my mind, but since I am replacing the top part, I need to assume imports are at the top.
+// Wait, replace_file_content replaces a block.
+// I will target the imports down to the 'const Species = ...'
 
 const getConservationStatusColor = (status: string) => {
   switch (status) {
@@ -59,6 +62,11 @@ const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
           <p className="text-forest-700 text-sm italic">
             {species.scientific_name}
           </p>
+          {species.establishment_status_colombia && (
+            <Badge variant="outline" className={`mt-2 ${species.is_native ? 'border-green-500 text-green-700' : 'border-orange-500 text-orange-700'}`}>
+              {species.establishment_status_colombia}
+            </Badge>
+          )}
         </div>
       </Card>
     </Link>
@@ -66,39 +74,72 @@ const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
 };
 
 const Species = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filtersVisible, setFiltersVisible] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
-  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Debounce search
+  // Derive state from URL
+  const page = parseInt(searchParams.get("page") || "1");
+  const q = searchParams.get("q") || "";
+  const stateProvince = searchParams.get("stateProvince") || "";
+  const municipality = searchParams.get("municipality") || "";
+
+  // Local state for inputs (to allow typing without instant URL sync if desired, but for simplicity sync on change/debounce)
+  // Actually, for filters like Dept/Muni, 'onBlur' or 'Enter' is better, or debounce.
+  // For 'q' we already have logic to debounce? 
+  // Let's use useSpecies directly with URL params. The hook will handle fetching.
+  // BUT we need to debounce 'q' updates to the URL to avoid history spam.
+
+  const [searchTerm, setSearchTerm] = useState(q);
+  const [debouncedSearch, setDebouncedSearch] = useState(q);
+
+  // Debounce effect for Search Term
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-      setCurrentPage(1); // Reset to page 1 on search
+      if (searchTerm !== q) {
+        updateParams({ q: searchTerm, page: 1 });
+      }
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  const updateParams = (newParams: Record<string, any>) => {
+    const current = Object.fromEntries(searchParams.entries());
+    const merged = { ...current, ...newParams };
+
+    // Clean empty values
+    Object.keys(merged).forEach(key => {
+      if (!merged[key]) delete merged[key];
+    });
+
+    setSearchParams(merged);
+  };
+
   const { data, isLoading: loading, isError, error: queryError } = useSpecies({
-    page: currentPage,
-    per_page: itemsPerPage,
-    q: debouncedSearch
+    page,
+    per_page: 12,
+    q: debouncedSearch,
+    stateProvince,
+    municipality
   });
 
   const species = data?.data || [];
-  const paginationData = data?.pagination || { total: 0, per_page: itemsPerPage, current_page: 1, last_page: 1 };
+  const paginationData = data?.pagination || { total: 0, per_page: 12, current_page: 1, last_page: 1 };
 
   const toggleFilters = () => setFiltersVisible(!filtersVisible);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handlePageChange = (newPage: number) => {
+    updateParams({ page: newPage });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
+  };
+
+  // Filter handlers
+  const handleLocationFilter = (key: string, value: string) => {
+    updateParams({ [key]: value, page: 1 });
   };
 
   const error = isError ? String(queryError) : null;
@@ -152,6 +193,37 @@ const Species = () => {
           Filters
         </Button>
       </div>
+
+      {filtersVisible && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl border border-lime-200 animate-slide-in-top">
+          <div>
+            <label className="text-sm font-medium text-forest-700 mb-1 block">Departamento / Estado</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-forest-500 h-4 w-4" />
+              <Input
+                placeholder="Ej: Antioquia"
+                defaultValue={stateProvince}
+                onKeyPress={(e) => e.key === 'Enter' && handleLocationFilter('stateProvince', (e.target as HTMLInputElement).value)}
+                onBlur={(e) => handleLocationFilter('stateProvince', e.target.value)}
+                className="pl-9 border-lime-200"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-forest-700 mb-1 block">Municipio</label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-forest-500 h-4 w-4" />
+              <Input
+                placeholder="Ej: Medellín"
+                defaultValue={municipality}
+                onKeyPress={(e) => e.key === 'Enter' && handleLocationFilter('municipality', (e.target as HTMLInputElement).value)}
+                onBlur={(e) => handleLocationFilter('municipality', e.target.value)}
+                className="pl-9 border-lime-200"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {/* Results */}

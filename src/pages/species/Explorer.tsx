@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search, Filter, X, Loader2, Pin, ShieldX, Music, MapPin, Star, Sparkles, Shuffle, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -114,35 +114,75 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
 };
 
 export default function Explorer() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClass, setSelectedClass] = useState("Todas");
-  const [selectedConservationStatus, setSelectedConservationStatus] = useState("Todos");
-  const [nativeFilter, setNativeFilter] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filtersVisible, setFiltersVisible] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [sortBy, setSortBy] = useState("observations_count");
   const queryClient = useQueryClient();
 
-  // Debounce search term
+  // Derive state from URL
+  const page = parseInt(searchParams.get("page") || "1");
+  const currentPage = page; // Alias for backward compatibility with existing JSX
+  const q = searchParams.get("q") || "";
+  const selectedClass = searchParams.get("rank") || "Todas";
+  const selectedConservationStatus = searchParams.get("threatened") === "true" ? "threatened" : "Todos";
+  const nativeFilter = searchParams.get("native") === "true" ? "native" : (searchParams.get("endemic") === "true" ? "endemic" : "all");
+  const sortBy = searchParams.get("order_by") || "observations_count";
+  const stateProvince = searchParams.get("stateProvince") || "";
+  const municipality = searchParams.get("municipality") || "";
+
+  // Local state for inputs (debouncing)
+  const [searchTerm, setSearchTerm] = useState(q);
+  const [debouncedSearch, setDebouncedSearch] = useState(q);
+
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
+      if (searchTerm !== q) {
+        updateParams({ q: searchTerm, page: 1 });
+      }
     }, 500);
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  const updateParams = (newParams: Record<string, any>) => {
+    const current = Object.fromEntries(searchParams.entries());
+    const merged = { ...current, ...newParams };
+
+    // Logic to handle specific filters clearing others if needed
+    if (newParams.native === 'all') { delete merged.native; delete merged.endemic; }
+    if (newParams.native === 'native') { merged.native = 'true'; delete merged.endemic; }
+    if (newParams.native === 'endemic') { merged.endemic = 'true'; delete merged.native; }
+
+    if (newParams.threatened === 'Todos') { delete merged.threatened; }
+    if (newParams.threatened === 'threatened') { merged.threatened = 'true'; }
+
+    if (newParams.rank === 'Todas') { delete merged.rank; }
+
+    // Clean empty values
+    Object.keys(merged).forEach(key => {
+      if (merged[key] === '' || merged[key] === undefined || merged[key] === null) delete merged[key];
+    });
+
+    setSearchParams(merged);
+  };
+
+  // Filter handlers
+  const handleLocationFilter = (key: string, value: string) => {
+    updateParams({ [key]: value, page: 1 });
+  };
+
   const ITEMS_PER_PAGE = 24;
 
   const { data, isLoading, isError, error, isFetching } = useSpecies({
-    page: currentPage,
+    page,
     per_page: ITEMS_PER_PAGE,
-    q: searchTerm, // Using direct search term for responsiveness, ideally debounce
-    rank: selectedClass,
+    q: debouncedSearch,
+    rank: selectedClass !== "Todas" ? selectedClass : undefined,
     native: nativeFilter === 'native',
     endemic: nativeFilter === 'endemic',
     threatened: selectedConservationStatus === 'threatened',
     order_by: sortBy,
+    stateProvince,
+    municipality
   });
 
   const speciesList = data?.data || [];
@@ -153,22 +193,18 @@ export default function Explorer() {
 
   const clearAllFilters = () => {
     setSearchTerm("");
-    setSelectedClass("Todas");
-    setSelectedConservationStatus("Todos");
-    setNativeFilter("all");
-    setCurrentPage(1);
-    setSortBy("observations_count");
+    setSearchParams({}); // Clear all params to default
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handlePageChange = (newPage: number) => {
+    updateParams({ page: newPage });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div>
-        <h1 className="text-4xl font-bold text-forest-950 mb-2">Explorador de Especies</h1>
+       <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-forest-950 mb-2">Explorador de Especies</h1>
         <p className="text-forest-700 text-lg">Descubre la biodiversidad de Colombia</p>
       </div>
 
@@ -181,10 +217,7 @@ export default function Explorer() {
             placeholder="Buscar por nombre común, científico..."
             className="pl-10 bg-white rounded-xl border-lime-200"
             value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1); // Reset page on search
-            }}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
           {searchTerm && (
             <button
@@ -209,6 +242,36 @@ export default function Explorer() {
       {filtersVisible && (
         <Card className="p-6 border-lime-200 shadow-md">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Location Filters */}
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-4 mb-2">
+              <div>
+                <label className="text-sm font-medium text-forest-700 mb-1 block">Departamento / Estado</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-forest-500 h-4 w-4" />
+                  <Input
+                    placeholder="Ej: Antioquia"
+                    defaultValue={stateProvince}
+                    onKeyPress={(e) => e.key === 'Enter' && handleLocationFilter('stateProvince', (e.target as HTMLInputElement).value)}
+                    onBlur={(e) => handleLocationFilter('stateProvince', e.target.value)}
+                    className="pl-9 border-lime-200"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-forest-700 mb-1 block">Municipio</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-forest-500 h-4 w-4" />
+                  <Input
+                    placeholder="Ej: Medellín"
+                    defaultValue={municipality}
+                    onKeyPress={(e) => e.key === 'Enter' && handleLocationFilter('municipality', (e.target as HTMLInputElement).value)}
+                    onBlur={(e) => handleLocationFilter('municipality', e.target.value)}
+                    className="pl-9 border-lime-200"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div>
               <h3 className="font-semibold text-forest-900 mb-3 text-lg">Categoría</h3>
               <div className="flex flex-wrap gap-2">
@@ -219,10 +282,7 @@ export default function Explorer() {
                       ? "bg-lime-500 text-white shadow-md"
                       : "bg-lime-50 text-forest-700 hover:bg-lime-100"
                       }`}
-                    onClick={() => {
-                      setSelectedClass(className);
-                      setCurrentPage(1);
-                    }}
+                    onClick={() => updateParams({ rank: className, page: 1 })}
                   >
                     {className}
                   </button>
@@ -240,10 +300,7 @@ export default function Explorer() {
                       ? "bg-lime-500 text-white shadow-md"
                       : "bg-lime-50 text-forest-700 hover:bg-lime-100"
                       }`}
-                    onClick={() => {
-                      setSelectedConservationStatus(status.value);
-                      setCurrentPage(1);
-                    }}
+                    onClick={() => updateParams({ threatened: status.value, page: 1 })}
                   >
                     {status.label}
                   </button>
@@ -259,10 +316,7 @@ export default function Explorer() {
                     ? "bg-lime-500 text-white shadow-md"
                     : "bg-lime-50 text-forest-700 hover:bg-lime-100"
                     }`}
-                  onClick={() => {
-                    setNativeFilter("all");
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => updateParams({ native: 'all', page: 1 })}
                 >
                   Todas
                 </button>
@@ -271,10 +325,7 @@ export default function Explorer() {
                     ? "bg-lime-500 text-white shadow-md"
                     : "bg-lime-50 text-forest-700 hover:bg-lime-100"
                     }`}
-                  onClick={() => {
-                    setNativeFilter("native");
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => updateParams({ native: 'native', page: 1 })}
                 >
                   Solo Nativas
                 </button>
@@ -283,10 +334,7 @@ export default function Explorer() {
                     ? "bg-lime-500 text-white shadow-md"
                     : "bg-lime-50 text-forest-700 hover:bg-lime-100"
                     }`}
-                  onClick={() => {
-                    setNativeFilter("endemic");
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => updateParams({ native: 'endemic', page: 1 })}
                 >
                   Solo Endémicas
                 </button>
@@ -301,10 +349,7 @@ export default function Explorer() {
                     ? "bg-lime-500 text-white shadow-md"
                     : "bg-lime-50 text-forest-700 hover:bg-lime-100"
                     }`}
-                  onClick={() => {
-                    setSortBy("observations_count");
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => updateParams({ order_by: "observations_count", page: 1 })}
                 >
                   <Trophy className="h-4 w-4" />
                   Más Populares
@@ -316,8 +361,7 @@ export default function Explorer() {
                     }`}
                   onClick={() => {
                     queryClient.invalidateQueries({ queryKey: ['species'] });
-                    setSortBy("random");
-                    setCurrentPage(1);
+                    updateParams({ order_by: "random", page: 1 });
                   }}
                 >
                   <Shuffle className="h-4 w-4" />
@@ -335,8 +379,7 @@ export default function Explorer() {
           className={`gap-2 rounded-full ${sortBy === 'random' ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
           onClick={() => {
             queryClient.invalidateQueries({ queryKey: ['species'] });
-            setSortBy(sortBy === 'random' ? 'observations_count' : 'random');
-            setCurrentPage(1);
+            updateParams({ order_by: sortBy === 'random' ? 'observations_count' : 'random', page: 1 });
           }}
         >
           {sortBy === 'random' ? <Trophy className="h-4 w-4" /> : <Shuffle className="h-4 w-4" />}
@@ -346,10 +389,7 @@ export default function Explorer() {
         <Button
           variant={nativeFilter === 'native' ? 'default' : 'outline'}
           className={`gap-2 rounded-full ${nativeFilter === 'native' ? 'bg-lime-600' : ''}`}
-          onClick={() => {
-            setNativeFilter(nativeFilter === 'native' ? 'all' : 'native');
-            setCurrentPage(1);
-          }}
+          onClick={() => updateParams({ native: nativeFilter === 'native' ? 'all' : 'native', page: 1 })}
         >
           <Star className="h-4 w-4" />
           {nativeFilter === 'native' ? "Todas" : "Solo Nativas"}
@@ -358,10 +398,7 @@ export default function Explorer() {
         <Button
           variant={selectedConservationStatus === 'threatened' ? 'default' : 'outline'}
           className={`gap-2 rounded-full ${selectedConservationStatus === 'threatened' ? 'bg-orange-600 hover:bg-orange-700' : ''}`}
-          onClick={() => {
-            setSelectedConservationStatus(selectedConservationStatus === 'threatened' ? 'Todos' : 'threatened');
-            setCurrentPage(1);
-          }}
+          onClick={() => updateParams({ threatened: selectedConservationStatus === 'threatened' ? 'Todos' : 'threatened', page: 1 })}
         >
           <ShieldX className="h-4 w-4" />
           {selectedConservationStatus === 'threatened' ? "Todas" : "Amenazadas"}

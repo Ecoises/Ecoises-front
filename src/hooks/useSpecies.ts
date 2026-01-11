@@ -11,6 +11,8 @@ interface UseSpeciesParams {
   endemic?: boolean;
   threatened?: boolean;
   order_by?: string;
+  stateProvince?: string;
+  municipality?: string;
 }
 
 export const useSpecies = (params: UseSpeciesParams = {}) => {
