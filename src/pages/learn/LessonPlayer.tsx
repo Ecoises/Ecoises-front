@@ -45,10 +45,10 @@ const LessonPlayer = () => {
         }
     };
 
-    // Initial load
+    // Load/refresh when course or lesson changes to keep progress in sync
     useEffect(() => {
         fetchContent();
-    }, [courseSlug]);
+    }, [courseSlug, lessonId]);
 
     // Auto-save removed to prevent 400 errors and rely on explicit navigation completion
 
@@ -75,13 +75,14 @@ const LessonPlayer = () => {
         const currentLesson = course.lessons?.find(l => l.id === Number(lessonId));
         if (!currentLesson) return;
 
-        const isCompleted = course.lesson_progress?.[currentLesson.id]?.status === "completed";
+        const isCompleted = course.lesson_progress?.[currentLesson.id]?.status === "completada";
 
         if (!isCompleted) {
             setCompleting(true);
             try {
                 await completeLesson(currentLesson.id);
-                // Refresh data not strictly needed if we navigate, but good for cache
+                // Refresh data to sync enrollment progress and completed activities before navigating
+                await fetchContent();
             } catch (error) {
                 console.error("Error completing lesson:", error);
 
@@ -141,7 +142,7 @@ const LessonPlayer = () => {
     }
 
     const isLessonCompleted = (id: number) => {
-        return course.lesson_progress?.[id]?.status === "completed";
+        return course.lesson_progress?.[id]?.status === "completada";
     };
 
     const isCurrentLessonCompleted = isLessonCompleted(currentLesson.id);

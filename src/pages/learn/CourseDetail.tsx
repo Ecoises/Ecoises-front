@@ -52,7 +52,7 @@ const CourseDetail = () => {
       if (content.lessons && content.lessons.length > 0) {
         const firstIncomplete = content.lessons.find(l => {
           const progress = content.lesson_progress?.[l.id];
-          return !progress || progress.status !== "completed";
+          return !progress || progress.status !== "completada";
         });
         targetLessonId = firstIncomplete ? firstIncomplete.id : content.lessons[0].id;
       }
@@ -101,7 +101,7 @@ const CourseDetail = () => {
   const isEnrolled = !!content.enrollment;
   const progressPercentage = content.enrollment?.progress_percentage || 0;
   const completedLessons = Object.values(content.lesson_progress || {}).filter(
-    p => p.status === "completed"
+    p => p.status === "completada"
   ).length;
 
   return (
@@ -218,9 +218,7 @@ const CourseDetail = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent" />
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-background/20 backdrop-blur-lg flex items-center justify-center">
-                    <PlayCircle className="w-8 h-8 sm:w-10 sm:h-10 text-background" />
-                  </div>
+                  
                 </div>
               </div>
             </motion.div>
@@ -249,9 +247,16 @@ const CourseDetail = () => {
               <div className="space-y-3">
                 {content.lessons?.map((lesson, index) => {
                   const lessonProgress = content.lesson_progress?.[lesson.id];
-                  const isCompleted = lessonProgress?.status === "completed";
-                  const isLocked = !isEnrolled && index > 0;
-                  const isCurrent = !isCompleted && !isLocked && (index === 0 || content.lesson_progress?.[content.lessons![index - 1].id]?.status === "completed");
+                  const isCompleted = lessonProgress?.status === "completada";
+                  // Sequentially lock future lessons: Locked if not first AND (User not enrolled OR Previous not completed)
+                  // Actually, if Enrolled, strict sequential locking. If not enrolled, only first is free (if that's the model, or all locked). 
+                  // Assuming user must enroll to play. If enrolled, enforce sequence.
+                  // If Enrolled: Locked = index > 0 && Previous != Completed
+                  // If Not Enrolled: Locked = index > 0 (Preview mode?)
+                  const previousLessonProgress = index > 0 ? content.lesson_progress?.[content.lessons![index - 1].id] : null;
+                  const isLocked = index > 0 && (!isEnrolled || previousLessonProgress?.status !== 'completada');
+
+                  const isCurrent = !isCompleted && !isLocked && (index === 0 || previousLessonProgress?.status === "completada");
 
                   return (
                     <LessonCard

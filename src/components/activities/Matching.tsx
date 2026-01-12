@@ -11,16 +11,45 @@ interface MatchingProps {
 }
 
 export const Matching = ({ activity, onComplete, isCompleted = false }: MatchingProps) => {
+    // Normalize data structure handles both {Key: Value} object and [{id, term, match}] array
+    const normalizedPairs = (() => {
+        if (activity.pairs && !Array.isArray(activity.pairs) && typeof activity.pairs === 'object') {
+            // Handle { "Term": "Match", ... } if passed as object
+            return Object.entries(activity.pairs).map(([key, value], index) => ({
+                id: `pair-${index}`,
+                term: key,
+                match: String(value)
+            }));
+        }
+        if (Array.isArray(activity.pairs)) {
+            // Handle existing array format, ensure IDs
+            return activity.pairs.map((p, index) => ({
+                id: p.id ? String(p.id) : `pair-${index}`,
+                term: p.term || p.element, // Fallback
+                match: p.match || p.target // Fallback
+            }));
+        }
+        // Fallback for key-value items if pairs is empty/undefined but items exists
+        if (activity.items && !Array.isArray(activity.items) && typeof activity.items === 'object') {
+            return Object.entries(activity.items).map(([key, value], index) => ({
+                id: `pair-${index}`,
+                term: key,
+                match: String(value)
+            }));
+        }
+        return [];
+    })();
+
     const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
     const [connections, setConnections] = useState<Record<string, string>>({});
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
 
     const [shuffledTerms] = useState(() =>
-        [...(activity.pairs || [])].sort(() => Math.random() - 0.5)
+        [...normalizedPairs].sort(() => Math.random() - 0.5)
     );
     const [shuffledMatches] = useState(() =>
-        [...(activity.pairs || [])].sort(() => Math.random() - 0.5)
+        [...normalizedPairs].sort(() => Math.random() - 0.5)
     );
 
     const handleTermClick = (termId: string) => {
@@ -61,7 +90,7 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
 
     const handleSubmit = () => {
         let allCorrect = true;
-        activity.pairs?.forEach(pair => {
+        normalizedPairs.forEach(pair => {
             if (connections[pair.id] !== pair.id) {
                 allCorrect = false;
             }
@@ -82,7 +111,7 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
         setIsCorrect(false);
     };
 
-    const allConnected = Object.keys(connections).length === (activity.pairs?.length || 0);
+    const allConnected = Object.keys(connections).length === (normalizedPairs.length || 0);
 
     const getConnectionColor = (termId: string) => {
         const colors = [

@@ -11,16 +11,16 @@ interface QuizMultipleProps {
 }
 
 export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: QuizMultipleProps) => {
-    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
 
-    const handleOptionSelect = (optionId: string) => {
+    const handleOptionSelect = (index: number) => {
         if (showResult || isCompleted) return; // Already answered or completed
 
-        setSelectedOption(optionId);
-        const option = activity.options?.find(o => o.id === optionId);
-        const correct = option?.isCorrect ?? false;
+        setSelectedIndex(index);
+        const option = activity.options?.[index];
+        const correct = option?.isCorrect ?? option?.is_correct ?? false;
         setIsCorrect(correct);
         setShowResult(true);
 
@@ -33,12 +33,13 @@ export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: Quiz
     };
 
     const handleRetry = () => {
-        setSelectedOption(null);
+        setSelectedIndex(null);
         setShowResult(false);
         setIsCorrect(false);
     };
 
-    const selectedFeedback = activity.options?.find(o => o.id === selectedOption)?.feedback;
+    // Safe access to selected option's feedback
+    const selectedFeedback = selectedIndex !== null ? activity.options?.[selectedIndex]?.feedback : null;
 
     return (
         <div className="glass-card p-6 space-y-6">
@@ -61,33 +62,39 @@ export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: Quiz
             </div>
 
             <div className="space-y-3">
-                {activity.options?.map((option) => (
-                    <button
-                        key={option.id}
-                        onClick={() => handleOptionSelect(option.id)}
-                        disabled={showResult || isCompleted}
-                        className={cn(
-                            "w-full text-left p-4 rounded-xl border-2 transition-all duration-300",
-                            !showResult && selectedOption === option.id && "border-accent bg-accent/10",
-                            !showResult && selectedOption !== option.id && !isCompleted && "border-border/50 hover:border-accent/50 hover:bg-secondary/50",
-                            (showResult || isCompleted) && option.isCorrect && "border-primary bg-primary/20",
-                            showResult && !option.isCorrect && selectedOption === option.id && "border-destructive bg-destructive/10",
-                            (showResult || isCompleted) && selectedOption !== option.id && !option.isCorrect && "opacity-50",
-                            (showResult || isCompleted) && "cursor-default"
-                        )}
-                    >
-                        <div className="flex items-center justify-between">
-                            <span className={cn(
-                                "font-medium",
-                                (showResult || isCompleted) && option.isCorrect && "text-primary"
-                            )}>
-                                {option.text}
-                            </span>
-                            {(showResult || isCompleted) && option.isCorrect && <CheckCircle2 className="w-5 h-5 text-primary" />}
-                            {showResult && !option.isCorrect && selectedOption === option.id && <XCircle className="w-5 h-5 text-destructive" />}
-                        </div>
-                    </button>
-                ))}
+                {activity.options?.map((option, index) => {
+                    // Check both camelCase (frontend mock) and snake_case (backend)
+                    const isOptCorrect = option.isCorrect ?? option.is_correct ?? false;
+                    const isSelected = selectedIndex === index;
+
+                    return (
+                        <button
+                            key={index}
+                            onClick={() => handleOptionSelect(index)}
+                            disabled={showResult || isCompleted}
+                            className={cn(
+                                "w-full text-left p-4 rounded-xl border-2 transition-all duration-300",
+                                !showResult && isSelected && "border-accent bg-accent/10",
+                                !showResult && !isSelected && !isCompleted && "border-border/50 hover:border-accent/50 hover:bg-secondary/50",
+                                (showResult || isCompleted) && isOptCorrect && "border-primary bg-primary/20",
+                                showResult && !isOptCorrect && isSelected && "border-destructive bg-destructive/10",
+                                (showResult || isCompleted) && !isSelected && !isOptCorrect && "opacity-50",
+                                (showResult || isCompleted) && "cursor-default"
+                            )}
+                        >
+                            <div className="flex items-center justify-between">
+                                <span className={cn(
+                                    "font-medium",
+                                    (showResult || isCompleted) && isOptCorrect && "text-primary"
+                                )}>
+                                    {option.text}
+                                </span>
+                                {(showResult || isCompleted) && isOptCorrect && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                                {showResult && !isOptCorrect && isSelected && <XCircle className="w-5 h-5 text-destructive" />}
+                            </div>
+                        </button>
+                    );
+                })}
             </div>
 
             {showResult && selectedFeedback && (

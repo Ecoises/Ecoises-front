@@ -64,7 +64,7 @@ export interface LessonProgress {
     id: number;
     enrollment_id: number;
     lesson_id: number;
-    status: 'locked' | 'started' | 'completed';
+    status: 'en_progreso' | 'completada';
     completed_at?: string;
     points_earned: number;
 }

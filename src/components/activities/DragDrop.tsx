@@ -11,11 +11,32 @@ interface DragDropProps {
 }
 
 export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDropProps) => {
+    // Normalize data structure handles both {Key: Value} object and [{id, element, target}] array
+    const normalizedPairs = (() => {
+        if (activity.items && !Array.isArray(activity.items) && typeof activity.items === 'object') {
+            // Handle { "GET": "Lectura", ... }
+            return Object.entries(activity.items).map(([key, value], index) => ({
+                id: `item-${index}`,
+                element: key,
+                target: String(value)
+            }));
+        }
+        if (Array.isArray(activity.pairs)) {
+            // Handle existing array format, ensure IDs
+            return activity.pairs.map((p, index) => ({
+                id: p.id ? String(p.id) : `item-${index}`,
+                element: p.element || p.term, // Fallback for term
+                target: p.target || p.match   // Fallback for match
+            }));
+        }
+        return [];
+    })();
+
     const [items, setItems] = useState(() =>
-        [...(activity.pairs || [])].sort(() => Math.random() - 0.5)
+        [...normalizedPairs].sort(() => Math.random() - 0.5)
     );
     const [targets] = useState(() =>
-        [...(activity.pairs || [])].sort(() => Math.random() - 0.5).map(p => ({ id: p.id, target: p.target }))
+        [...normalizedPairs].sort(() => Math.random() - 0.5).map(p => ({ id: p.id, target: p.target }))
     );
     const [placements, setPlacements] = useState<Record<string, string>>({});
     const [showResult, setShowResult] = useState(false);
@@ -60,7 +81,7 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
     const handleSubmit = () => {
         // Check if all placements are correct
         let allCorrect = true;
-        activity.pairs?.forEach(pair => {
+        normalizedPairs.forEach(pair => {
             const placedItemId = placements[pair.id];
             if (placedItemId !== pair.id) {
                 allCorrect = false;
@@ -81,9 +102,9 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
         setIsCorrect(false);
     };
 
-    const getItemById = (id: string) => activity.pairs?.find(p => p.id === id);
+    const getItemById = (id: string) => items.find(p => p.id === id);
 
-    const allPlaced = Object.keys(placements).length === (activity.pairs?.length || 0);
+    const allPlaced = Object.keys(placements).length === (normalizedPairs.length || 0);
 
     return (
         <div className="glass-card p-6 space-y-6">
