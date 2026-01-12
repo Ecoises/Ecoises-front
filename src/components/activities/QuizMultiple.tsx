@@ -10,7 +10,10 @@ interface QuizMultipleProps {
     isCompleted?: boolean;
 }
 
+import { useSoundEffect } from "@/hooks/useSoundEffect";
+
 export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: QuizMultipleProps) => {
+    const { playCorrect, playIncorrect } = useSoundEffect();
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
@@ -25,8 +28,10 @@ export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: Quiz
         setShowResult(true);
 
         if (correct) {
-            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 1500);
+            playCorrect();
+            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 800);
         } else {
+            playIncorrect();
             // Still call onComplete but with false, so it's recorded
             setTimeout(() => onComplete(false, 0), 1500);
         }

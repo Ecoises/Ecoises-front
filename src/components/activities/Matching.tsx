@@ -10,7 +10,10 @@ interface MatchingProps {
     isCompleted?: boolean;
 }
 
+import { useSoundEffect } from "@/hooks/useSoundEffect";
+
 export const Matching = ({ activity, onComplete, isCompleted = false }: MatchingProps) => {
+    const { playCorrect, playIncorrect } = useSoundEffect();
     // Normalize data structure handles both {Key: Value} object and [{id, term, match}] array
     const normalizedPairs = (() => {
         if (activity.pairs && !Array.isArray(activity.pairs) && typeof activity.pairs === 'object') {
@@ -100,7 +103,10 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
         setShowResult(true);
 
         if (allCorrect) {
-            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 1500);
+            playCorrect();
+            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 800);
+        } else {
+            playIncorrect();
         }
     };
 

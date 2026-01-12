@@ -10,7 +10,10 @@ interface QuizTrueFalseProps {
     isCompleted?: boolean;
 }
 
+import { useSoundEffect } from "@/hooks/useSoundEffect";
+
 export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: QuizTrueFalseProps) => {
+    const { playCorrect, playIncorrect } = useSoundEffect();
     const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
@@ -30,7 +33,10 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
         setShowResult(true);
 
         if (correct) {
-            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 1500);
+            playCorrect();
+            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 800);
+        } else {
+            playIncorrect();
         }
     };
 

@@ -10,7 +10,10 @@ interface DragDropProps {
     isCompleted?: boolean;
 }
 
+import { useSoundEffect } from "@/hooks/useSoundEffect";
+
 export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDropProps) => {
+    const { playCorrect, playIncorrect } = useSoundEffect();
     // Normalize data structure handles both {Key: Value} object and [{id, element, target}] array
     const normalizedPairs = (() => {
         if (activity.items && !Array.isArray(activity.items) && typeof activity.items === 'object') {
@@ -92,7 +95,10 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
         setShowResult(true);
 
         if (allCorrect) {
-            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 1500);
+            playCorrect();
+            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 800);
+        } else {
+            playIncorrect();
         }
     };
 

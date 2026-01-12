@@ -110,7 +110,7 @@ const CourseDetail = () => {
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm"
+        className="sticky top-[3.5rem] sm:top-16 z-30 bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm"
       >
         <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/learn">
@@ -218,7 +218,7 @@ const CourseDetail = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent" />
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  
+
                 </div>
               </div>
             </motion.div>
