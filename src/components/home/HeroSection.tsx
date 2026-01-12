@@ -12,7 +12,6 @@ const HeroSection = () => {
 
   const [current, setCurrent] = useState(0);
 
-  // Cambiar imagen cada 5 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrent((prev) => (prev + 1) % images.length);
@@ -21,8 +20,9 @@ const HeroSection = () => {
   }, [images.length]);
 
   return (
-    <section className="relative rounded-3xl overflow-hidden">
-      <div className="relative w-full h-80 md:h-50 lg:h-[330px]">
+    <section className="relative rounded-3xl overflow-hidden bg-forest-900">
+      {/* Background Images */}
+      <div className="absolute inset-0 z-0">
         {images.map((img, index) => (
           <img
             key={index}
@@ -33,28 +33,38 @@ const HeroSection = () => {
             }`}
           />
         ))}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
       </div>
       
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
-      
-      <div className="absolute inset-0 flex items-center">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl space-y-4 sm:space-y-6">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight text-left">
-              Descubre y Protege la 
-              <span className="text-primary"> Biodiversidad Local</span>
-            </h1>
-            
-            {/* Párrafo oculto en pantallas muy pequeñas */}
-            <p className="hidden sm:block text-base sm:text-lg md:text-xl text-gray-200 leading-relaxed">
-              Únete a la aventura interactiva de conservación. Aprende, explora y protege las especies únicas de tu región.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-lime-500 hover:bg-lime-600 w-full sm:w-auto px-6 py-3 text-sm sm:text-base">
-                Comenzar Exploración
-              </Button>
-            </div>
+      {/* Content Container */}
+      <div className={`
+        relative z-10 flex items-center 
+        h-auto           /* En móvil se ajusta al contenido */
+        lg:h-[330px]     /* En pantallas grandes vuelve a tu alto original */
+        py-12            /* Espacio interno para que el texto respire en móvil */
+        md:py-0          /* Quitamos el padding en desktop porque el alto es fijo */
+        px-8 sm:px-12 lg:px-20
+      `}>
+        
+        <div className="max-w-2xl w-full">
+          {/* Título optimizado */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-[1.2] tracking-tight">
+            Descubre y Protege <br className="hidden sm:block" />
+            <span className="text-lime-400"> 
+              la Biodiversidad Local
+            </span>
+          </h1>
+          
+          {/* Descripción: Se oculta en móvil para ahorrar espacio */}
+          <p className="hidden sm:block mt-4 text-lg text-white/90 leading-relaxed max-w-xl">
+            Únete a la aventura interactiva de conservación. Aprende, explora y protege las especies únicas de tu región.
+          </p>
+          
+          {/* Botón: Solo visible en desktop, alineado con el alto de 330px */}
+          <div className="hidden sm:flex mt-6">
+            <Button className="bg-lime-500 hover:bg-lime-600 px-8 py-5 text-base font-bold shadow-lg">
+              Comenzar Exploración
+            </Button>
           </div>
         </div>
       </div>

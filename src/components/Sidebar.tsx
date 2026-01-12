@@ -49,11 +49,11 @@ export const navItems = [
 ];
 
 export const mobileNavItems = [
-  { icon: Home, label: "Home", to: "/home" },
-  { icon: Search, label: "Search", to: "/explorer" },
+  { icon: Home, label: "Inicio", to: "/home" },
+  { icon: Search, label: "Explorar", to: "/explorer" },
   { icon: Plus, label: "Add Sighting", to: "/sightings/new" },
-  { icon: Map, label: "Map", to: "/map" },
-  { icon: User, label: "Profile", to: "/profile" },
+  { icon: BookOpen, label: "Aprende", to: "/learn" },
+  { icon: User, label: "Perfil", to: "/profile" },
 ];
 
 interface SidebarProps {
