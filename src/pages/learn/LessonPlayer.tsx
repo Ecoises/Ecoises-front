@@ -19,7 +19,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
 const LessonPlayer = () => {
     const { courseSlug, lessonId } = useParams<{ courseSlug: string; lessonId: string }>();
     const navigate = useNavigate();
@@ -31,6 +30,7 @@ const LessonPlayer = () => {
     const [autoSaving, setAutoSaving] = useState(false);
     const [showIncompleteDialog, setShowIncompleteDialog] = useState(false);
     const hasAutoSaved = useRef(false);
+    const mainContentRef = useRef<HTMLElement>(null);
 
     // Fetch course data function
     const fetchContent = async () => {
@@ -49,6 +49,16 @@ const LessonPlayer = () => {
     useEffect(() => {
         fetchContent();
     }, [courseSlug, lessonId]);
+
+    useEffect(() => {
+        // Scroll the main content container to top when lesson changes
+        if (mainContentRef.current) {
+            mainContentRef.current.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    }, [lessonId]);
 
     // Auto-save removed to prevent 400 errors and rely on explicit navigation completion
 
@@ -288,7 +298,7 @@ const LessonPlayer = () => {
                 )}
 
                 {/* Main Content */}
-                <main className="flex-1 overflow-y-auto flex flex-col min-w-0">
+                <main ref={mainContentRef} className="flex-1 overflow-y-auto flex flex-col min-w-0">
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 w-full">
                         {/* Lesson Header */}
                         <motion.div

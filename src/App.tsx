@@ -27,6 +27,7 @@ import LessonEditor from "./pages/educator/LessonEditor";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
             v7_startTransition: true,
             v7_relativeSplatPath: true,
           }}>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={
@@ -65,10 +67,12 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route path="/home" element={<Dashboard />} />
+
               <Route path="/explorer" element={<Explorer />} />
-              <Route path="/identify" element={<Identify />} />
               <Route path="/species" element={<Species />} />
               <Route path="/species/:id" element={<SpeciesDetail />} />
+
+              <Route path="/identify" element={<Identify />} />
               <Route path="/map" element={<Map />} />
               <Route path="/sightings" element={<Sightings />} />
               <Route path="/observations/:id" element={<ObservationDetail />} />
