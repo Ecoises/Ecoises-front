@@ -113,6 +113,17 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
   );
 };
 
+// Skeleton Card Component for loading state
+const SkeletonCard = () => (
+  <Card className="overflow-hidden h-full animate-pulse">
+    <div className="h-48 bg-gray-200"></div>
+    <div className="p-4">
+      <div className="h-6 bg-gray-200 rounded mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+    </div>
+  </Card>
+);
+
 export default function Explorer() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filtersVisible, setFiltersVisible] = useState(false);
@@ -204,7 +215,7 @@ export default function Explorer() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div>
-       <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-forest-950 mb-2">Explorador de Especies</h1>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-forest-950 mb-2">Explorador de Especies</h1>
         <p className="text-forest-700 text-lg">Descubre la biodiversidad de Colombia</p>
       </div>
 
@@ -419,9 +430,11 @@ export default function Explorer() {
           </h2>
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-12 w-12 text-lime-500 animate-spin" />
+        {isLoading || isFetching ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         ) : isError ? (
           <Card className="p-12 text-center border-red-200 shadow-md bg-red-50">
@@ -436,7 +449,7 @@ export default function Explorer() {
           </Card>
         ) : speciesList.length > 0 ? (
           <>
-            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 transition-opacity duration-300 ${isFetching ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {speciesList.map(species => (
                 <SpeciesCard key={species.id} species={species} />
               ))}
