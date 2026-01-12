@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Home, Map, Search, BookOpen, Calendar, User,
-  Settings, LogOut, ChevronDown, Plus
+  Settings, LogOut, ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -51,7 +51,6 @@ export const navItems = [
 export const mobileNavItems = [
   { icon: Home, label: "Inicio", to: "/home" },
   { icon: Search, label: "Explorar", to: "/explorer" },
-  { icon: Plus, label: "Add Sighting", to: "/sightings/new" },
   { icon: BookOpen, label: "Aprende", to: "/learn" },
   { icon: User, label: "Perfil", to: "/profile" },
 ];

@@ -3,14 +3,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
-import DashboardNavbar from "./DashboardNavbar"; // Asegúrate de que esta importación sea correcta
-import { Plus } from "lucide-react";
+import DashboardNavbar from "./DashboardNavbar";
 import { Outlet } from "react-router-dom";
-import ActionDialog from "./ActionDialog";
 
 const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [actionDialogOpen, setActionDialogOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -39,23 +36,6 @@ const Layout = () => {
           <div className="container px-4 py-6 sm:p-6 max-w-6xl mx-auto">
             <Outlet />
           </div>
-
-          {/* Botón de acción flotante - visible solo en escritorio */}
-          {!isMobile && (
-            <button
-              onClick={() => setActionDialogOpen(true)}
-              className="fixed bottom-4 right-6 z-50 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-lime-500"
-              aria-label="Acciones Rápidas"
-            >
-              <Plus className="h-6 w-6 text-white" />
-            </button>
-          )}
-
-          {/* Diálogo de Acción */}
-          <ActionDialog
-            open={actionDialogOpen}
-            onOpenChange={setActionDialogOpen}
-          />
         </main>
       </div>
 
