@@ -33,7 +33,7 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
         : '/api/taxa/explore/colombia';
 
       const { data } = await api.get<ExploreResponse>(endpoint, {
-        params: cleanParams,
+        params: { ...cleanParams, enrich: 0 }, // Optimize load time by skipping heavy details
       });
       return data;
     },

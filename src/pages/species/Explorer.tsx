@@ -24,48 +24,6 @@ const conservationStatuses = [
 ];
 
 const SpeciesCard = ({ species }: { species: Taxon }) => {
-  // Configuración de estado de conservación (Misma lógica que SpeciesDetail)
-  const getConservationConfig = (s: string | null | undefined | { status: string }) => {
-    if (!s) return null;
-    let status = typeof s === 'object' && s !== null ? s.status : s;
-    status = String(status).toUpperCase();
-
-    switch (status) {
-      case 'EX': return { label: 'EX', className: 'bg-gray-900 text-white' };
-      case 'EW': return { label: 'EW', className: 'bg-purple-100 text-purple-800' };
-      case 'CR': return { label: 'CR', className: 'bg-red-100 text-red-800' };
-      case 'EN': return { label: 'EN', className: 'bg-orange-100 text-orange-800' };
-      case 'VU': return { label: 'VU', className: 'bg-yellow-100 text-yellow-800' };
-      case 'NT': return { label: 'NT', className: 'bg-lime-100 text-lime-800' };
-      case 'LC': return { label: 'LC', className: 'bg-green-100 text-green-800' };
-      case 'DD': return { label: 'DD', className: 'bg-gray-100 text-gray-800' };
-      case 'NE': return null; // No mostrar si es NE
-      default: return null;
-    }
-  };
-
-  // Configuración de estado de establecimiento
-  const getEstablishmentConfig = () => {
-    if (species.is_endemic) {
-      return {
-        icon: <Sparkles className="h-3.5 w-3.5" />,
-        className: "bg-lime-800 text-white",
-        label: "Endémica"
-      };
-    }
-    if (species.is_native) {
-      return {
-        icon: <Star className="h-3.5 w-3.5" />,
-        className: "bg-lime-300 text-forest-900",
-        label: "Nativa"
-      };
-    }
-    return null;
-  };
-
-  const conservationConfig = getConservationConfig(species.conservation_status) || getConservationConfig((species as any).conservation_status_details);
-  const establishmentConfig = getEstablishmentConfig();
-
   const location = useLocation();
 
   return (
@@ -85,24 +43,7 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
             </div>
           )}
 
-          {/* Badge: Estado de Conservación (Top Right) */}
-          {conservationConfig && (
-            <div className="absolute top-2 right-2">
-              <Badge className={`${conservationConfig.className} border-0 shadow-sm`}>
-                {conservationConfig.label}
-              </Badge>
-            </div>
-          )}
 
-          {/* Badge: Establecimiento (Top Left) */}
-          {establishmentConfig && (
-            <div className="absolute top-2 left-2">
-              <Badge className={`${establishmentConfig.className} border-0 shadow-sm gap-1 pl-2 pr-2.5`}>
-                {establishmentConfig.icon}
-                <span>{establishmentConfig.label}</span>
-              </Badge>
-            </div>
-          )}
         </div>
         <div className="p-4 flex-grow">
           <h3 className="font-bold text-forest-900 text-lg mb-1 line-clamp-2">
