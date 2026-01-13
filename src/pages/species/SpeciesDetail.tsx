@@ -1,23 +1,36 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, Calendar, ArrowLeft, Circle, Clock, Ruler, Music, Star, Eye, Info, TreePine, Sparkles, CornerRightDown, Loader2 } from "lucide-react"
+import { MapPin, Calendar, ArrowLeft, Circle, Clock, Ruler, Music, Star, Eye, Info, TreePine, Sparkles, CornerRightDown, Loader2, X, Maximize2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { useSpeciesDetail, useRelatedSpecies } from "@/hooks/useSpecies"
 import SpeciesDistributionMap from "@/components/maps/SpeciesDistributionMap"
+import { AnimatePresence, motion } from "framer-motion"
 
 
 const SpeciesDetail = () => {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate();
+  const location = useLocation();
   const { data: species, isLoading, isError } = useSpeciesDetail(id!, { enabled: !!id });
   const { data: relatedSpecies, isLoading: isLoadingRelated } = useRelatedSpecies(id!, { enabled: !!id });
   const [activeImage, setActiveImage] = useState("")
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Cerrar con tecla escape
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFullscreen(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
 
   // Helper to force high-resolution URL for iNaturalist images
   const getHighResUrl = (url: string) => {
@@ -44,7 +57,7 @@ const SpeciesDetail = () => {
         setActiveImage(getHighResUrl(urlToCheck));
       }
     }
-  }, [species]);
+  }, [species, id]);
 
   if (isLoading) {
     return (
@@ -76,26 +89,49 @@ const SpeciesDetail = () => {
   // Determinar la foto activa para mostrar su atribución correcta
   const activePhotoData = gallery.find(img => getHighResUrl(img.url || img.medium_url) === activeImage) || defaultPhoto;
 
+  const handleBack = () => {
+    // Si hay estado previo (venimos de una navegación interna), volvemos atrás
+    // Si el historial es corto, vamos al explorer por defecto
+    if (location.state?.from || window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate("/explorer");
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="mb-4">
-        <Link to="/explorer" className="text-forest-700 hover:text-forest-900 inline-flex items-center gap-1">
+        <Button
+          variant="ghost"
+          onClick={handleBack}
+          className="text-forest-700 hover:text-forest-900 px-0 hover:bg-transparent inline-flex items-center gap-1"
+        >
           <ArrowLeft className="h-4 w-4" />
           Volver a explorar
-        </Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column: Images */}
         <div className="lg:col-span-1 space-y-4">
-          <Card className="relative overflow-hidden border rounded-xl shadow-md">
+          <Card
+            className="relative overflow-hidden border rounded-xl shadow-md cursor-zoom-in group"
+            onClick={() => setIsFullscreen(true)}
+          >
             <img
               src={activeImage || "/placeholder.svg"}
               alt={species.common_name}
-              className="w-full aspect-[4/3] md:aspect-[4/4] object-cover bg-gray-100"
+              className="w-full aspect-[4/3] md:aspect-[4/4] object-cover bg-gray-100 transition-transform duration-500 group-hover:scale-105"
             />
+
+            {/* Overlay hint */}
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 p-2 rounded-full text-white backdrop-blur-sm pointer-events-none">
+              <Maximize2 className="h-5 w-5" />
+            </div>
+
             {activePhotoData?.attribution && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 pointer-events-none">
                 <p className="text-xs text-white font-medium">
                   {activePhotoData.attribution}
                 </p>
@@ -394,6 +430,53 @@ const SpeciesDetail = () => {
           </div>
         </div>
       </div>
+
+
+      {/* Fullscreen Image Viewer */}
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 md:p-8"
+            onClick={() => setIsFullscreen(false)}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="absolute top-4 right-4 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors z-50 cursor-pointer"
+            >
+              <X className="h-8 w-8" />
+              <span className="sr-only">Cerrar</span>
+            </button>
+
+            {/* Image Container */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center pointer-events-none" // pointer-events-none prevents clicking the div closing the modal, but we want click anywhere to close mostly
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image wrapper itself? actually user wants click to close? "Close button... and easy exit". Usually clicking background closes.
+            >
+              <img
+                src={activeImage || "/placeholder.svg"}
+                alt={species.common_name}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl pointer-events-auto" // Re-enable pointer events for the image if we want context menu etc
+              />
+
+              {activePhotoData?.attribution && (
+                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-auto">
+                  <span className="inline-block bg-black/60 text-white px-4 py-2 rounded-full text-sm backdrop-blur-md">
+                    {activePhotoData.attribution}
+                  </span>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

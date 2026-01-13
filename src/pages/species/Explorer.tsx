@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { Search, Filter, X, Loader2, Pin, ShieldX, Music, MapPin, Star, Sparkles, Shuffle, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -66,8 +66,10 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
   const conservationConfig = getConservationConfig(species.conservation_status) || getConservationConfig((species as any).conservation_status_details);
   const establishmentConfig = getEstablishmentConfig();
 
+  const location = useLocation();
+
   return (
-    <Link to={`/species/${species.id}`} className="w-full block h-full">
+    <Link to={`/species/${species.id}`} state={{ from: location }} className="w-full block h-full">
       <Card className="w-full overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full cursor-pointer flex flex-col group">
         <div className="relative h-48 bg-gray-100 overflow-hidden">
           {species.default_photo?.url ? (
