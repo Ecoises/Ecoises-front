@@ -34,7 +34,7 @@ const AuthForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
-  
+
   // Estado para mostrar/ocultar contraseñas
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
@@ -65,12 +65,12 @@ const AuthForm: React.FC = () => {
       if (isLogin) {
         const response = await authService.login({ email, password });
         console.log("Login exitoso. Usuario autenticado.");
-        
+
         // Actualizar el contexto de autenticación con el usuario
         if (response.user) {
           login(response.user);
         }
-        
+
         // Redirigir a la página anterior o al home
         const from = location.state?.from?.pathname || '/home';
         navigate(from, { replace: true });
@@ -195,7 +195,7 @@ const AuthForm: React.FC = () => {
                 />
               </div>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -207,7 +207,7 @@ const AuthForm: React.FC = () => {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
               <div className="relative">
@@ -233,13 +233,13 @@ const AuthForm: React.FC = () => {
                 </button>
               </div>
               {!isLogin && (
-                <PasswordRequirements 
-                  password={password} 
+                <PasswordRequirements
+                  password={password}
                   onValidityChange={handlePasswordValidityChange}
                 />
               )}
             </div>
-            
+
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
@@ -278,13 +278,13 @@ const AuthForm: React.FC = () => {
                 />
                 <Label htmlFor="terms" className="text-sm cursor-pointer leading-relaxed">
                   Acepto los{" "}
-                  <a href="#" className="text-lime-600 hover:text-lime-700 underline">
+                  <Link to="/terms" className="text-lime-600 hover:text-lime-700 underline" target="_blank">
                     términos y condiciones
-                  </a>{" "}
+                  </Link>{" "}
                   y las{" "}
-                  <a href="#" className="text-lime-600 hover:text-lime-700 underline">
+                  <Link to="/privacy" className="text-lime-600 hover:text-lime-700 underline" target="_blank">
                     políticas de privacidad
-                  </a>
+                  </Link>
                 </Label>
               </div>
             )}
@@ -305,9 +305,9 @@ const AuthForm: React.FC = () => {
               </div>
             )}
 
-            <Button 
-              type="submit" 
-              className="w-full bg-lime-500 hover:bg-lime-600" 
+            <Button
+              type="submit"
+              className="w-full bg-lime-500 hover:bg-lime-600"
               disabled={isLoading || (!isLogin && (!acceptTerms || !isPasswordValid))}
             >
               {isLoading ? "Cargando..." : (isLogin ? "Iniciar sesión" : "Registrarse")}

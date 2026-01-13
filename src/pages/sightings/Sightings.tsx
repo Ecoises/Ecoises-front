@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Calendar, Search, Eye, MapPin, BookOpen, Plus, Trophy, Award, Medal, Bird } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,14 +24,14 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
-const StatCard = ({ 
-  icon: Icon, 
-  label, 
-  value, 
-  color 
-}: { 
-  icon: React.ElementType; 
-  label: string; 
+const StatCard = ({
+  icon: Icon,
+  label,
+  value,
+  color
+}: {
+  icon: React.ElementType;
+  label: string;
   value: string;
   color: string;
 }) => (
@@ -45,27 +46,27 @@ const StatCard = ({
   </Card>
 );
 
-const RecentSighting = ({ 
-  bird, 
-  location, 
-  date, 
-  image 
-}: { 
-  bird: string; 
-  location: string; 
+const RecentSighting = ({
+  bird,
+  location,
+  date,
+  image
+}: {
+  bird: string;
+  location: string;
   date: string;
   image: string;
 }) => (
   <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-lime-50 transition-colors">
-    <img 
-      src={image} 
-      alt={bird} 
+    <img
+      src={image}
+      alt={bird}
       className="h-12 w-12 rounded-lg object-cover"
     />
     <div>
       <h3 className="font-medium text-forest-900">{bird}</h3>
       <div className="flex items-center text-xs text-forest-700">
-        <MapPin className="h-3 w-3 mr-1" /> 
+        <MapPin className="h-3 w-3 mr-1" />
         <span>{location}</span>
         <span className="mx-2">•</span>
         <span>{date}</span>
@@ -74,14 +75,14 @@ const RecentSighting = ({
   </div>
 );
 
-const FeatureCard = ({ 
-  icon: Icon, 
-  title, 
-  description, 
-  linkTo 
-}: { 
-  icon: React.ElementType; 
-  title: string; 
+const FeatureCard = ({
+  icon: Icon,
+  title,
+  description,
+  linkTo
+}: {
+  icon: React.ElementType;
+  title: string;
   description: string;
   linkTo: string;
 }) => (
@@ -96,17 +97,17 @@ const FeatureCard = ({
   </Link>
 );
 
-const TopWinnerCard = ({ 
-  position, 
-  name, 
-  sightings, 
-  species, 
+const TopWinnerCard = ({
+  position,
+  name,
+  sightings,
+  species,
   avatar,
   isFirst = false
-}: { 
-  position: number; 
-  name: string; 
-  sightings: number; 
+}: {
+  position: number;
+  name: string;
+  sightings: number;
   species: number;
   avatar: string;
   isFirst?: boolean;
@@ -114,7 +115,7 @@ const TopWinnerCard = ({
   // Determine which icon to use based on position
   let PositionIcon = Medal;
   let positionColor = "bg-lime-100 text-forest-800";
-  
+
   if (position === 1) {
     PositionIcon = Trophy;
     positionColor = "bg-yellow-500 text-white";
@@ -123,18 +124,18 @@ const TopWinnerCard = ({
   } else if (position === 3) {
     positionColor = "bg-amber-700 text-white";
   }
-  
+
   return (
     <Card className={`p-4 text-center flex flex-col items-center ${isFirst ? 'bg-lime-50 shadow-lg border-lime-200' : ''}`}>
       <div className={`h-10 w-10 rounded-full flex items-center justify-center mb-2 ${positionColor}`}>
         <PositionIcon className="h-5 w-5" />
       </div>
-      
+
       <Avatar className={`h-16 w-16 ${isFirst ? 'h-20 w-20' : ''} mb-2`}>
         <AvatarImage src={avatar} alt={name} />
         <AvatarFallback>{name.substring(0, 2)}</AvatarFallback>
       </Avatar>
-      
+
       <h3 className="font-heading font-semibold text-forest-900">{name}</h3>
       <div className="text-sm text-forest-700 mt-1">
         <span className="font-medium">{sightings}</span> sightings
@@ -183,7 +184,7 @@ const SpeciesRecommendation = () => {
   // For simplicity, we'll just pick a random bird from our sample data
   const randomIndex = Math.floor(Math.random() * recommendedBirds.length);
   const bird = recommendedBirds[randomIndex] || recommendedBirds[0];
-  
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -195,13 +196,13 @@ const SpeciesRecommendation = () => {
           Explore More Species
         </Link>
       </div>
-      
+
       <Card className="overflow-hidden border-lime-200">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
           <div className="md:col-span-1">
-            <img 
-              src={bird.image} 
-              alt={bird.name} 
+            <img
+              src={bird.image}
+              alt={bird.name}
               className="h-full w-full object-cover aspect-square md:aspect-auto"
             />
           </div>
@@ -212,7 +213,7 @@ const SpeciesRecommendation = () => {
             <h3 className="text-xl font-heading font-semibold text-forest-900 mb-1">{bird.name}</h3>
             <p className="text-forest-700 italic text-sm mb-3">{bird.scientificName}</p>
             <p className="text-forest-800 mb-4 line-clamp-3">{bird.description}</p>
-            
+
             <div className="grid grid-cols-3 gap-2 mb-4 text-sm">
               <div>
                 <p className="text-forest-700">Difficulty:</p>
@@ -227,7 +228,7 @@ const SpeciesRecommendation = () => {
                 <p className="font-medium text-forest-900">{bird.habitat}</p>
               </div>
             </div>
-            
+
             <Link to={`/species/${bird.id}`}>
               <Button className="w-full md:w-auto bg-lime-500 hover:bg-lime-600 text-white rounded-full">
                 View Details
@@ -285,7 +286,7 @@ const SpeciesGallery = () => {
           Discover More Birds
         </Link>
       </div>
-      
+
       {/* Mobile view - carousel */}
       <div className="block md:hidden">
         <Carousel className="w-full">
@@ -300,7 +301,7 @@ const SpeciesGallery = () => {
           <CarouselNext className="-right-4" />
         </Carousel>
       </div>
-      
+
       {/* Desktop view - grid */}
       <div className="hidden md:grid md:grid-cols-5 gap-4">
         {birdGallery.map((bird) => (
@@ -324,8 +325,8 @@ const FlipCard = ({ bird }: { bird: BirdGalleryItem }) => {
       <HoverCardTrigger asChild>
         <div className="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer">
           <AspectRatio ratio={1}>
-            <img 
-              src={bird.image} 
+            <img
+              src={bird.image}
               alt={bird.name}
               className="object-cover w-full h-full transition-transform duration-300"
             />
@@ -353,11 +354,21 @@ const FlipCard = ({ bird }: { bird: BirdGalleryItem }) => {
 };
 
 const Index = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleRecordSighting = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      navigate('/login');
+    }
+  };
+
   // Get top 3 for the podium
   const topThree = leaderboardData.slice(0, 3);
   // Get the rest for the table
   const restOfLeaderboard = leaderboardData.slice(3);
-  
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -366,14 +377,14 @@ const Index = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2">Welcome to Ecoises</h1>
           <p className="text-forest-700">Track, explore, and discover the fascinating world of birds</p>
         </div>
-        <Link to="/sightings/new">
+        <Link to="/sightings/new" onClick={handleRecordSighting}>
           <Button className="bg-lime-500 hover:bg-lime-600 text-white gap-2 rounded-full">
             <Plus className="h-4 w-4" />
             Record Sighting
           </Button>
         </Link>
       </div>
-      
+
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Eye} label="Total Sightings" value="124" color="bg-lime-500" />
@@ -381,13 +392,13 @@ const Index = () => {
         <StatCard icon={Calendar} label="Active Streak" value="12 days" color="bg-forest-800" />
         <StatCard icon={MapPin} label="Locations Visited" value="18" color="bg-forest-700" />
       </div>
-      
+
       {/* Species Recommendation */}
       <SpeciesRecommendation />
-      
+
       {/* Species Gallery with flip cards */}
       <SpeciesGallery />
-      
+
       {/* Main content grid with recent sightings and leaderboard */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Sightings */}
@@ -400,28 +411,28 @@ const Index = () => {
           </div>
           <Card className="p-4">
             <div className="divide-y divide-lime-100">
-              <RecentSighting 
-                bird="American Robin" 
-                location="Central Park" 
+              <RecentSighting
+                bird="American Robin"
+                location="Central Park"
                 date="Today, 10:23 AM"
                 image="https://images.unsplash.com/photo-1555284223-28889a2e698e?auto=format&fit=crop&w=300&h=300"
               />
-              <RecentSighting 
-                bird="Northern Cardinal" 
-                location="Riverside Trail" 
+              <RecentSighting
+                bird="Northern Cardinal"
+                location="Riverside Trail"
                 date="Yesterday"
                 image="https://images.unsplash.com/photo-1549608276-5786777e6587?auto=format&fit=crop&w=300&h=300"
               />
-              <RecentSighting 
-                bird="Blue Jay" 
-                location="Oakwood Park" 
+              <RecentSighting
+                bird="Blue Jay"
+                location="Oakwood Park"
                 date="May 3, 2023"
                 image="https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=300&h=300"
               />
             </div>
           </Card>
         </div>
-        
+
         {/* Leaderboard */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
@@ -433,7 +444,7 @@ const Index = () => {
               View Complete Ranking
             </Link>
           </div>
-          
+
           {/* Top 3 Podium */}
           <div className="mb-6">
             <div className="grid grid-cols-3 gap-4">
@@ -441,19 +452,19 @@ const Index = () => {
               <div className="self-end">
                 <TopWinnerCard {...topThree[1]} />
               </div>
-              
+
               {/* First place - center, larger */}
               <div className="transform -translate-y-4">
                 <TopWinnerCard {...topThree[0]} isFirst={true} />
               </div>
-              
+
               {/* Third place */}
               <div className="self-end">
                 <TopWinnerCard {...topThree[2]} />
               </div>
             </div>
           </div>
-          
+
           {/* Rest of Leaderboard */}
           <Card>
             <Table>
@@ -475,8 +486,8 @@ const Index = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <img 
-                          src={entry.avatar} 
+                        <img
+                          src={entry.avatar}
                           alt={entry.name}
                           className="h-8 w-8 rounded-full object-cover"
                         />
@@ -492,26 +503,26 @@ const Index = () => {
           </Card>
         </div>
       </div>
-      
+
       {/* Features */}
       <div>
         <h2 className="text-xl font-heading font-bold text-forest-900 mb-4">Explore Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FeatureCard 
-            icon={Search} 
-            title="Bird Explorer" 
+          <FeatureCard
+            icon={Search}
+            title="Bird Explorer"
             description="Search and discover different bird species with beautiful imagery and detailed information."
             linkTo="/explorer"
           />
-          <FeatureCard 
-            icon={MapPin} 
-            title="Sightings Map" 
+          <FeatureCard
+            icon={MapPin}
+            title="Sightings Map"
             description="Visualize bird sightings on an interactive map and explore hotspots in your area."
             linkTo="/map"
           />
-          <FeatureCard 
-            icon={BookOpen} 
-            title="Species Guide" 
+          <FeatureCard
+            icon={BookOpen}
+            title="Species Guide"
             description="Access comprehensive information about bird species, including habitat, behavior, and calls."
             linkTo="/species"
           />

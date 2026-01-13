@@ -50,11 +50,11 @@ const DashboardNavbar = () => {
           </div>
           <h1 className="text-forest-900 font-bold text-xl">Ecoises</h1> */}
           <img
-              src="/favicon.png"
-              alt="Logo Ecoises"
-              className="h-9 w-9 object-contain"
-            />
-            <h1 className="text-forest-900 font-bold text-xl">Ecoises</h1> 
+            src="/favicon.png"
+            alt="Logo Ecoises"
+            className="h-9 w-9 object-contain"
+          />
+          <h1 className="text-forest-900 font-bold text-xl">Ecoises</h1>
         </div>
 
         {/* Desktop Layout */}
@@ -73,59 +73,72 @@ const DashboardNavbar = () => {
 
             {/* Right side - Notifications and Profile */}
             <div className="flex items-center gap-4">
-              {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full"></span>
-              </Button>
-
-              {/* Profile */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      {user?.avatar && (
-                        <AvatarImage 
-                          src={user.avatar} 
-                          alt={user.full_name || 'Perfil'}
-                          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                            // Si falla la carga de la imagen, mostrar las iniciales
-                            const target = e.target as HTMLImageElement;
-                            if (target) {
-                              target.style.display = 'none';
-                              const fallback = target.nextElementSibling as HTMLElement | null;
-                              if (fallback) {
-                                fallback.style.display = 'flex';
-                              }
-                            }
-                          }}
-                        />
-                      )}
-                      <AvatarFallback className="bg-primary/10">
-                        {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
+              {user ? (
+                <>
+                  {/* Notifications */}
+                  <Button variant="ghost" size="icon" className="relative">
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full"></span>
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user?.full_name || 'Usuario'}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email || 'usuario@ejemplo.com'}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>Perfil</DropdownMenuItem>
-                  <DropdownMenuItem>Configuración</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Cerrar sesión
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+
+                  {/* Profile */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                        <Avatar className="h-8 w-8">
+                          {user?.avatar && (
+                            <AvatarImage
+                              src={user.avatar}
+                              alt={user.full_name || 'Perfil'}
+                              onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                // Si falla la carga de la imagen, mostrar las iniciales
+                                const target = e.target as HTMLImageElement;
+                                if (target) {
+                                  target.style.display = 'none';
+                                  const fallback = target.nextElementSibling as HTMLElement | null;
+                                  if (fallback) {
+                                    fallback.style.display = 'flex';
+                                  }
+                                }
+                              }}
+                            />
+                          )}
+                          <AvatarFallback className="bg-primary/10">
+                            {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">{user?.full_name || 'Usuario'}</p>
+                          <p className="text-xs leading-none text-muted-foreground">
+                            {user?.email || 'usuario@ejemplo.com'}
+                          </p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/profile')}>Perfil</DropdownMenuItem>
+                      <DropdownMenuItem>Configuración</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Cerrar sesión
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" onClick={() => navigate('/login')}>
+                    Iniciar sesión
+                  </Button>
+                  <Button onClick={() => navigate('/register')}>
+                    Registrarse
+                  </Button>
+                </div>
+              )}
             </div>
           </>
         )}
@@ -144,8 +157,8 @@ const DashboardNavbar = () => {
                     autoFocus
                   />
                 </div>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   onClick={() => setIsSearchExpanded(false)}
                 >
@@ -155,67 +168,75 @@ const DashboardNavbar = () => {
             ) : (
               <>
                 {/* Search Icon */}
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   onClick={() => setIsSearchExpanded(true)}
                 >
                   <Search className="h-5 w-5" />
                 </Button>
 
-                {/* Notifications */}
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full"></span>
-                </Button>
-
-                {/* Profile */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      {user?.avatar && (
-                        <AvatarImage 
-                          src={user.avatar} 
-                          alt={user.full_name || 'Perfil'}
-                          onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                            // Si falla la carga de la imagen, mostrar las iniciales
-                            const target = e.target as HTMLImageElement;
-                            if (target) {
-                              target.style.display = 'none';
-                              const fallback = target.nextElementSibling as HTMLElement | null;
-                              if (fallback) {
-                                fallback.style.display = 'flex';
-                              }
-                            }
-                          }}
-                        />
-                      )}
-                      <AvatarFallback className="bg-primary/10">
-                        {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
-                      </AvatarFallback>
-                    </Avatar>
+                {user ? (
+                  <>
+                    {/* Notifications */}
+                    <Button variant="ghost" size="icon" className="relative">
+                      <Bell className="h-5 w-5" />
+                      <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full"></span>
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user?.full_name || 'Usuario'}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                          {user?.email || 'usuario@ejemplo.com'}
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate('/profile')}>Perfil</DropdownMenuItem>
-                    <DropdownMenuItem>Configuración</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Cerrar sesión
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+
+                    {/* Profile */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                          <Avatar className="h-8 w-8">
+                            {user?.avatar && (
+                              <AvatarImage
+                                src={user.avatar}
+                                alt={user.full_name || 'Perfil'}
+                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                  // Si falla la carga de la imagen, mostrar las iniciales
+                                  const target = e.target as HTMLImageElement;
+                                  if (target) {
+                                    target.style.display = 'none';
+                                    const fallback = target.nextElementSibling as HTMLElement | null;
+                                    if (fallback) {
+                                      fallback.style.display = 'flex';
+                                    }
+                                  }
+                                }}
+                              />
+                            )}
+                            <AvatarFallback className="bg-primary/10">
+                              {user?.full_name ? getInitials(user.full_name) : <User className="h-4 w-4" />}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">{user?.full_name || 'Usuario'}</p>
+                            <p className="text-xs leading-none text-muted-foreground">
+                              {user?.email || 'usuario@ejemplo.com'}
+                            </p>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate('/profile')}>Perfil</DropdownMenuItem>
+                        <DropdownMenuItem>Configuración</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Cerrar sesión
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
+                ) : (
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
+                    Ingresar
+                  </Button>
+                )}
               </>
             )}
           </div>

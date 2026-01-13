@@ -25,6 +25,8 @@ import LessonPlayer from "./pages/learn/LessonPlayer";
 import EducatorDashboard from "./pages/educator/EducatorDashboard";
 import LessonEditor from "./pages/educator/LessonEditor";
 import { AuthProvider } from "./contexts/AuthContext";
+import TermsOfService from "./pages/legal/TermsOfService";
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -44,7 +46,7 @@ const App = () => (
           }}>
           <ScrollToTop />
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+
             <Route path="/login" element={
               <PublicRoute>
                 <Login />
@@ -61,11 +63,9 @@ const App = () => (
               </PublicRoute>
             } />
 
-            <Route element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
+            {/* Public Routes with Layout */}
+            <Route element={<Layout />}>
+              <Route path="/" element={<Dashboard />} />
               <Route path="/home" element={<Dashboard />} />
 
               <Route path="/explorer" element={<Explorer />} />
@@ -81,14 +81,26 @@ const App = () => (
               <Route path="/learn" element={<Learn />} />
               <Route path="/learn/course/:slug" element={<CourseDetail />} />
               <Route path="/learn/article/:slug" element={<ArticleDetail />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+            </Route>
+
+            {/* Protected Routes */}
+            <Route element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              {/* Learning Progress - Protected */}
               <Route path="/learn/course/:courseSlug/lesson/:lessonId" element={<LessonPlayer />} />
 
               {/* Educator Routes */}
               <Route path="/educator" element={<EducatorDashboard />} />
               <Route path="/educator/new" element={<LessonEditor />} />
               <Route path="/educator/edit/:id" element={<LessonEditor />} />
-              <Route path="*" element={<NotFound />} />
             </Route>
+
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

@@ -17,10 +17,12 @@ import {
 import { getEducationalContent, startContent, EducationalContent } from "@/api/services/educationalContentService";
 import { CourseProgress } from "@/components/learn/CourseProgress";
 import { LessonCard } from "@/components/learn/LessonCard";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CourseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [content, setContent] = useState<EducationalContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -42,6 +44,12 @@ const CourseDetail = () => {
 
   const handleStartContinue = async () => {
     if (!content) return;
+
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
     setStarting(true);
     try {
       if (!content.enrollment) {
