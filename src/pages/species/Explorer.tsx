@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
-import { Search, Filter, X, Loader2, MapPin, Star, Sparkles, Shuffle, Trophy, Navigation, Map } from "lucide-react";
+import { Search, Filter, X, Loader2, MapPin, Star, Sparkles, Shuffle, Navigation, Map, CornerRightDown, Leaf } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,64 +19,139 @@ import { Taxon } from "@/types/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const classes = ["Todas", "Aves", "Mammalia", "Reptilia", "Amphibia", "Insecta"];
-const conservationStatuses = [
-  { value: "Todos", label: "Todos" },
-  { value: "threatened", label: "Amenazadas (VU, EN, CR)" },
-];
+
+// Helpes for badges
+const getConservationBadge = (statusData?: any) => {
+  if (!statusData) return null;
+
+  // Extract status code (VU, EN, etc)
+  let code = '';
+  if (typeof statusData === 'object') {
+    code = statusData.status || statusData.status_name || '';
+  } else {
+    code = String(statusData);
+  }
+
+  const s = code.toUpperCase();
+
+  if (s === 'NE') return null; // Hide Not Evaluated
+
+  switch (s) {
+    case 'EX': return { label: 'EX', className: 'bg-gray-900 text-white border-gray-700' };
+    case 'EW': return { label: 'EW', className: 'bg-purple-100 text-purple-800 border-purple-200' };
+    case 'CR': return { label: 'CR', className: 'bg-red-100 text-red-800 border-red-200' };
+    case 'EN': return { label: 'EN', className: 'bg-orange-100 text-orange-800 border-orange-200' };
+    case 'VU': return { label: 'VU', className: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
+    case 'NT': return { label: 'NT', className: 'bg-lime-100 text-lime-800 border-lime-200' };
+    case 'LC': return { label: 'LC', className: 'bg-green-100 text-green-800 border-green-200' };
+    case 'DD': return { label: 'DD', className: 'bg-gray-100 text-gray-800 border-gray-200' };
+    default: return null;
+  }
+};
+
+const getEstablishmentBadge = (species: Taxon) => {
+  // 1. Check strict booleans first
+  if (species.endemic) {
+    return {
+      icon: <Sparkles className="h-3 w-3" />,
+      className: "bg-lime-800 text-white border-lime-900",
+      label: "Endémica"
+    };
+  }
+
+  // 2. Check string status (handling Spanish/English variations from Backend)
+  const status = String(species.establishment_status_colombia || "").toLowerCase();
+
+  if (status === "endemic" || status === "endémica" || status === "endemica") {
+    return {
+      icon: <Sparkles className="h-3 w-3" />,
+      className: "bg-lime-800 text-white border-lime-900",
+      label: "Endémica"
+    };
+  }
+
+  if (species.native || status === "native" || status === "nativa") {
+    return {
+      icon: <Star className="h-3 w-3" />,
+      className: "bg-lime-300 text-forest-900 border-lime-400",
+      label: "Nativa"
+    };
+  }
+
+  if (status === 'introduced' || status === 'introducida') {
+    return {
+      icon: <CornerRightDown className="h-3 w-3" />,
+      className: "bg-pink-100 text-pink-800 border-pink-200",
+      label: "Introducida"
+    };
+  }
+  return null;
+};
 
 const SpeciesCard = ({ species }: { species: Taxon }) => {
   const location = useLocation();
+  const conservation = getConservationBadge(species.conservation_status);
+  const establishment = getEstablishmentBadge(species);
 
   return (
     <Link to={`/species/${species.id}`} state={{ from: location }} className="w-full block h-full">
-      <Card className="w-full overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full cursor-pointer flex flex-col group border-lime-100/50">
+      <Card className="w-full overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full cursor-pointer flex flex-col group border-lime-100/60 bg-white">
         <div className="relative h-48 bg-gray-100 overflow-hidden">
           {species.default_photo?.url ? (
             <img
               src={species.default_photo.url.replace("square", "medium")}
               alt={species.common_name || species.scientific_name}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               loading="lazy"
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-400 bg-gray-50">
+            <div className="flex flex-col items-center justify-center h-full text-forest-300 bg-forest-50/50">
+              <Leaf className="h-8 w-8 mb-2 opacity-50" />
               <span className="text-xs">Sin imagen</span>
             </div>
           )}
-          {species.conservation_status?.status_name && (
-            <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
-              {species.conservation_status.status_name}
+
+          {/* Establishment Badge (Top Left) */}
+          {establishment && (
+            <div className={`absolute top-2 left-2 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-sm flex items-center gap-1 ${establishment.className}`}>
+              {establishment.icon}
+              {establishment.label}
+            </div>
+          )}
+
+          {/* Conservation Status Badge (Top Right) */}
+          {conservation && (
+            <div className={`absolute top-2 right-2 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-sm ${conservation.className}`}>
+              {conservation.label}
             </div>
           )}
         </div>
+
         <div className="p-4 flex-grow flex flex-col">
-          <h3 className="font-bold text-forest-900 text-lg mb-1 line-clamp-2 leading-tight">
+          <h3 className="font-bold text-forest-950 text-lg mb-1 line-clamp-2 leading-tight group-hover:text-lime-700 transition-colors">
             {species.common_name || species.scientific_name}
           </h3>
-          <p className="text-forest-600/80 text-sm italic font-serif flex-grow">{species.scientific_name}</p>
+          {/* Changed typography: removed font-serif, kept italic */}
+          <p className="text-forest-600/80 text-sm italic mb-3 line-clamp-1">{species.scientific_name}</p>
 
-          {/* Status Indicators */}
-          <div className="flex gap-2 mt-3 text-xs">
-            {species.endemic && (
-              <span className="text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">Endémica</span>
-            )}
-            {species.native && !species.endemic && (
-              <span className="text-lime-600 bg-lime-50 px-2 py-0.5 rounded-full border border-lime-100">Nativa</span>
-            )}
-          </div>
+          {/* Spacer to push tags to bottom */}
+          <div className="flex-grow"></div>
         </div>
       </Card>
     </Link>
   );
 };
 
-// Skeleton Card Component
+// Update SkeletonCard
 const SkeletonCard = () => (
-  <Card className="overflow-hidden h-full animate-pulse border-lime-100">
-    <div className="h-48 bg-gray-200"></div>
-    <div className="p-4">
-      <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
-      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+  <Card className="overflow-hidden h-full border-lime-100/50 bg-white">
+    <div className="h-48 bg-gray-200 animate-pulse"></div>
+    <div className="p-4 space-y-3">
+      <div className="h-5 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+      <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+      <div className="pt-2">
+        <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
+      </div>
     </div>
   </Card>
 );
@@ -99,7 +174,8 @@ export default function Explorer() {
   const [isLocating, setIsLocating] = useState(false);
 
   // Derive state from URL
-  const page = parseInt(searchParams.get("page") || "1");
+  const paramPage = parseInt(searchParams.get("page") || "1");
+  const page = isNaN(paramPage) || paramPage < 1 ? 1 : paramPage;
   const currentPage = page;
   const q = searchParams.get("q") || "";
   const selectedClass = searchParams.get("rank") || "Todas";
@@ -196,7 +272,6 @@ export default function Explorer() {
   const speciesList = data?.data || [];
   const pagination = data?.meta?.pagination || data?.pagination || { total: 0, last_page: 1, current_page: 1 };
   const totalPages = pagination.last_page;
-  const usedLocationType = data?.meta?.used_location;
 
   const toggleFilters = () => setFiltersVisible(!filtersVisible);
 
@@ -216,6 +291,9 @@ export default function Explorer() {
     if (userLocation) return "Especies observadas cerca de ti";
     return "Especies de Colombia";
   };
+
+  // Determines if we should show skeleton loading
+  const showLoading = isLoading || isFetching;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -363,9 +441,9 @@ export default function Explorer() {
 
       {/* Grid */}
       <div>
-        {isLoading ? (
+        {showLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : isError ? (
           <Alert variant="destructive">
@@ -385,7 +463,7 @@ export default function Explorer() {
               ))}
             </div>
 
-            {/* Pagination */}
+            {/* Pagination - Simple Reverted */}
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
