@@ -6,7 +6,8 @@ interface UseSpeciesParams {
   page?: number;
   per_page?: number;
   q?: string;
-  rank?: string;
+  // rank?: string; // Removed in favor of iconic_taxa for consistency
+  iconic_taxa?: string;
   native?: boolean;
   endemic?: boolean;
   threatened?: boolean;

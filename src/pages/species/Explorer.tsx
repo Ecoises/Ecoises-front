@@ -178,7 +178,7 @@ export default function Explorer() {
   const page = isNaN(paramPage) || paramPage < 1 ? 1 : paramPage;
   const currentPage = page;
   const q = searchParams.get("q") || "";
-  const selectedClass = searchParams.get("rank") || "Todas";
+  const selectedClass = searchParams.get("iconic_taxa") || "Todas";
   const selectedConservationStatus = searchParams.get("threatened") === "true" ? "threatened" : "Todos";
   const nativeFilter = searchParams.get("native") === "true" ? "native" : (searchParams.get("endemic") === "true" ? "endemic" : "all");
   const sortBy = searchParams.get("order_by") || "observations_count";
@@ -207,7 +207,7 @@ export default function Explorer() {
     if (newParams.native === 'endemic') { merged.endemic = 'true'; delete merged.native; }
     if (newParams.threatened === 'Todos') { delete merged.threatened; }
     if (newParams.threatened === 'threatened') { merged.threatened = 'true'; }
-    if (newParams.rank === 'Todas') { delete merged.rank; }
+    if (newParams.iconic_taxa === 'Todas') { delete merged.iconic_taxa; }
 
     Object.keys(merged).forEach(key => {
       if (merged[key] === '' || merged[key] === undefined || merged[key] === null) delete merged[key];
@@ -258,7 +258,7 @@ export default function Explorer() {
     page,
     per_page: ITEMS_PER_PAGE,
     q: debouncedSearch,
-    rank: selectedClass !== "Todas" ? selectedClass : undefined,
+    iconic_taxa: selectedClass !== "Todas" ? selectedClass : undefined,
     native: nativeFilter === 'native',
     endemic: nativeFilter === 'endemic', // If nativeFilter is endemic, pass endemic=true
     threatened: selectedConservationStatus === 'threatened',
@@ -395,7 +395,7 @@ export default function Explorer() {
                       type="radio"
                       name="class"
                       checked={selectedClass === c}
-                      onChange={() => updateParams({ rank: c, page: 1 })}
+                      onChange={() => updateParams({ iconic_taxa: c, page: 1 })}
                       className="accent-lime-600"
                     />
                     {c}
