@@ -13,6 +13,9 @@ interface UseSpeciesParams {
   order_by?: string;
   stateProvince?: string;
   municipality?: string;
+  lat?: number;
+  lng?: number;
+  radius?: number;
 }
 
 export const useSpecies = (params: UseSpeciesParams = {}) => {

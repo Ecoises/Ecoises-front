@@ -71,10 +71,10 @@ export interface Taxon {
   family: string | null;
   order_name: string | null;
   rank: string | null;
-  conservation_status: string | null; // e.g., "LC", "NT", "VU", "EN"
+  conservation_status: { status_name: string; iucn: number } | null; // e.g., { status_name: "VU", iucn: 40 }
   establishment_status_colombia?: string | null; // e.g., "native", "endemic", "introduced"
-  is_native: boolean;
-  is_endemic: boolean;
+  native: boolean;
+  endemic: boolean;
   observation_count: number;
   default_photo: TaxonPhoto | null;
   wikipedia_url?: string | null;
