@@ -18,7 +18,20 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Taxon } from "@/types/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-const classes = ["Todas", "Aves", "Mammalia", "Reptilia", "Amphibia", "Insecta"];
+
+const groups = [
+  { label: "Todas", value: "" },
+  { label: "Aves", value: "Aves" },
+  { label: "Mamíferos", value: "Mammalia" },
+  { label: "Reptiles", value: "Reptilia" },
+  { label: "Anfibios", value: "Amphibia" },
+  { label: "Insectos", value: "Insecta" },
+  { label: "Arañas", value: "Arachnida" },
+  { label: "Moluscos", value: "Mollusca" },
+  { label: "Peces", value: "Actinopterygii" },
+  { label: "Plantas", value: "Plantae" },
+  { label: "Hongos", value: "Fungi" },
+];
 
 // Helpes for badges
 const getConservationBadge = (statusData?: any) => {
@@ -178,7 +191,7 @@ export default function Explorer() {
   const page = isNaN(paramPage) || paramPage < 1 ? 1 : paramPage;
   const currentPage = page;
   const q = searchParams.get("q") || "";
-  const selectedClass = searchParams.get("iconic_taxa") || "Todas";
+  const selectedGroup = searchParams.get("iconic_taxa") || "";
   const selectedConservationStatus = searchParams.get("threatened") === "true" ? "threatened" : "Todos";
   const nativeFilter = searchParams.get("native") === "true" ? "native" : (searchParams.get("endemic") === "true" ? "endemic" : "all");
   const sortBy = searchParams.get("order_by") || "observations_count";
@@ -207,7 +220,15 @@ export default function Explorer() {
     if (newParams.native === 'endemic') { merged.endemic = 'true'; delete merged.native; }
     if (newParams.threatened === 'Todos') { delete merged.threatened; }
     if (newParams.threatened === 'threatened') { merged.threatened = 'true'; }
-    if (newParams.iconic_taxa === 'Todas') { delete merged.iconic_taxa; }
+
+    // Handle taxon_id clearing
+    if (newParams.taxon_id === undefined || newParams.taxon_id === null) {
+      delete merged.taxon_id;
+    }
+
+    // Clean up old params if they exist
+    delete merged.iconic_taxa;
+    delete merged.rank;
 
     Object.keys(merged).forEach(key => {
       if (merged[key] === '' || merged[key] === undefined || merged[key] === null) delete merged[key];
@@ -258,15 +279,14 @@ export default function Explorer() {
     page,
     per_page: ITEMS_PER_PAGE,
     q: debouncedSearch,
-    iconic_taxa: selectedClass !== "Todas" ? selectedClass : undefined,
+    iconic_taxa: selectedGroup || undefined,
     native: nativeFilter === 'native',
-    endemic: nativeFilter === 'endemic', // If nativeFilter is endemic, pass endemic=true
+    endemic: nativeFilter === 'endemic',
     threatened: selectedConservationStatus === 'threatened',
     order_by: sortBy,
-    // Pass Location if available
     lat: userLocation?.lat,
     lng: userLocation?.lng,
-    radius: 50 // Default 50km
+    radius: 50
   });
 
   const speciesList = data?.data || [];
@@ -387,18 +407,18 @@ export default function Explorer() {
         {filtersVisible && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4 bg-lime-50/50 rounded-xl border border-lime-100 animate-in slide-in-from-top-2">
             <div>
-              <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Clase</h4>
+              <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Grupo</h4>
               <div className="flex flex-col gap-1">
-                {classes.map(c => (
-                  <label key={c} className="flex items-center gap-2 text-sm text-forest-700 cursor-pointer hover:text-forest-900">
+                {groups.map(group => (
+                  <label key={group.value || 'all'} className="flex items-center gap-2 text-sm text-forest-700 cursor-pointer hover:text-forest-900">
                     <input
                       type="radio"
-                      name="class"
-                      checked={selectedClass === c}
-                      onChange={() => updateParams({ iconic_taxa: c, page: 1 })}
+                      name="group"
+                      checked={selectedGroup === group.value}
+                      onChange={() => updateParams({ iconic_taxa: group.value || undefined, page: 1 })}
                       className="accent-lime-600"
                     />
-                    {c}
+                    {group.label}
                   </label>
                 ))}
               </div>

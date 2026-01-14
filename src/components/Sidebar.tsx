@@ -40,7 +40,7 @@ const NavItem = ({ icon: Icon, label, to, active }: NavItemProps) => {
 };
 
 export const navItems = [
-  { icon: Home, label: "Inicio", to: "/home" },
+  { icon: Home, label: "Inicio", to: "/" },
   { icon: Search, label: "Exporar", to: "/explorer" },
   { icon: Map, label: "Sightings Map", to: "/map" },
   { icon: BookOpen, label: "Species Guide", to: "/species" },
@@ -49,7 +49,7 @@ export const navItems = [
 ];
 
 export const mobileNavItems = [
-  { icon: Home, label: "Inicio", to: "/home" },
+  { icon: Home, label: "Inicio", to: "/" },
   { icon: Search, label: "Explorar", to: "/explorer" },
   { icon: BookOpen, label: "Aprende", to: "/learn" },
   { icon: User, label: "Perfil", to: "/profile" },
@@ -82,12 +82,15 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
             // Special case overrides
             let isActive = false;
 
-            if (item.to === '/species') {
+            if (item.to === '/') {
+              // Home: only active on exact root path
+              isActive = location.pathname === '/';
+            } else if (item.to === '/species') {
               isActive = isSpeciesGuideSimple;
             } else if (item.to === '/explorer') {
               isActive = location.pathname === item.to || isSpeciesDetail;
             } else {
-              isActive = location.pathname === item.to || (item.to !== '/' && item.to !== '/home' && location.pathname.startsWith(item.to + '/'));
+              isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/');
             }
 
             return (
