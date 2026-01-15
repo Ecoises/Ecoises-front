@@ -192,6 +192,7 @@ export default function Explorer() {
   const currentPage = page;
   const q = searchParams.get("q") || "";
   const selectedGroup = searchParams.get("iconic_taxa") || "";
+  console.log('🔍 DEBUG selectedGroup:', selectedGroup, 'from URL param:', searchParams.get("iconic_taxa"));
   const selectedConservationStatus = searchParams.get("threatened") === "true" ? "threatened" : "Todos";
   const nativeFilter = searchParams.get("native") === "true" ? "native" : (searchParams.get("endemic") === "true" ? "endemic" : "all");
   const sortBy = searchParams.get("order_by") || "observations_count";
@@ -227,8 +228,8 @@ export default function Explorer() {
     }
 
     // Clean up old params if they exist
-    delete merged.iconic_taxa;
-    delete merged.rank;
+    // delete merged.iconic_taxa;  // REMOVED: This was preventing radio buttons from working
+    // delete merged.rank;
 
     Object.keys(merged).forEach(key => {
       if (merged[key] === '' || merged[key] === undefined || merged[key] === null) delete merged[key];
@@ -274,6 +275,12 @@ export default function Explorer() {
   };
 
   const ITEMS_PER_PAGE = 25;
+
+  console.log('📤 Params being sent to useSpecies:', {
+    iconic_taxa: selectedGroup || undefined,
+    selectedGroup,
+    willBeSent: selectedGroup || undefined
+  });
 
   const { data, isLoading, isError, error, isFetching } = useSpecies({
     page,
