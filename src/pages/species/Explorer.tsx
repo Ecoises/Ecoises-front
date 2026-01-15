@@ -462,6 +462,19 @@ export default function Explorer() {
                 </Button>
               </div>
             </div>
+
+            <div className="col-span-full flex justify-center pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  clearAllFilters();
+                  setFiltersVisible(false);
+                }}
+                className="border-red-200 text-red-600 hover:bg-red-50"
+              >
+                Limpiar filtros
+              </Button>
+            </div>
           </div>
         )}
       </div>
