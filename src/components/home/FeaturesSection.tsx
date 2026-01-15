@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 import { Search, MapPin, BookOpen } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-const FeatureCard = ({ 
-  icon: Icon, 
-  title, 
-  description, 
-  linkTo 
-}: { 
-  icon: React.ElementType; 
-  title: string; 
+const FeatureCard = ({
+  icon: Icon,
+  title,
+  description,
+  linkTo
+}: {
+  icon: React.ElementType;
+  title: string;
   description: string;
   linkTo: string;
 }) => (
@@ -30,23 +30,23 @@ const FeaturesSection = () => {
     <div>
       <h2 className="text-xl font-heading font-bold text-forest-900 mb-4">Explore Features</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <FeatureCard 
-          icon={Search} 
-          title="Bird Explorer" 
+        <FeatureCard
+          icon={Search}
+          title="Bird Explorer"
           description="Search and discover different bird species with beautiful imagery and detailed information."
           linkTo="/explorer"
         />
-        <FeatureCard 
-          icon={MapPin} 
-          title="Sightings Map" 
+        <FeatureCard
+          icon={MapPin}
+          title="Sightings Map"
           description="Visualize bird sightings on an interactive map and explore hotspots in your area."
           linkTo="/map"
         />
-        <FeatureCard 
-          icon={BookOpen} 
-          title="Species Guide" 
+        <FeatureCard
+          icon={BookOpen}
+          title="Species Guide"
           description="Access comprehensive information about bird species, including habitat, behavior, and calls."
-          linkTo="/species"
+          linkTo="/taxa"
         />
       </div>
     </div>

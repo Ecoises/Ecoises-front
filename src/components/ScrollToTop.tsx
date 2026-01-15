@@ -5,14 +5,14 @@ function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Definir rutas exactas donde queremos preservar el scroll (listados)
-    // No usamos startsWith para permitir que /species/123 sí haga scroll top
-    const preserveScrollPaths = ['/explorer', '/species', '/sightings', '/map'];
+    // Definir rutas donde queremos preservar el scroll (listados y detalles)
+    // Usamos startsWith para preservar scroll en /taxa y /taxa/:id
+    const preserveScrollPaths = ['/explorer', '/taxa', '/sightings', '/map'];
 
-    // Verificar si el pathname exacto está en la lista (ignorando query params que router extrae)
-    const shouldPreserveScroll = preserveScrollPaths.includes(pathname);
+    // Verificar si el pathname empieza con alguna ruta preservada
+    const shouldPreserveScroll = preserveScrollPaths.some(path => pathname.startsWith(path));
 
-    // Solo hacer scroll top si NO es una ruta de listado
+    // Solo hacer scroll top si NO es una ruta preservada
     if (!shouldPreserveScroll) {
       window.scrollTo(0, 0);
     }

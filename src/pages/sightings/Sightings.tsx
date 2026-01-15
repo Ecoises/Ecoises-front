@@ -192,7 +192,7 @@ const SpeciesRecommendation = () => {
           <Bird className="h-5 w-5 text-lime-600" />
           <h2 className="text-xl font-heading font-bold text-forest-900">Species Recommendation</h2>
         </div>
-        <Link to="/species" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
+        <Link to="/taxa" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
           Explore More Species
         </Link>
       </div>
@@ -229,7 +229,7 @@ const SpeciesRecommendation = () => {
               </div>
             </div>
 
-            <Link to={`/species/${bird.id}`}>
+            <Link to={`/taxa/${bird.id}`}>
               <Button className="w-full md:w-auto bg-lime-500 hover:bg-lime-600 text-white rounded-full">
                 View Details
               </Button>
@@ -282,7 +282,7 @@ const SpeciesGallery = () => {
           <Bird className="h-5 w-5 text-lime-600" />
           <h2 className="text-xl font-heading font-bold text-forest-900">Fascinating Species</h2>
         </div>
-        <Link to="/species" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
+        <Link to="/taxa" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
           Discover More Birds
         </Link>
       </div>
@@ -342,7 +342,7 @@ const FlipCard = ({ bird }: { bird: BirdGalleryItem }) => {
           <p className="text-forest-800 text-sm">{bird.funFact}</p>
         </div>
         <div className="p-3 bg-white flex justify-end">
-          <Link to={`/species/${bird.id}`}>
+          <Link to={`/taxa/${bird.id}`}>
             <Button variant="link" className="text-lime-600 p-0 h-auto">
               Learn more
             </Button>
@@ -524,7 +524,7 @@ const Index = () => {
             icon={BookOpen}
             title="Species Guide"
             description="Access comprehensive information about bird species, including habitat, behavior, and calls."
-            linkTo="/species"
+            linkTo="/taxa"
           />
         </div>
       </div>

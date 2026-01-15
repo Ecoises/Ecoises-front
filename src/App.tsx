@@ -69,8 +69,8 @@ const App = () => (
               <Route path="/home" element={<Dashboard />} />
 
               <Route path="/explorer" element={<Explorer />} />
-              <Route path="/species" element={<Species />} />
-              <Route path="/species/:id" element={<SpeciesDetail />} />
+              <Route path="/taxa" element={<Species />} />
+              <Route path="/taxa/:id" element={<SpeciesDetail />} />
 
               <Route path="/identify" element={<Identify />} />
               <Route path="/map" element={<Map />} />

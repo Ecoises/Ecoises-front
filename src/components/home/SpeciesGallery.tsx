@@ -69,7 +69,7 @@ const FlippingCard = ({ bird, isIntro = false }) => {
               <h3 className="font-heading font-bold text-xl md:text-2xl mb-2">Especies fascinantes</h3>
               <p>Discover the beautiful diversity of bird species from around the world</p>
             </div>
-            
+
             {/* Back side */}
             <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-forest-800 text-white rounded-xl p-6 flex flex-col justify-center">
               <h3 className="font-heading font-bold text-xl md:text-2xl mb-2">Bird Conservation</h3>
@@ -88,8 +88,8 @@ const FlippingCard = ({ bird, isIntro = false }) => {
           {/* Front side - Image */}
           <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-xl overflow-hidden">
             <AspectRatio ratio={1}>
-              <img 
-                src={bird.image} 
+              <img
+                src={bird.image}
                 alt={bird.name}
                 className="object-cover w-full h-full"
               />
@@ -100,7 +100,7 @@ const FlippingCard = ({ bird, isIntro = false }) => {
               </div>
             </AspectRatio>
           </div>
-          
+
           {/* Back side - Information */}
           <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-white border border-lime-200 rounded-xl p-6 flex flex-col justify-center">
             <h3 className="font-heading font-bold text-xl text-forest-900 mb-3">{bird.name}</h3>
@@ -125,11 +125,11 @@ const SpeciesGallery = () => {
           <Bird className="h-5 w-5 text-lime-600" />
           <h2 className="text-xl font-heading font-bold text-forest-900">Fascinating Species</h2>
         </div>
-        <Link to="/species" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
+        <Link to="/taxa" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
           Discover More Birds
         </Link>
       </div>
-      
+
       {/* Mobile view - carousel */}
       <div className="block md:hidden">
         <Carousel className="w-full">
@@ -147,7 +147,7 @@ const SpeciesGallery = () => {
           <CarouselNext className="-right-4" />
         </Carousel>
       </div>
-      
+
       {/* Desktop view - grid */}
       <div className="hidden md:grid grid-cols-3 gap-4">
         <FlippingCard bird={null} isIntro={true} />

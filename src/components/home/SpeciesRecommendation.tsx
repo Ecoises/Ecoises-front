@@ -31,7 +31,7 @@ const recommendedBirds = [
 const SpeciesRecommendation = () => {
   const randomIndex = Math.floor(Math.random() * recommendedBirds.length);
   const bird = recommendedBirds[randomIndex] || recommendedBirds[0];
-  
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -47,14 +47,14 @@ const SpeciesRecommendation = () => {
             <p className="text-sm text-forest-600">Perfecta para observar hoy</p>
           </div>
         </div>
-        <Link to="/species">
+        <Link to="/taxa">
           <Button variant="ghost" className="text-lime-600 hover:text-lime-700 hover:bg-lime-50 gap-1">
             Ver Más
             <ChevronRight className="h-4 w-4" />
           </Button>
         </Link>
       </div>
-      
+
       {/* Card */}
       <Card className="overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 group">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
@@ -66,14 +66,14 @@ const SpeciesRecommendation = () => {
                 Recomendada
               </Badge>
             </div>
-            <img 
-              src={bird.image} 
-              alt={bird.name} 
+            <img
+              src={bird.image}
+              alt={bird.name}
               className="h-full w-full object-cover aspect-[4/3] lg:aspect-auto transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           </div>
-          
+
           {/* Content Section */}
           <div className="lg:col-span-3 p-8 bg-gradient-to-br from-white to-lime-50/30">
             <div className="h-full flex flex-col justify-between">
@@ -86,18 +86,18 @@ const SpeciesRecommendation = () => {
                   <Bird className="h-4 w-4 text-lime-600" />
                   {bird.scientificName}
                 </p>
-                
+
                 {/* Description */}
                 <p className="text-forest-700 leading-relaxed mb-6 line-clamp-3">
                   {bird.description}
                 </p>
-                
+
                 {/* Info Pills */}
-                
+
               </div>
-              
+
               {/* CTA Button */}
-              <Link to={`/species/${bird.id}`} className="mt-auto">
+              <Link to={`/taxa/${bird.id}`} className="mt-auto">
                 <Button className="bg-lime-500 hover:bg-lime-600 w-full sm:w-auto px-6 py-3 text-sm sm:text-base">
                   Explorar esta Especie
                   <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />

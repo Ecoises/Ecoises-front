@@ -20,7 +20,7 @@ const MobileNavbar = ({ }: MobileNavbarProps) => {
           {mobileNavItems.map((item) => {
             const Icon = item.icon;
 
-            const isSpeciesDetail = item.to === '/explorer' && location.pathname.startsWith('/species/');
+            const isSpeciesDetail = item.to === '/explorer' && location.pathname.startsWith('/taxa/');
             let active = false;
 
             if (item.to === '/explorer') {

@@ -393,7 +393,7 @@ const SpeciesDetail = () => {
               relatedSpecies.map((similar: any, index: number) => {
                 const similarPhoto = similar.default_photo?.url || similar.default_photo?.medium_url;
                 return (
-                  <Link key={index} to={`/species/${similar.id}`}>
+                  <Link key={index} to={`/taxa/${similar.id}`}>
                     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group mb-1">
                       <div className="flex gap-4">
                         <div className="w-32 h-32 flex-shrink-0 overflow-hidden bg-gray-100">

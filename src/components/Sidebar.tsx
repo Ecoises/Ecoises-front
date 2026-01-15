@@ -43,7 +43,7 @@ export const navItems = [
   { icon: Home, label: "Inicio", to: "/" },
   { icon: Search, label: "Exporar", to: "/explorer" },
   { icon: Map, label: "Sightings Map", to: "/map" },
-  { icon: BookOpen, label: "Species Guide", to: "/species" },
+  { icon: BookOpen, label: "Species Guide", to: "/taxa" },
   { icon: Calendar, label: "My Sightings", to: "/sightings" },
   { icon: BookOpen, label: "Aprende", to: "/learn" },
 ];
@@ -77,15 +77,15 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
       <div className="h-[calc(100vh-4rem)] overflow-auto p-4 flex flex-col">
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => {
-            const isSpeciesDetail = item.to === '/explorer' && location.pathname.startsWith('/species/');
-            const isSpeciesGuideSimple = item.to === '/species' && location.pathname === '/species';
+            const isSpeciesDetail = item.to === '/explorer' && location.pathname.startsWith('/taxa/');
+            const isSpeciesGuideSimple = item.to === '/taxa' && location.pathname === '/taxa';
             // Special case overrides
             let isActive = false;
 
             if (item.to === '/') {
               // Home: only active on exact root path
               isActive = location.pathname === '/';
-            } else if (item.to === '/species') {
+            } else if (item.to === '/taxa') {
               isActive = isSpeciesGuideSimple;
             } else if (item.to === '/explorer') {
               isActive = location.pathname === item.to || isSpeciesDetail;

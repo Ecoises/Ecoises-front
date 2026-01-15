@@ -107,7 +107,7 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
   const establishment = getEstablishmentBadge(species);
 
   return (
-    <Link to={`/species/${species.id}`} state={{ from: location }} className="w-full block h-full">
+    <Link to={`/taxa/${species.id}`} state={{ from: location }} className="w-full block h-full">
       <Card className="w-full overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full cursor-pointer flex flex-col group border-lime-100/60 bg-white">
         <div className="relative h-48 bg-gray-100 overflow-hidden">
           {species.default_photo?.url ? (

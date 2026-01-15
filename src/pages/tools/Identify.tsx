@@ -112,14 +112,12 @@ const Identify = () => {
             {/* Tab selection */}
             <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-lime-200 bg-lime-50/50">
               <button
-                className={`flex items-center gap-2 p-4 md:py-6 flex-1 md:w-56 ${
-                  uploadType === "image" ? "bg-white" : ""
-                }`}
+                className={`flex items-center gap-2 p-4 md:py-6 flex-1 md:w-56 ${uploadType === "image" ? "bg-white" : ""
+                  }`}
                 onClick={() => setUploadType("image")}
               >
-                <div className={`p-2 rounded-full ${
-                  uploadType === "image" ? "bg-lime-100 text-lime-800" : "bg-gray-100 text-gray-500"
-                }`}>
+                <div className={`p-2 rounded-full ${uploadType === "image" ? "bg-lime-100 text-lime-800" : "bg-gray-100 text-gray-500"
+                  }`}>
                   <Image className="h-5 w-5" />
                 </div>
                 <div className="text-left">
@@ -131,14 +129,12 @@ const Identify = () => {
               </button>
 
               <button
-                className={`flex items-center gap-2 p-4 md:py-6 flex-1 md:w-56 ${
-                  uploadType === "characteristics" ? "bg-white" : ""
-                }`}
+                className={`flex items-center gap-2 p-4 md:py-6 flex-1 md:w-56 ${uploadType === "characteristics" ? "bg-white" : ""
+                  }`}
                 onClick={() => setUploadType("characteristics")}
               >
-                <div className={`p-2 rounded-full ${
-                  uploadType === "characteristics" ? "bg-lime-100 text-lime-800" : "bg-gray-100 text-gray-500"
-                }`}>
+                <div className={`p-2 rounded-full ${uploadType === "characteristics" ? "bg-lime-100 text-lime-800" : "bg-gray-100 text-gray-500"
+                  }`}>
                   <List className="h-5 w-5" />
                 </div>
                 <div className="text-left">
@@ -155,7 +151,7 @@ const Identify = () => {
                 <div className="space-y-4">
                   <h2 className="text-xl font-medium text-forest-900">Sube una foto del ave</h2>
                   <p className="text-gray-500 text-sm">
-                    Sube una imagen clara del ave para obtener los mejores resultados. 
+                    Sube una imagen clara del ave para obtener los mejores resultados.
                     Imágenes con buena luz y donde el ave es claramente visible funcionan mejor.
                   </p>
 
@@ -170,7 +166,7 @@ const Identify = () => {
                   </div>
 
                   <div className="mt-8">
-                    <Button 
+                    <Button
                       className="w-full bg-lime-600 hover:bg-lime-700"
                       onClick={handleUpload}
                       disabled={isProcessing}
@@ -200,11 +196,11 @@ const Identify = () => {
                               <div className="text-right text-gray-500">Rojo/naranja</div>
                             </div>
                             <FormControl>
-                              <Slider 
-                                defaultValue={[50]} 
-                                min={0} 
-                                max={100} 
-                                step={1} 
+                              <Slider
+                                defaultValue={[50]}
+                                min={0}
+                                max={100}
+                                step={1}
                                 onValueChange={(vals) => field.onChange(vals[0])}
                               />
                             </FormControl>
@@ -224,11 +220,11 @@ const Identify = () => {
                               <div className="text-right text-gray-500">Grande (águila)</div>
                             </div>
                             <FormControl>
-                              <Slider 
-                                defaultValue={[50]} 
-                                min={0} 
-                                max={100} 
-                                step={1} 
+                              <Slider
+                                defaultValue={[50]}
+                                min={0}
+                                max={100}
+                                step={1}
                                 onValueChange={(vals) => field.onChange(vals[0])}
                               />
                             </FormControl>
@@ -248,11 +244,11 @@ const Identify = () => {
                               <div className="text-right text-gray-500">Largo y delgado</div>
                             </div>
                             <FormControl>
-                              <Slider 
-                                defaultValue={[50]} 
-                                min={0} 
-                                max={100} 
-                                step={1} 
+                              <Slider
+                                defaultValue={[50]}
+                                min={0}
+                                max={100}
+                                step={1}
                                 onValueChange={(vals) => field.onChange(vals[0])}
                               />
                             </FormControl>
@@ -268,7 +264,7 @@ const Identify = () => {
                             <FormItem>
                               <FormLabel>Hábitat</FormLabel>
                               <FormControl>
-                                <Input 
+                                <Input
                                   placeholder="Ej: bosque, lago, jardín"
                                   {...field}
                                 />
@@ -284,7 +280,7 @@ const Identify = () => {
                             <FormItem>
                               <FormLabel>Región geográfica</FormLabel>
                               <FormControl>
-                                <Input 
+                                <Input
                                   placeholder="Ej: norte de México, Yucatán"
                                   {...field}
                                 />
@@ -294,8 +290,8 @@ const Identify = () => {
                         />
                       </div>
 
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         className="w-full bg-lime-600 hover:bg-lime-700 mt-4"
                         disabled={isProcessing}
                       >
@@ -330,26 +326,24 @@ const Identify = () => {
                     <h3 className="text-lg font-medium text-forest-900">Posibles coincidencias</h3>
                     <div className="space-y-2">
                       {results.map((result) => (
-                        <div 
+                        <div
                           key={result.id}
-                          className={`flex items-center gap-3 p-3 rounded-lg border ${
-                            result.id === 1 ? "border-lime-500 bg-lime-50" : "border-gray-200 hover:bg-lime-50/50"
-                          } cursor-pointer transition-colors`}
+                          className={`flex items-center gap-3 p-3 rounded-lg border ${result.id === 1 ? "border-lime-500 bg-lime-50" : "border-gray-200 hover:bg-lime-50/50"
+                            } cursor-pointer transition-colors`}
                         >
-                          <img 
-                            src={result.image} 
-                            alt={result.name} 
-                            className="h-12 w-12 object-cover rounded-lg" 
+                          <img
+                            src={result.image}
+                            alt={result.name}
+                            className="h-12 w-12 object-cover rounded-lg"
                           />
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-forest-900 truncate">{result.name}</h4>
                             <p className="text-xs text-gray-500 italic">{result.scientificName}</p>
                           </div>
-                          <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            result.probability > 90 ? "bg-lime-100 text-lime-800" :
-                            result.probability > 70 ? "bg-amber-100 text-amber-800" :
-                            "bg-orange-100 text-orange-800"
-                          }`}>
+                          <div className={`px-2 py-1 rounded-full text-xs font-medium ${result.probability > 90 ? "bg-lime-100 text-lime-800" :
+                              result.probability > 70 ? "bg-amber-100 text-amber-800" :
+                                "bg-orange-100 text-orange-800"
+                            }`}>
                             {result.probability}%
                           </div>
                         </div>
@@ -371,10 +365,10 @@ const Identify = () => {
                     </div>
 
                     <div className="aspect-w-16 aspect-h-9 mb-4 rounded-xl overflow-hidden">
-                      <img 
-                        src={results[0].image} 
+                      <img
+                        src={results[0].image}
                         alt={results[0].name}
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover"
                       />
                     </div>
 
@@ -399,7 +393,7 @@ const Identify = () => {
                     </div>
 
                     <div className="flex gap-3">
-                      <Link to={`/species/${results[0].id}`}>
+                      <Link to={`/taxa/${results[0].id}`}>
                         <Button className="bg-forest-700 hover:bg-forest-800">Ver detalle completo</Button>
                       </Link>
                       <Button variant="outline" className="border-lime-200">Guardar identificación</Button>
@@ -414,10 +408,10 @@ const Identify = () => {
                           <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                             <div className="p-1">
                               <div className="overflow-hidden rounded-xl aspect-square bg-gray-100">
-                                <img 
-                                  src={results[0].image} 
+                                <img
+                                  src={results[0].image}
                                   alt={`${results[0].name} ${index + 1}`}
-                                  className="w-full h-full object-cover" 
+                                  className="w-full h-full object-cover"
                                 />
                               </div>
                             </div>

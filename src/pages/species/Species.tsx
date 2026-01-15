@@ -43,7 +43,7 @@ const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
   const imageUrl = species.default_photo?.url || 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?auto=format&fit=crop&w=600&h=400';
 
   return (
-    <Link to={`/species/${species.id}`}>
+    <Link to={`/taxa/${species.id}`}>
       <Card className="overflow-hidden card-hover h-full">
         <div className="relative h-48">
           <img
