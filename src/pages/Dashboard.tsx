@@ -10,6 +10,7 @@ import SpeciesGallery from "@/components/home/SpeciesGallery";
 import LeaderboardSection from "@/components/home/LeaderboardSection";
 import RecentSightingsSection from "@/components/home/RecentSightingsSection";
 import FeaturesSection from "@/components/home/FeaturesSection";
+import EcosystemGridGallery from "@/components/home/EcosystemGridGallery";
 
 const Index = () => {
   return (
@@ -36,15 +37,14 @@ const Index = () => {
       
       {/* Species Gallery with flipping cards */}
       <SpeciesGallery />
+
+      {/* Ecosystem Grid Gallery */}
+      <EcosystemGridGallery />
       
       {/* Leaderboard Section */}
-      <LeaderboardSection />
+      {/* <LeaderboardSection /> */}
       
-      {/* Recent Sightings Section */}
-      <RecentSightingsSection />
       
-        {/* Features */}
-        <FeaturesSection />
       </div>
     </div>
   );

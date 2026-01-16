@@ -42,9 +42,9 @@ const SpeciesRecommendation = () => {
           </div>
           <div>
             <h2 className="text-xl font-heading font-bold text-forest-900">
-              Especie Recomendada
+              Especie del día
             </h2>
-            <p className="text-sm text-forest-600">Perfecta para observar hoy</p>
+            <p className="text-sm text-forest-600">Aprende algo nuevo sobre esta especie</p>
           </div>
         </div>
         <Link to="/taxa">
@@ -83,7 +83,7 @@ const SpeciesRecommendation = () => {
                   {bird.name}
                 </h3>
                 <p className="text-forest-600 italic text-base mb-6 flex items-center gap-2">
-                  <Bird className="h-4 w-4 text-lime-600" />
+                  
                   {bird.scientificName}
                 </p>
 
@@ -99,7 +99,7 @@ const SpeciesRecommendation = () => {
               {/* CTA Button */}
               <Link to={`/taxa/${bird.id}`} className="mt-auto">
                 <Button className="bg-lime-500 hover:bg-lime-600 w-full sm:w-auto px-6 py-3 text-sm sm:text-base">
-                  Explorar esta Especie
+                  Ver Detalles
                   <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>

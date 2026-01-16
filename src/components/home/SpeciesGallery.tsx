@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Bird } from "lucide-react";
+import { Bird, Brain } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Carousel,
@@ -29,33 +29,8 @@ const birdGallery = [
     lifespan: "4-10 years",
     wingspan: "80-95 cm"
   },
-  {
-    id: 3,
-    name: "Peacock",
-    image: "https://images.unsplash.com/photo-1602170284347-f9c28856c744?auto=format&fit=crop&w=500&h=500",
-    funFact: "A peacock's tail feathers (known as a train) make up about 60% of its body length and contain a complex pattern of eyespots that help attract mates.",
-    habitat: "Forests, grasslands",
-    lifespan: "10-25 years",
-    wingspan: "130-160 cm"
-  },
-  {
-    id: 4,
-    name: "Toucan",
-    image: "https://images.unsplash.com/photo-1551085254-e96b210db58a?auto=format&fit=crop&w=500&h=500",
-    funFact: "Despite its large size, a toucan's beak is lightweight and made of keratin with a hollow honeycomb structure inside, which helps regulate body temperature.",
-    habitat: "Tropical rainforests",
-    lifespan: "12-20 years",
-    wingspan: "43-52 cm"
-  },
-  {
-    id: 5,
-    name: "Hummingbird",
-    image: "https://images.unsplash.com/photo-1590143640485-b927afbc3d42?auto=format&fit=crop&w=500&h=500",
-    funFact: "Hummingbirds are the only birds that can fly backwards and hover in mid-air. Their wings beat about 70 times per second!",
-    habitat: "Gardens, forests",
-    lifespan: "3-5 years",
-    wingspan: "8-10 cm"
-  }
+  
+  
 ];
 
 const FlippingCard = ({ bird, isIntro = false }) => {
@@ -67,13 +42,13 @@ const FlippingCard = ({ bird, isIntro = false }) => {
             {/* Front side */}
             <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] bg-lime-500 text-white rounded-xl p-6 flex flex-col justify-center">
               <h3 className="font-heading font-bold text-xl md:text-2xl mb-2">Especies fascinantes</h3>
-              <p>Discover the beautiful diversity of bird species from around the world</p>
+              <p>Descubre la diversidad hermosa de las especies de aves del mundo</p>
             </div>
 
             {/* Back side */}
             <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-forest-800 text-white rounded-xl p-6 flex flex-col justify-center">
-              <h3 className="font-heading font-bold text-xl md:text-2xl mb-2">Bird Conservation</h3>
-              <p>Learn how you can help protect these amazing creatures and their habitats</p>
+              <h3 className="font-heading font-bold text-xl md:text-2xl mb-2">Conservación de las aves</h3>
+              <p>Aprende cómo puedes ayudar a proteger estas maravillosas criaturas y sus hábitats</p>
             </div>
           </div>
         </div>
@@ -102,14 +77,11 @@ const FlippingCard = ({ bird, isIntro = false }) => {
           </div>
 
           {/* Back side - Information */}
-          <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-white border border-lime-200 rounded-xl p-6 flex flex-col justify-center">
-            <h3 className="font-heading font-bold text-xl text-forest-900 mb-3">{bird.name}</h3>
+          <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] bg-forest-800 text-white rounded-xl p-6 flex flex-col justify-center">
+            <h3 className="font-heading font-bold text-xl ">{bird.name}</h3>
+             <p className="italic text-base  flex items-center  mb-3">Nombre Cientifico</p>
             <p className="">{bird.funFact}</p>
-            <div className="space-y-2 text-xs text-forest-600">
-              <div><span className="font-medium">Habitat:</span> {bird.habitat}</div>
-              <div><span className="font-medium">Lifespan:</span> {bird.lifespan}</div>
-              <div><span className="font-medium">Wingspan:</span> {bird.wingspan}</div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -120,14 +92,18 @@ const FlippingCard = ({ bird, isIntro = false }) => {
 const SpeciesGallery = () => {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Bird className="h-5 w-5 text-lime-600" />
-          <h2 className="text-xl font-heading font-bold text-forest-900">Fascinating Species</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 mt-4">
+          <div className="p-2 bg-gradient-to-br from-lime-500 to-lime-600 rounded-xl shadow-lg shadow-lime-500/20">
+            <Brain className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-heading font-bold text-forest-900">
+              ¿Sabias que?
+            </h2>
+            <p className="text-sm text-forest-600">Datos interesantes del día</p>
+          </div>
         </div>
-        <Link to="/taxa" className="text-lime-600 hover:text-lime-700 text-sm font-medium">
-          Discover More Birds
-        </Link>
       </div>
 
       {/* Mobile view - carousel */}
