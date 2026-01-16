@@ -27,7 +27,7 @@ const Layout = () => {
         {/* Contenido Principal: Ocupa el espacio restante horizontalmente */}
         {/* Aquí el ml-64 (o el ancho de tu sidebar) es crucial para empujar el contenido más allá del sidebar */}
         <main className={cn(
-          "flex-1 transition-all duration-300", // flex-1 para ocupar el espacio horizontal restante
+          "flex-1 transition-[margin] duration-300", // Use specific transition property to avoid layout thrashing
           isMobile
             ? "pb-24" // Padding para la navbar inferior en móvil
             : "ml-64" // Margen izquierdo para dejar espacio al sidebar en escritorio

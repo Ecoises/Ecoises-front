@@ -1,144 +1,169 @@
 import React from "react";
-import { Leaf } from "lucide-react";
+import { Leaf, ChevronRight, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { Link, useLocation } from "react-router-dom";
 
 const ecosystemData = [
   {
     id: 1,
-    title: "MAMÍFEROS",
-    count: "6355 Especies",
-    image: "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=800&q=80",
-    gridArea: "mamiferos"
+    title: "Mamíferos",
+    count: "6,355 Especies",
+    image: "https://images.unsplash.com/photo-1604890532358-4029426b27af?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    className: "md:col-span-2 md:row-span-1",
+    taxon: "Mammalia"
   },
   {
     id: 2,
     title: "REINO ANIMALIA",
-    subtitle: "Explora animales con base en su taxonomía, hábitat, dieta, estilo de vida y más",
-    count: "36073 Especies",
-    image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=800&q=80",
-    gridArea: "centro",
-    featured: true
+    subtitle: "Explora animales con base en su taxonomía, hábitat, dieta y estilo de vida",
+    count: "36,073 Especies",
+    image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=1000&q=80",
+    className: "md:col-span-2 md:row-span-2",
+    featured: true,
+    taxon: "" // All animalia
   },
   {
     id: 3,
     title: "MOLUSCOS",
-    count: "4910 Especies",
-    image: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80",
-    gridArea: "moluscos"
+    count: "4,910 Especies",
+    image: "https://images.unsplash.com/photo-1599463740831-a5015ef7b65a?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    className: "md:col-span-1 md:row-span-2",
+    taxon: "Mollusca"
   },
   {
     id: 4,
     title: "AVES",
-    count: "10363 Especies",
-    image: "https://images.unsplash.com/photo-1551771331-14eb264b5542?w=800&q=80",
-    gridArea: "aves"
+    count: "10,363 Especies",
+    image: "public/images/ave.jpg",
+    className: "md:col-span-1 md:row-span-1",
+    taxon: "Aves"
   },
   {
     id: 5,
     title: "ANFIBIOS",
-    count: "3424 Especies",
+    count: "3,424 Especies",
     image: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80",
-    gridArea: "anfibios"
+    className: "md:col-span-2 md:row-span-1",
+    taxon: "Amphibia"
   },
   {
     id: 6,
     title: "REPTILES",
-    count: "5892 Especies",
+    count: "5,892 Especies",
     image: "https://images.unsplash.com/photo-1531386151447-fd76ad50012f?w=800&q=80",
-    gridArea: "reptiles"
+    className: "md:col-span-1 md:row-span-1",
+    taxon: "Reptilia"
   }
 ];
 
-const EcosystemCard = ({ item }) => {
+const EcosystemCard = ({ item, index }: { item: any; index: number }) => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams();
+  if (item.taxon) searchParams.set("iconic_taxa", item.taxon);
+
   return (
-    <div
-      style={{ gridArea: item.gridArea }}
-      className="relative overflow-hidden rounded-2xl group cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
+    <Link
+      to={`/explorer?${searchParams.toString()}`}
+      state={{ from: location }}
+      className={item.className}
     >
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <img
-          src={item.image}
-          alt={item.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: index * 0.1 }}
+        className="relative overflow-hidden rounded-3xl group cursor-pointer h-full min-h-[220px] border border-white/10"
+      >
+        {/* Background Image with Zoom Effect */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src={item.image}
+            alt={item.title}
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          />
+          {/* Dynamic Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:via-black/50 transition-colors duration-300" />
+        </div>
 
-      {/* Content */}
-      <div className="relative h-full p-6 flex flex-col justify-end text-white">
-        {item.featured ? (
-          <div className="text-center space-y-3">
-            <div className="inline-block p-3 bg-yellow-400 rounded-full mb-2">
-              <Leaf className="h-6 w-6 text-forest-900" />
+        {/* Glassmorphism Border Overlay on Hover */}
+        <div className="absolute inset-0 border-2 border-lime-500/0 group-hover:border-lime-500/30 rounded-3xl transition-all duration-300 pointer-events-none z-20" />
+
+        {/* Content */}
+        <div className="relative z-10 h-full p-6 md:p-8 flex flex-col justify-end text-white">
+          {item.featured ? (
+            <div className="space-y-4">
+              <motion.div
+                initial={{ scale: 0.8 }}
+                whileInView={{ scale: 1 }}
+                className="inline-flex p-3 bg-lime-500/20 backdrop-blur-md rounded-2xl border border-white/20 mb-2"
+              >
+                <Leaf className="h-6 w-6 text-lime-400" />
+              </motion.div>
+              <h2 className="text-3xl lg:text-5xl font-heading font-bold tracking-tight leading-tight">
+                {item.title}
+              </h2>
+              <p className="text-sm lg:text-base max-w-md opacity-80 font-sans leading-relaxed">
+                {item.subtitle}
+              </p>
+              <div className="flex items-center gap-3">
+                <span className="text-xl font-heading font-bold text-lime-400">{item.count}</span>
+                <div className="h-1 w-12 bg-lime-500/30 rounded-full" />
+              </div>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-wide">
-              {item.title}
-            </h2>
-            <p className="text-sm md:text-base max-w-md mx-auto opacity-90">
-              {item.subtitle}
-            </p>
-            <p className="text-lg font-semibold italic">{item.count}</p>
-          </div>
-        ) : (
-          <>
-            <h3 className="text-2xl md:text-3xl font-bold mb-2 tracking-wide">
-              {item.title}
-            </h3>
-            <p className="text-sm font-medium">{item.count}</p>
-          </>
-        )}
-      </div>
+          ) : (
+            <div className="space-y-1">
+              <h3 className="text-xl lg:text-2xl font-heading font-bold tracking-wide group-hover:text-lime-400 transition-colors">
+                {item.title}
+              </h3>
+              <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                <p className="text-sm font-medium text-white/70 italic">{item.count}</p>
+                <ArrowRight className="h-4 w-4 text-lime-400" />
+              </div>
+              {/* Default count display when not hovered */}
+              <p className="text-xs font-medium text-white/50 group-hover:opacity-0 transition-opacity">
+                {item.count}
+              </p>
+            </div>
+          )}
+        </div>
 
-      {/* Hover Overlay */}
-      <div className="absolute inset-0 bg-lime-500/0 group-hover:bg-lime-500/10 transition-colors duration-300" />
-    </div>
+        {/* Decorative Shine Effect */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      </motion.div>
+    </Link>
   );
 };
 
 const EcosystemGridGallery = () => {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-lime-500 to-lime-600 rounded-xl shadow-lg shadow-lime-500/20">
-            <Leaf className="h-5 w-5 text-white" />
+    <section className="py-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-l-4 border-lime-500 pl-4 md:pl-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-lime-600 font-semibold text-sm uppercase tracking-wider">
+            <Leaf className="h-4 w-4" />
+            <span>Naturaleza Viva</span>
           </div>
-          <div>
-            <h2 className="text-xl font-heading font-bold text-forest-900">
-              Explora por Ecosistema
-            </h2>
-            <p className="text-sm text-forest-600">Descubre la biodiversidad del planeta</p>
-          </div>
+          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-forest-900">
+            Explora por Ecosistema
+          </h2>
+          <p className="text-forest-600 max-w-xl">
+            Sumérgete en la vasta biodiversidad del planeta filtrada por categorías taxonómicas y ecosistemas vitales.
+          </p>
         </div>
+        <button className="flex items-center gap-2 text-lime-600 hover:text-lime-700 font-bold group">
+          Ver todos los grupos
+          <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+        </button>
       </div>
 
-      {/* Mobile - Single Column Stack */}
-      <div className="grid grid-cols-1 gap-4 md:hidden">
-        {ecosystemData.map((item) => (
-          <div key={item.id} className="h-64">
-            <EcosystemCard item={item} />
-          </div>
+      {/* Mosaic Grid Container */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 auto-rows-[250px] gap-4 lg:gap-6">
+        {ecosystemData.map((item, index) => (
+          <EcosystemCard key={item.id} item={item} index={index} />
         ))}
       </div>
-
-      {/* Desktop - Asymmetric Grid Layout */}
-      <div 
-        className="hidden md:grid gap-4"
-        style={{
-          gridTemplateColumns: 'repeat(5, 1fr)',
-          gridTemplateRows: 'repeat(3, 220px)',
-          gridTemplateAreas: `
-            "mamiferos mamiferos centro centro moluscos"
-            "aves aves centro centro moluscos"
-            "aves aves anfibios anfibios reptiles"
-          `
-        }}
-      >
-        {ecosystemData.map((item) => (
-          <EcosystemCard key={item.id} item={item} />
-        ))}
-      </div>
-    </div>
+    </section>
   );
 };
 

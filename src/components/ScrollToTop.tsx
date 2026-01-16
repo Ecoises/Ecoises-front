@@ -1,22 +1,26 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { useLocation, useNavigationType } from 'react-router-dom';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
+  const navType = useNavigationType();
+  const isPop = navType === 'POP';
 
   useEffect(() => {
-    // Definir rutas donde queremos preservar el scroll (listados y detalles)
-    // Usamos startsWith para preservar scroll en /taxa y /taxa/:id
-    const preserveScrollPaths = ['/explorer', '/taxa', '/sightings', '/map'];
-
-    // Verificar si el pathname empieza con alguna ruta preservada
-    const shouldPreserveScroll = preserveScrollPaths.some(path => pathname.startsWith(path));
-
-    // Solo hacer scroll top si NO es una ruta preservada
-    if (!shouldPreserveScroll) {
-      window.scrollTo(0, 0);
+    // Solo configurar esto una vez o cuando sea necesario, pero 'auto' es el default generalmente.
+    // Lo forzamos para asegurar que el navegador sepa que puede restaurar.
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'auto';
     }
-  }, [pathname]);
+  }, []);
+
+  useEffect(() => {
+    // Si la navegación es POP (Atrás/Adelante), TERMINANTEMENTE PROHIBIDO tocar el scroll.
+    if (isPop) return;
+
+    // Solo si es PUSH (Nueva navegación) o REPLACE explícito, vamos arriba.
+    window.scrollTo(0, 0);
+  }, [pathname, isPop]);
 
   return null;
 }

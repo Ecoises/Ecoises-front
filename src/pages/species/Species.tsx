@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, X, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import {
   Pagination,
@@ -40,10 +40,11 @@ const getConservationStatusColor = (status: string) => {
 };
 
 const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
+  const location = useLocation();
   const imageUrl = species.default_photo?.url || 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?auto=format&fit=crop&w=600&h=400';
 
   return (
-    <Link to={`/taxa/${species.id}`}>
+    <Link to={`/taxa/${species.id}`} state={{ from: location }}>
       <Card className="overflow-hidden card-hover h-full">
         <div className="relative h-48">
           <img
@@ -63,7 +64,7 @@ const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
             {species.scientific_name}
           </p>
           {species.establishment_status_colombia && (
-            <Badge variant="outline" className={`mt-2 ${species.is_native ? 'border-green-500 text-green-700' : 'border-orange-500 text-orange-700'}`}>
+            <Badge variant="outline" className={`mt-2 ${species.native ? 'border-green-500 text-green-700' : 'border-orange-500 text-orange-700'}`}>
               {species.establishment_status_colombia}
             </Badge>
           )}
@@ -115,7 +116,7 @@ const Species = () => {
     setSearchParams(merged);
   };
 
-  const { data, isLoading: loading, isError, error: queryError } = useSpecies({
+  const { data, isLoading: loading, isError, error: queryError, isFetching } = useSpecies({
     page,
     per_page: 12,
     q: debouncedSearch,

@@ -320,10 +320,12 @@ export default function Explorer() {
   };
 
   // Determines if we should show skeleton loading
-  const showLoading = isLoading || isFetching;
+  // FIX: Only show full skeleton on initial load (isLoading). 
+  // Ignore isFetching to avoid layout thrashing when returning from cache.
+  const showLoading = isLoading;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 min-h-screen">
 
       {/* Header & Location Control */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
