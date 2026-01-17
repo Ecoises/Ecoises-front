@@ -13,55 +13,17 @@ interface DailySpecies {
   image: string;
   description: string;
   date: string;
+  author?: string;
 }
-
-// Custom hook to manage Daily Species with LocalStorage Cache
+// Custom hook to manage Daily Species using Backend API
 const useDailySpecies = () => {
-  const today = new Date().toISOString().split('T')[0];
-
   return useQuery({
-    queryKey: ['daily_species', today],
+    queryKey: ['daily_recommendation'],
     queryFn: async () => {
-      // 1. Check Local Storage
-      const cached = localStorage.getItem('daily_species');
-      if (cached) {
-        try {
-          const parsed: DailySpecies = JSON.parse(cached);
-          if (parsed.date === today) {
-            return parsed;
-          }
-        } catch (e) {
-          localStorage.removeItem('daily_species');
-        }
-      }
-
-      // 2. Fetch New Random Species
-      const { data } = await api.get('/api/taxa/explore/colombia', {
-        params: {
-          order_by: 'random',
-          per_page: 1,
-          enrich: 1
-        }
-      });
-
-      const species = data.data[0];
-      if (!species) throw new Error("No species found");
-
-      // 3. Format & Cache
-      const newDaily: DailySpecies = {
-        id: species.id,
-        name: species.common_name || species.scientific_name,
-        scientificName: species.scientific_name,
-        image: species.default_photo?.url?.replace('square', 'medium') || species.default_photo?.medium_url || species.default_photo?.url || "https://images.unsplash.com/photo-1518531933037-9a8473035e52?auto=format&fit=crop&w=800&h=500",
-        description: species.wikipedia_summary || `Descubre la biodiversidad de Colombia con el ${species.common_name || species.scientific_name}.`,
-        date: today
-      };
-
-      localStorage.setItem('daily_species', JSON.stringify(newDaily));
-      return newDaily;
+      const { data } = await api.get('/api/daily-recommendation');
+      return data;
     },
-    staleTime: 24 * 60 * 60 * 1000,
-    gcTime: 24 * 60 * 60 * 1000,
+    staleTime: 60 * 60 * 1000,
     retry: 2
   });
 };
@@ -134,7 +96,7 @@ const SpeciesRecommendation = () => {
             <div className="absolute top-4 left-4 z-10">
               <Badge className="bg-lime-500 hover:bg-lime-600 text-white border-0 shadow-lg px-3 py-1.5 gap-2">
                 <Sparkles className="h-3.5 w-3.5" />
-                Hoy
+                Recomendada
               </Badge>
             </div>
 
@@ -156,7 +118,7 @@ const SpeciesRecommendation = () => {
                   {species.name}
                 </h3>
                 <p className="text-forest-600 italic text-lg mb-6 flex items-center gap-2">
-                  <Leaf className="h-4 w-4 text-lime-500" />
+                  
                   {species.scientificName}
                 </p>
 
