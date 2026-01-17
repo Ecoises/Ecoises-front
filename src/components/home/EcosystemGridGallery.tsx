@@ -6,51 +6,51 @@ import { Link, useLocation } from "react-router-dom";
 const ecosystemData = [
   {
     id: 1,
-    title: "Mamíferos",
+    title: "Insectos",
     count: "6,355 Especies",
-    image: "https://images.unsplash.com/photo-1604890532358-4029426b27af?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    image: "public/images/hero-img-3.png",
     className: "md:col-span-2 md:row-span-1",
-    taxon: "Mammalia"
+    taxon: "Insecta"
   },
   {
     id: 2,
-    title: "REINO ANIMALIA",
+    title: "Mamíferos",
     subtitle: "Explora animales con base en su taxonomía, hábitat, dieta y estilo de vida",
     count: "36,073 Especies",
-    image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=1000&q=80",
+    image: "https://plus.unsplash.com/premium_photo-1661947474212-151e08a94a33?q=80&w=892&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     className: "md:col-span-2 md:row-span-2",
-    featured: true,
-    taxon: "" // All animalia
+    featured: false,
+    taxon: "Mammalia" // All animalia
   },
   {
     id: 3,
-    title: "MOLUSCOS",
-    count: "4,910 Especies",
-    image: "https://images.unsplash.com/photo-1599463740831-a5015ef7b65a?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    title: "Plantas",
+    count: "Plantas",
+    image: "https://images.unsplash.com/photo-1567991722999-74f27f53f33a?q=80&w=386&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     className: "md:col-span-1 md:row-span-2",
-    taxon: "Mollusca"
+    taxon: "Plantae"
   },
   {
     id: 4,
-    title: "AVES",
+    title: "Aves",
     count: "10,363 Especies",
-    image: "public/images/ave.jpg",
+    image: "https://plus.unsplash.com/premium_photo-1729791088946-c3994880b47c?q=80&w=455&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     className: "md:col-span-1 md:row-span-1",
     taxon: "Aves"
   },
   {
     id: 5,
-    title: "ANFIBIOS",
+    title: "Anfibios",
     count: "3,424 Especies",
-    image: "https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=800&q=80",
+    image: "public/images/hero-img-6.png  ",
     className: "md:col-span-2 md:row-span-1",
     taxon: "Amphibia"
   },
   {
     id: 6,
-    title: "REPTILES",
+    title: "Reptiles",
     count: "5,892 Especies",
-    image: "https://images.unsplash.com/photo-1531386151447-fd76ad50012f?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1661481072791-1df445889e4b?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     className: "md:col-span-1 md:row-span-1",
     taxon: "Reptilia"
   }
@@ -82,7 +82,7 @@ const EcosystemCard = ({ item, index }: { item: any; index: number }) => {
             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           />
           {/* Dynamic Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent group-hover:via-black/50 transition-colors duration-300" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/0 to-transparent group-hover:via-black/50 transition-colors duration-300" />
         </div>
 
         {/* Glassmorphism Border Overlay on Hover */}
@@ -112,16 +112,14 @@ const EcosystemCard = ({ item, index }: { item: any; index: number }) => {
             </div>
           ) : (
             <div className="space-y-1">
-              <h3 className="text-xl lg:text-2xl font-heading font-bold tracking-wide group-hover:text-lime-400 transition-colors">
-                {item.title}
-              </h3>
+              
               <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                <p className="text-sm font-medium text-white/70 italic">{item.count}</p>
+                <p className="text-xl lg:text-2xl font-heading font-bold  group-hover:text-lime-400 transition-colors">{item.title}</p>
                 <ArrowRight className="h-4 w-4 text-lime-400" />
               </div>
               {/* Default count display when not hovered */}
-              <p className="text-xs font-medium text-white/50 group-hover:opacity-0 transition-opacity">
-                {item.count}
+              <p className="text-xl lg:text-2xl font-heading font-bold group-hover:opacity-0 transition-opacity">
+                {item.title}
               </p>
             </div>
           )}
