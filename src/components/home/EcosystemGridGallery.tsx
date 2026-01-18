@@ -8,7 +8,7 @@ const ecosystemData = [
     id: 1,
     title: "Insectos",
     count: "6,355 Especies",
-    image: "public/images/hero-img-3.png",
+    image: "/images/hero-img-3.png",
     className: "md:col-span-2 md:row-span-1",
     taxon: "Insecta"
   },
@@ -42,7 +42,7 @@ const ecosystemData = [
     id: 5,
     title: "Anfibios",
     count: "3,424 Especies",
-    image: "public/images/hero-img-6.png  ",
+    image: "/images/hero-img-6.png  ",
     className: "md:col-span-2 md:row-span-1",
     taxon: "Amphibia"
   },
