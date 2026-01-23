@@ -183,6 +183,9 @@ export default function Explorer() {
       return null;
     }
   });
+  const [locationName, setLocationName] = useState<string | null>(() => {
+    return localStorage.getItem('locationName');
+  });
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
 
@@ -248,11 +251,25 @@ export default function Explorer() {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
         const locationData = { lat: latitude, lng: longitude };
         setUserLocation(locationData);
         localStorage.setItem('userLocation', JSON.stringify(locationData));
+
+        try {
+          // Reverse geocoding to get place name
+          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`);
+          const data = await response.json();
+          const address = data.address;
+          // Prioritize: city -> town -> village -> county -> state
+          const name = address.city || address.town || address.village || address.municipality || address.county || address.state || "Tu ubicación";
+          setLocationName(name);
+          localStorage.setItem('locationName', name);
+        } catch (error) {
+          console.error("Error getting location name:", error);
+          setLocationName("Tu ubicación"); // Fallback
+        }
 
         setIsLocating(false);
         // Force update to use new location
@@ -270,7 +287,9 @@ export default function Explorer() {
 
   const clearLocation = () => {
     setUserLocation(null);
+    setLocationName(null);
     localStorage.removeItem('userLocation');
+    localStorage.removeItem('locationName');
     setLocationError(null);
   };
 
@@ -332,14 +351,14 @@ export default function Explorer() {
         <div>
           <Badge variant="outline" className="mb-2 border-lime-500 text-lime-700 bg-lime-50">
             {userLocation ? (
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Radio 50km</span>
+              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {locationName || "Cerca de ti"}</span>
             ) : "Exploración Nacional"}
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2 leading-none">
             {getHeaderTitle()}
           </h1>
           <p className="text-forest-700/80 text-lg">
-            {userLocation ? "Descubre qué especies viven a tu alrededor" : "Catálogo general de biodiversidad"}
+            {userLocation ? `Descubre qué especies viven en ${locationName || "tu zona"}` : "Catálogo general de biodiversidad"}
           </p>
         </div>
 
