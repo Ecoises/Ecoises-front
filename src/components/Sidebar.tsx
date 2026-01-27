@@ -83,8 +83,8 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
             let isActive = false;
 
             if (item.to === '/') {
-              // Home: only active on exact root path
-              isActive = location.pathname === '/';
+              // Home: active on root path or /home
+              isActive = location.pathname === '/' || location.pathname === '/home';
             } else if (item.to === '/taxa') {
               isActive = isSpeciesGuideSimple;
             } else if (item.to === '/explorer') {

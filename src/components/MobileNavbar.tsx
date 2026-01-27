@@ -25,9 +25,12 @@ const MobileNavbar = ({ }: MobileNavbarProps) => {
 
             if (item.to === '/explorer') {
               active = location.pathname === item.to || isSpeciesDetail;
+            } else if (item.to === '/') {
+              // Home: active on root path or /home
+              active = location.pathname === '/' || location.pathname === '/home';
             } else {
               // General prefix match (excluding root mismatch)
-              active = location.pathname === item.to || (item.to !== '/' && item.to !== '/home' && location.pathname.startsWith(item.to + '/'));
+              active = location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to + '/'));
             }
 
             if (item.label === 'Perfil' && !user) {
