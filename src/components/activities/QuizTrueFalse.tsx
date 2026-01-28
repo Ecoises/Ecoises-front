@@ -26,7 +26,11 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
         setSelectedAnswer(answer);
 
         // Backend might send "true"/"false" strings or booleans
-        const correctAnswer = activity.is_true === true || activity.is_true === "true";
+        // Fix: prioritize correct_answer over is_true
+        const correctAnswer = activity.correct_answer !== undefined
+            ? (activity.correct_answer === true || activity.correct_answer === "true")
+            : (activity.is_true === true || activity.is_true === "true");
+
         const correct = answer === correctAnswer;
 
         setIsCorrect(correct);
@@ -138,7 +142,7 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
                     )}
                     style={{
                         transform: showResult
-                            ? `translateX(${isCorrect === ((activity.is_true === true || activity.is_true === "true") === true) ? ((activity.is_true === true || activity.is_true === "true") ? 50 : -50) : 0}px)`
+                            ? `translateX(${isCorrect === ((activity.correct_answer !== undefined ? (activity.correct_answer === true || activity.correct_answer === "true") : (activity.is_true === true || activity.is_true === "true")) === true) ? ((activity.correct_answer !== undefined ? (activity.correct_answer === true || activity.correct_answer === "true") : (activity.is_true === true || activity.is_true === "true")) ? 50 : -50) : 0}px)`
                             : `translateX(${dragX}px) rotate(${rotation}deg)`,
                         transition: isDragging ? 'none' : 'transform 0.3s ease-out'
                     }}
@@ -211,7 +215,7 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
                         showResult && selectedAnswer === false && !isCorrect && "border-red-500 bg-red-100 text-red-500",
                         showResult && selectedAnswer === false && isCorrect && "border-green-500 bg-green-100 text-green-500",
                         (showResult || isCompleted) && selectedAnswer !== false && "border-muted text-muted-foreground opacity-50",
-                        showResult && (activity.is_true === "false" || activity.is_true === false) && selectedAnswer !== false && "border-green-500 text-green-500 opacity-50"
+                        showResult && (activity.correct_answer !== undefined ? (activity.correct_answer === "false" || activity.correct_answer === false) : (activity.is_true === "false" || activity.is_true === false)) && selectedAnswer !== false && "border-green-500 text-green-500 opacity-50"
                     )}
                 >
                     F
@@ -225,7 +229,7 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
                         showResult && selectedAnswer === true && isCorrect && "border-green-500 bg-green-100 text-green-500",
                         showResult && selectedAnswer === true && !isCorrect && "border-red-500 bg-red-100 text-red-500",
                         (showResult || isCompleted) && selectedAnswer !== true && "border-muted text-muted-foreground opacity-50",
-                        showResult && (activity.is_true === "true" || activity.is_true === true) && selectedAnswer !== true && "border-green-500 text-green-500 opacity-50"
+                        showResult && (activity.correct_answer !== undefined ? (activity.correct_answer === "true" || activity.correct_answer === true) : (activity.is_true === "true" || activity.is_true === true)) && selectedAnswer !== true && "border-green-500 text-green-500 opacity-50"
                     )}
                 >
                     V
@@ -242,7 +246,9 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
                         "text-sm",
                         isCorrect ? "text-green-700" : "text-red-700"
                     )}>
-                        {activity.true_false_feedback || "Respuesta correcta/incorrecta"}
+                        {isCorrect
+                            ? (activity.feedback_correct || activity.true_false_feedback || "¡Correcto!")
+                            : (activity.feedback_incorrect || activity.true_false_feedback || "Incorrecto")}
                     </p>
                 </div>
             )}

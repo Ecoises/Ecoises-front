@@ -17,6 +17,11 @@ export interface Activity {
     is_true?: string | boolean;
     true_false_feedback?: string;
 
+    // New Feedback structure
+    correct_answer?: string | boolean;
+    feedback_correct?: string;
+    feedback_incorrect?: string;
+
     // Legacy fields (can be deprecated or mapped if needed, but backend sends above)
     statement?: string;
     answer?: boolean;
