@@ -30,6 +30,7 @@ export interface Activity {
 
 export interface Lesson {
     id: number;
+    slug: string;
     title: string;
     description?: string;
     content_text?: string;
@@ -74,6 +75,12 @@ export interface LessonProgress {
     points_earned: number;
 }
 
+export interface ActivityProgress {
+    id: number;
+    is_completed: boolean;
+    points_earned: number;
+}
+
 export interface EducationalContent {
     id: number;
     title: string;
@@ -104,7 +111,8 @@ export interface EducationalContent {
     // Progress fields (attached if authenticated)
     enrollment?: Enrollment;
     lesson_progress?: Record<number, LessonProgress>;
-    completed_activities?: number[];
+    completed_activities?: number[]; // Backward compatibility
+    activity_progress?: ActivityProgress[];
 }
 
 export const getEducationalContents = async (params?: { search?: string; category?: string }) => {
@@ -122,8 +130,8 @@ export const startContent = async (slugOrId: string): Promise<Enrollment> => {
     return response.data;
 };
 
-export const completeLesson = async (id: number) => {
-    const response = await apiClient.post<LessonProgress>(`/lessons/${id}/complete`);
+export const completeLesson = async (slugOrId: string | number) => {
+    const response = await apiClient.post<LessonProgress>(`/lessons/${slugOrId}/complete`);
     return response.data;
 };
 

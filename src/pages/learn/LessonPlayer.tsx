@@ -20,7 +20,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 const LessonPlayer = () => {
-    const { courseSlug, lessonId } = useParams<{ courseSlug: string; lessonId: string }>();
+    const { courseSlug, lessonSlug } = useParams<{ courseSlug: string; lessonSlug: string }>();
     const navigate = useNavigate();
     const [course, setCourse] = useState<EducationalContent | null>(null);
     const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ const LessonPlayer = () => {
     // Load/refresh when course or lesson changes to keep progress in sync
     useEffect(() => {
         fetchContent();
-    }, [courseSlug, lessonId]);
+    }, [courseSlug, lessonSlug]);
 
     useEffect(() => {
         // Scroll the main content container to top when lesson changes
@@ -58,7 +58,7 @@ const LessonPlayer = () => {
                 behavior: 'smooth'
             });
         }
-    }, [lessonId]);
+    }, [lessonSlug]);
 
     // Auto-save removed to prevent 400 errors and rely on explicit navigation completion
 
@@ -82,7 +82,7 @@ const LessonPlayer = () => {
 
     const handleNext = async () => {
         if (!course) return;
-        const currentLesson = course.lessons?.find(l => l.id === Number(lessonId));
+        const currentLesson = course.lessons?.find(l => l.slug === lessonSlug);
         if (!currentLesson) return;
 
         const isCompleted = course.lesson_progress?.[currentLesson.id]?.status === "completada";
@@ -90,7 +90,7 @@ const LessonPlayer = () => {
         if (!isCompleted) {
             setCompleting(true);
             try {
-                await completeLesson(currentLesson.id);
+                await completeLesson(currentLesson.slug);
                 // Refresh data to sync enrollment progress and completed activities before navigating
                 await fetchContent();
             } catch (error) {
@@ -107,7 +107,7 @@ const LessonPlayer = () => {
         }
 
         if (nextLesson) {
-            navigate(`/learn/course/${courseSlug}/lesson/${nextLesson.id}`);
+            navigate(`/learn/course/${courseSlug}/lesson/${nextLesson.slug}`);
         } else {
             navigate(`/learn/course/${courseSlug}`);
         }
@@ -134,8 +134,8 @@ const LessonPlayer = () => {
         );
     }
 
-    const currentLesson = course.lessons?.find(l => l.id === Number(lessonId));
-    const currentLessonIndex = course.lessons?.findIndex(l => l.id === Number(lessonId)) ?? -1;
+    const currentLesson = course.lessons?.find(l => l.slug === lessonSlug);
+    const currentLessonIndex = course.lessons?.findIndex(l => l.slug === lessonSlug) ?? -1;
     const nextLesson = course.lessons?.[currentLessonIndex + 1];
     const previousLesson = course.lessons?.[currentLessonIndex - 1];
 
@@ -238,7 +238,7 @@ const LessonPlayer = () => {
                             return (
                                 <Link
                                     key={lesson.id}
-                                    to={isLocked ? '#' : `/learn/course/${courseSlug}/lesson/${lesson.id}`}
+                                    to={isLocked ? '#' : `/learn/course/${courseSlug}/lesson/${lesson.slug}`}
                                     className={cn(
                                         "flex items-center gap-3 p-3 border border-border rounded-lg transition-all cursor-pointer",
                                         isCurrent && "bg-primary/10 border-primary",
@@ -355,7 +355,7 @@ const LessonPlayer = () => {
                         <div className="flex items-center justify-between mt-12 pt-8 border-t">
                             <div className="flex gap-2">
                                 {previousLesson && (
-                                    <Button variant="outline" onClick={() => navigate(`/learn/course/${courseSlug}/lesson/${previousLesson.id}`)}>
+                                    <Button variant="outline" onClick={() => navigate(`/learn/course/${courseSlug}/lesson/${previousLesson.slug}`)}>
                                         <ChevronLeft className="w-4 h-4 mr-2" />
                                         Anterior
                                     </Button>

@@ -92,7 +92,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               {/* Learning Progress - Protected */}
-              <Route path="/learn/course/:courseSlug/lesson/:lessonId" element={<LessonPlayer />} />
+              <Route path="/learn/course/:courseSlug/lesson/:lessonSlug" element={<LessonPlayer />} />
 
               {/* Educator Routes */}
               <Route path="/educator" element={<EducatorDashboard />} />

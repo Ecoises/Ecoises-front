@@ -62,11 +62,8 @@ const CourseDetail = () => {
           const progress = content.lesson_progress?.[l.id];
           return !progress || progress.status !== "completada";
         });
-        targetLessonId = firstIncomplete ? firstIncomplete.id : content.lessons[0].id;
-      }
-
-      if (targetLessonId) {
-        navigate(`/learn/course/${content.slug}/lesson/${targetLessonId}`);
+        const targetLesson = firstIncomplete || content.lessons[0];
+        navigate(`/learn/course/${content.slug}/lesson/${targetLesson.slug}`);
       }
     } catch (error) {
       console.error("Error starting content:", error);
@@ -274,7 +271,7 @@ const CourseDetail = () => {
                       isCompleted={isCompleted}
                       isLocked={isLocked}
                       isCurrent={isCurrent}
-                      onClick={() => navigate(`/learn/course/${content.slug}/lesson/${lesson.id}`)}
+                      onClick={() => navigate(`/learn/course/${content.slug}/lesson/${lesson.slug}`)}
                     />
                   );
                 })}
