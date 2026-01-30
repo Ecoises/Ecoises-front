@@ -27,7 +27,7 @@ export const CourseProgress = ({ progress, className = "" }: CourseProgressProps
 
             {/* Progress Text */}
             <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Progreso del curso</span>
+                <span className="text-muted-foreground">Progreso</span>
                 <motion.span
                     key={progress}
                     initial={{ opacity: 0, y: -10 }}

@@ -44,7 +44,7 @@ const SpeciesDistributionMap = ({
     const iNatTileUrl = `https://api.inaturalist.org/v1/colored_heatmap/{z}/{x}/{y}.png?taxon_id=${taxonId}&color=%23FF4500`;
 
     return (
-        <div className="h-full w-full rounded-xl overflow-hidden border border-lime-200 shadow-md">
+        <div className="h-full w-full rounded-xl overflow-hidden border border-lime-200 shadow-md relative z-0">
             <MapContainer
                 center={center}
                 zoom={zoom}

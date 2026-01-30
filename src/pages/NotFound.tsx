@@ -18,7 +18,7 @@ const NotFound = () => {
       <div className="text-center space-y-6 max-w-lg mx-auto">
         <div className="flex justify-center">
           <img
-            src="public/404-error.svg"
+            src="public/404Error.svg"
             alt="404 Error - Especies perdidas"
             className="w-full max-w-md h-auto object-contain"
           />
