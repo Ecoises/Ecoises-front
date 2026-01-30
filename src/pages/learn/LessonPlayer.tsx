@@ -2,13 +2,14 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Menu, X, BookOpen, CheckCircle2, Lock, PlayCircle, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, X, BookOpen, CheckCircle2, Lock, PlayCircle, Clock, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getEducationalContent, completeLesson, EducationalContent } from "@/api/services/educationalContentService";
 import { ActivitiesSection } from "@/components/activities/ActivitiesSection";
 import { LessonContent } from "@/components/learn/LessonContent";
 import { References } from "@/components/learn/References";
 import { CourseProgress } from "@/components/learn/CourseProgress";
+import { AudioPlayer } from "@/components/ui/AudioPlayer";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -31,6 +32,7 @@ const LessonPlayer = () => {
     const [showIncompleteDialog, setShowIncompleteDialog] = useState(false);
     const hasAutoSaved = useRef(false);
     const mainContentRef = useRef<HTMLElement>(null);
+    const [isAudioPlayerOpen, setIsAudioPlayerOpen] = useState(false);
 
     // Fetch course data function
     const fetchContent = async () => {
@@ -157,6 +159,7 @@ const LessonPlayer = () => {
 
     const isCurrentLessonCompleted = isLessonCompleted(currentLesson.id);
     const progressPercentage = course.enrollment?.progress_percentage || 0;
+    const hasAudio = !!currentLesson.audio_url;
 
     return (
         <div className="h-screen flex flex-col overflow-hidden bg-background">
@@ -306,6 +309,17 @@ const LessonPlayer = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="mb-6 sm:mb-8"
                         >
+                            {/* Audio Button */}
+                            {hasAudio && (
+                                <button
+                                    onClick={() => setIsAudioPlayerOpen(true)}
+                                    className="group mb-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-lime-100 hover:bg-lime-200 text-lime-700 border border-lime-300 rounded-full transition-all duration-200"
+                                >
+                                    <Volume2 className="w-3.5 h-3.5" />
+                                    Escuchar
+                                </button>
+                            )}
+
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                 <div>
                                     <p className="text-sm text-primary font-medium mb-1">
@@ -376,6 +390,15 @@ const LessonPlayer = () => {
                     </div>
                 </main>
             </div>
+
+            {/* Audio Player */}
+            {hasAudio && currentLesson.audio_url && (
+                <AudioPlayer
+                    audioUrl={currentLesson.audio_url}
+                    isOpen={isAudioPlayerOpen}
+                    onClose={() => setIsAudioPlayerOpen(false)}
+                />
+            )}
 
             <AlertDialog open={showIncompleteDialog} onOpenChange={setShowIncompleteDialog}>
                 <AlertDialogContent>

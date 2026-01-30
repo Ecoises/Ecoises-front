@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, Tag, Volume2, ChevronLeft } from "lucide-react";
 import { LessonContent } from "@/components/learn/LessonContent";
 import { References } from "@/components/learn/References";
+import { AudioPlayer } from "@/components/ui/AudioPlayer";
 
 const ArticleDetail = () => {
     const { slug } = useParams<{ slug: string }>();
     const [content, setContent] = useState<EducationalContent | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isAudioPlayerOpen, setIsAudioPlayerOpen] = useState(false);
 
     useEffect(() => {
         const fetchContent = async () => {
@@ -37,6 +39,8 @@ const ArticleDetail = () => {
     const imageUrl = content.thumbnail_url
         ? (content.thumbnail_url.startsWith('http') ? content.thumbnail_url : `${import.meta.env.VITE_APP_API_URL || 'http://localhost:8000'}/storage/${content.thumbnail_url}`)
         : "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&h=400";
+
+    const hasAudio = !!content.article_details?.audio_url;
 
     return (
         <div className="min-h-screen bg-background pb-12">
@@ -78,6 +82,16 @@ const ArticleDetail = () => {
                 <div className="flex flex-col lg:flex-row gap-12 max-w-5xl mx-auto">
                     {/* Main Content - Mobile: First (Top), Desktop: First (Left) */}
                     <article className="flex-1 min-w-0">
+                        {/* Audio Button */}
+                        {hasAudio && (
+                            <button
+                                onClick={() => setIsAudioPlayerOpen(true)}
+                                className="group mb-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-lime-100 hover:bg-lime-200 text-lime-700 border border-lime-300 rounded-full transition-all duration-200"
+                            >
+                                <Volume2 className="w-3.5 h-3.5" />
+                                Escuchar
+                            </button>
+                        )}
                         <LessonContent
                             htmlContent={content.article_details?.content_text || ''}
                             className="animate-slide-up"
@@ -163,31 +177,19 @@ const ArticleDetail = () => {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Audio Card */}
-                            {content.article_details?.audio_url && (
-                                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-5 border border-purple-100 rounded-2xl shadow-inner relative overflow-hidden">
-                                    <div className="absolute -right-4 -top-4 bg-purple-200/50 w-24 h-24 rounded-full blur-2xl"></div>
-                                    <div className="flex items-center gap-3 mb-4 relative z-10">
-                                        <div className="p-2 bg-white shadow-sm rounded-lg text-purple-600">
-                                            <Volume2 className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-purple-900">Versión de Audio</p>
-                                            <p className="text-xs text-purple-700">Escucha mientras exploras</p>
-                                        </div>
-                                    </div>
-
-                                    <audio controls className="w-full relative z-10 rounded-lg shadow-sm" style={{ height: '32px' }}>
-                                        <source src={content.article_details.audio_url} type="audio/mpeg" />
-                                        Tu navegador no soporta el elemento de audio.
-                                    </audio>
-                                </div>
-                            )}
                         </div>
                     </aside>
                 </div>
             </div>
+
+            {/* Audio Player */}
+            {hasAudio && content.article_details?.audio_url && (
+                <AudioPlayer
+                    audioUrl={content.article_details.audio_url}
+                    isOpen={isAudioPlayerOpen}
+                    onClose={() => setIsAudioPlayerOpen(false)}
+                />
+            )}
         </div>
     );
 };
