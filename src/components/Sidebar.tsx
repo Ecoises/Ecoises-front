@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  Home, Map, Search, BookOpen, Calendar, User,
-  Settings, LogOut, ChevronDown
+  Home, Map, Search, BookOpen, Calendar, User, GraduationCap,
+  Settings, LogOut, ChevronDown, Trophy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -42,16 +42,15 @@ const NavItem = ({ icon: Icon, label, to, active }: NavItemProps) => {
 export const navItems = [
   { icon: Home, label: "Inicio", to: "/" },
   { icon: Search, label: "Exporar", to: "/explorer" },
-  { icon: Map, label: "Sightings Map", to: "/map" },
-  { icon: BookOpen, label: "Species Guide", to: "/taxa" },
-  { icon: Calendar, label: "My Sightings", to: "/sightings" },
-  { icon: BookOpen, label: "Aprende", to: "/learn" },
+  { icon: Trophy, label: "Ranking", to: "/ranking" },
+  { icon: GraduationCap, label: "Aprende", to: "/learn" },
 ];
 
 export const mobileNavItems = [
   { icon: Home, label: "Inicio", to: "/" },
   { icon: Search, label: "Explorar", to: "/explorer" },
-  { icon: BookOpen, label: "Aprende", to: "/learn" },
+  { icon: GraduationCap, label: "Aprende", to: "/learn" },
+  { icon: Trophy, label: "Ranking", to: "/ranking" },
   { icon: User, label: "Perfil", to: "/profile" },
 ];
 
