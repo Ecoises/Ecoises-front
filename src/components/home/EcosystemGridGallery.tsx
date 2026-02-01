@@ -1,5 +1,5 @@
 import React from "react";
-import { Leaf, ChevronRight, ArrowRight } from "lucide-react";
+import { Leaf, ChevronRight, ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 
@@ -136,23 +136,19 @@ const EcosystemGridGallery = () => {
   return (
     <section className="py-8 space-y-8">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-l-4 border-lime-500 pl-4 md:pl-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-lime-600 font-semibold text-sm uppercase tracking-wider">
-            <Leaf className="h-4 w-4" />
-            <span>Naturaleza Viva</span>
+      
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gradient-to-br from-lime-500 to-lime-600 rounded-xl shadow-lg shadow-lime-500/20">
+            <Sparkles className="h-5 w-5 text-white" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-forest-900">
-            Explora por Ecosistema
-          </h2>
-          <p className="text-forest-600 max-w-xl">
-            Sumérgete en la vasta biodiversidad del planeta filtrada por categorías taxonómicas y ecosistemas vitales.
-          </p>
+          <div>
+            <h2 className="text-xl font-heading font-bold text-forest-900">
+              Comienza tu exploración
+            </h2>
+            <p className="text-sm text-forest-600">Elige un grupo y comienza a descubrir especies.</p>
+          </div>
         </div>
-        <button className="flex items-center gap-2 text-lime-600 hover:text-lime-700 font-bold group">
-          Ver todos los grupos
-          <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-        </button>
       </div>
 
       {/* Mosaic Grid Container */}
