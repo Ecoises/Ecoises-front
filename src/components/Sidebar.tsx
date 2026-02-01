@@ -108,12 +108,15 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
         <div className="mt-auto pt-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 pb-2">
           <div className="flex flex-col items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex flex-wrap justify-center gap-2">
-              <a href="#" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Privacidad</a>
-              <a href="#" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Condiciones</a>
-              <a href="#" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Cookies</a>
+              <a href="/privacy" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Privacidad</a>
+              <span className="text-gray-400 dark:text-gray-500">•</span>
+              <a href="/terms" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Condiciones</a>
+              
             </div>
-            <div className="text-gray-400 dark:text-gray-500">
-              <span>&copy; 2025 Ecoises</span>
+            <div className="text-gray-400 dark:text-gray-500 flex flex-col items-center gap-2">
+              <span>&copy; {new Date().getFullYear()} Ecoises v1.0.0 </span>
+              <span>Desarrollado con ❤️ por <a href="https://www.instagram.com/jcamelo__/" target="_blank">Camelo</a></span> 
+              
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@ const PrivacyPolicy = () => {
     return (
         <div className="min-h-screen bg-background py-16 px-4">
             <div className="container max-w-3xl mx-auto space-y-8">
-                <Link to="/login">
+                <Link to="/">
                     <Button variant="ghost" className="mb-4">
                         <ChevronLeft className="mr-2 h-4 w-4" />
                         Volver
