@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
-import { Search, Filter, X, Loader2, MapPin, Star, Sparkles, Shuffle, Navigation, Map, CornerRightDown, Leaf } from "lucide-react";
+import { 
+  Search, Filter, X, ShieldAlert, Loader2, MapPin, Star, Sparkles, Shuffle, Navigation, Map, CornerRightDown, Leaf,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -461,7 +463,7 @@ export default function Explorer() {
                   className="justify-start"
                   onClick={() => updateParams({ threatened: selectedConservationStatus === 'threatened' ? 'Todos' : 'threatened', page: 1 })}
                 >
-                  <Star className="h-3 w-3 mr-2" />
+                  <ShieldAlert className="h-3 w-3 mr-2" />
                   Solo Amenazadas
                 </Button>
                 <Button
@@ -470,7 +472,7 @@ export default function Explorer() {
                   className="justify-start"
                   onClick={() => updateParams({ native: nativeFilter === 'endemic' ? 'all' : 'endemic', page: 1 })}
                 >
-                  <Map className="h-3 w-3 mr-2" />
+                  <Sparkles className="h-3 w-3 mr-2" />
                   Solo Endémicas
                 </Button>
                 <Button
