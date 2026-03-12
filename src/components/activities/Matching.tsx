@@ -44,6 +44,7 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
     })();
 
     const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
+    const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
     const [connections, setConnections] = useState<Record<string, string>>({});
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
@@ -68,27 +69,52 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
             return;
         }
 
-        setSelectedTerm(termId);
+        if (selectedMatch) {
+            // Already selected a match, connect them
+            setConnections(prev => {
+                const existingTerm = Object.keys(prev).find(t => prev[t] === selectedMatch);
+                const newConnections = { ...prev };
+                if (existingTerm) delete newConnections[existingTerm];
+                newConnections[termId] = selectedMatch;
+                return newConnections;
+            });
+            setSelectedMatch(null);
+            return;
+        }
+
+        // Toggle selection
+        setSelectedTerm(prev => prev === termId ? null : termId);
     };
 
     const handleMatchClick = (matchId: string) => {
-        if (showResult || !selectedTerm || isCompleted) return;
+        if (showResult || isCompleted) return;
 
-        // Check if this match is already used
-        const existingTerm = Object.keys(connections).find(t => connections[t] === matchId);
-        if (existingTerm) {
+        // Check if this match is already connected, disconnect it
+        const connectedTermId = Object.keys(connections).find(t => connections[t] === matchId);
+        if (connectedTermId) {
             setConnections(prev => {
                 const newConnections = { ...prev };
-                delete newConnections[existingTerm];
+                delete newConnections[connectedTermId];
                 return newConnections;
             });
+            return;
         }
 
-        setConnections(prev => ({
-            ...prev,
-            [selectedTerm]: matchId
-        }));
-        setSelectedTerm(null);
+        if (selectedTerm) {
+            // Connect
+            setConnections(prev => {
+                const existingTerm = Object.keys(prev).find(t => prev[t] === matchId);
+                const newConnections = { ...prev };
+                if (existingTerm) delete newConnections[existingTerm];
+                newConnections[selectedTerm] = matchId;
+                return newConnections;
+            });
+            setSelectedTerm(null);
+            return;
+        }
+
+        // Toggle selection
+        setSelectedMatch(prev => prev === matchId ? null : matchId);
     };
 
     const handleSubmit = () => {
@@ -113,6 +139,7 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
     const handleRetry = () => {
         setConnections({});
         setSelectedTerm(null);
+        setSelectedMatch(null);
         setShowResult(false);
         setIsCorrect(false);
     };
@@ -169,7 +196,7 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
                                     disabled={showResult || isCompleted}
                                     className={cn(
                                         "w-full text-left p-3 rounded-xl border-2 transition-all duration-300 flex items-center justify-between",
-                                        !showResult && !isConnected && !isSelected && !isCompleted && "border-border/50 hover:border-purple-300",
+                                        !showResult && !isConnected && !isSelected && !isCompleted && "border-border/50 hover:border-purple-300 cursor-pointer",
                                         !showResult && !isConnected && isCompleted && "border-border/50 opacity-50 cursor-default",
                                         !showResult && isSelected && "border-purple-500 bg-purple-50",
                                         !showResult && isConnected && "border-purple-200",
@@ -210,15 +237,18 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
                             const isCorrectMatch = showResult && connectedTermId === pair.id;
                             const isWrongMatch = showResult && connectedTermId && connectedTermId !== pair.id;
 
+                            const isSelectedMatchNode = selectedMatch === pair.id;
+
                             return (
                                 <button
                                     key={pair.id}
                                     onClick={() => handleMatchClick(pair.id)}
-                                    disabled={showResult || !selectedTerm || isCompleted}
+                                    disabled={showResult || isCompleted}
                                     className={cn(
                                         "w-full text-left p-3 rounded-xl border-2 transition-all duration-300 flex items-center gap-3",
-                                        !showResult && !isConnected && selectedTerm && !isCompleted && "border-border/50 hover:border-purple-300 cursor-pointer",
-                                        !showResult && !isConnected && (!selectedTerm || isCompleted) && "border-border/50 cursor-default",
+                                        !showResult && !isConnected && !isSelectedMatchNode && !isCompleted && "border-border/50 hover:border-purple-300 cursor-pointer",
+                                        !showResult && !isConnected && isCompleted && "border-border/50 opacity-50 cursor-default",
+                                        !showResult && isSelectedMatchNode && "border-purple-500 bg-purple-50",
                                         !showResult && isConnected && "border-purple-200",
                                         isCorrectMatch && "border-green-500 bg-green-50",
                                         isWrongMatch && "border-red-500 bg-red-50",
