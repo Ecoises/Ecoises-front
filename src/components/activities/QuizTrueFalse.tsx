@@ -212,8 +212,8 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
                     className={cn(
                         "w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-2xl transition-all duration-300",
                         !showResult && !isCompleted && "border-red-200 text-red-500 hover:border-red-500 hover:bg-red-50 cursor-pointer hover:scale-110",
-                        showResult && selectedAnswer === false && !isCorrect && "border-red-500 bg-red-100 text-red-500",
                         showResult && selectedAnswer === false && isCorrect && "border-green-500 bg-green-100 text-green-500",
+                        showResult && selectedAnswer === false && !isCorrect && "border-red-500 bg-red-100 text-red-500",
                         (showResult || isCompleted) && selectedAnswer !== false && "border-muted text-muted-foreground opacity-50 cursor-default",
                         showResult && (activity.correct_answer !== undefined ? (activity.correct_answer === "false" || activity.correct_answer === false) : (activity.is_true === "false" || activity.is_true === false)) && selectedAnswer !== false && "border-green-500 text-green-500 opacity-50 cursor-default"
                     )}

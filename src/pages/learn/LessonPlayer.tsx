@@ -344,6 +344,7 @@ const LessonPlayer = () => {
 
                         {/* Lesson Content */}
                         <motion.div
+                            key={`content-${currentLesson.id}`}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
@@ -355,6 +356,7 @@ const LessonPlayer = () => {
                         {/* Activities */}
                         {currentLesson.activities && currentLesson.activities.length > 0 && (
                             <ActivitiesSection
+                                key={`activities-${currentLesson.id}`}
                                 activities={currentLesson.activities}
                                 lessonTitle={currentLesson.title}
                                 completedActivities={course.completed_activities || []}

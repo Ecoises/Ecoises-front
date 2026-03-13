@@ -10,8 +10,9 @@ export interface Activity {
 
     // Mapped fields from backend accessors
     options?: any[]; // For quiz_multiple
-    items?: any[]; // For drag_drop
-    pairs?: any[]; // For matching/drag-drop
+    categories?: { name: string; items: string[] }[]; // For drag_drop (new category format)
+    items?: any[]; // For drag_drop (legacy key-value format)
+    pairs?: any[]; // For matching
 
     // True/False specific
     is_true?: string | boolean;
