@@ -64,7 +64,6 @@ const AuthForm: React.FC = () => {
     try {
       if (isLogin) {
         const response = await authService.login({ email, password });
-        console.log("Login exitoso. Usuario autenticado.");
 
         // Actualizar el contexto de autenticación con el usuario
         if (response.user) {
@@ -81,12 +80,10 @@ const AuthForm: React.FC = () => {
           password: password,
           password_confirmation: confirmPassword
         });
-        console.log("Registro exitoso.");
         setSuccessMessage("¡Registro exitoso! Ahora puedes iniciar sesión.");
         setIsLogin(true);
       }
     } catch (error: any) {
-      console.error("Error de autenticación:", error);
       if (axios.isAxiosError(error) && error.response) {
         const apiError = error.response.data;
         if (typeof apiError === 'object' && apiError !== null && 'message' in apiError && typeof apiError.message === 'string') {
@@ -110,7 +107,6 @@ const AuthForm: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await authService.googleLogin(googleIdToken);
-      console.log('Inicio de sesión con Google exitoso. Usuario autenticado.');
 
       if (response.user) {
         login(response.user);
@@ -120,7 +116,6 @@ const AuthForm: React.FC = () => {
       navigate(from, { replace: true });
 
     } catch (error: any) {
-      console.error('Error al iniciar sesión con Google:', error);
       if (axios.isAxiosError(error) && error.response) {
         const apiError = error.response.data;
         if (typeof apiError === 'object' && apiError !== null && 'message' in apiError && typeof apiError.message === 'string') {
@@ -139,7 +134,6 @@ const AuthForm: React.FC = () => {
   };
 
   const handleGoogleSignInFailure = (error: any) => {
-    console.error('Fallo el inicio de sesión con Google:', error);
     setErrorMessage("Fallo el inicio de sesión con Google. Por favor, inténtalo de nuevo.");
     setIsLoading(false);
   };
