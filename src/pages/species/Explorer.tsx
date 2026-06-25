@@ -197,7 +197,7 @@ export default function Explorer() {
   const currentPage = page;
   const q = searchParams.get("q") || "";
   const selectedGroup = searchParams.get("iconic_taxa") || "";
-  console.log('🔍 DEBUG selectedGroup:', selectedGroup, 'from URL param:', searchParams.get("iconic_taxa"));
+  // DEBUG: console.log('🔍 DEBUG selectedGroup:', selectedGroup, 'from URL param:', searchParams.get("iconic_taxa"));
   const selectedConservationStatus = searchParams.get("threatened") === "true" ? "threatened" : "Todos";
   const nativeFilter = searchParams.get("native") === "true" ? "native" : (searchParams.get("endemic") === "true" ? "endemic" : "all");
   const sortBy = searchParams.get("order_by") || "observations_count";
@@ -297,11 +297,7 @@ export default function Explorer() {
 
   const ITEMS_PER_PAGE = 25;
 
-  console.log('📤 Params being sent to useSpecies:', {
-    iconic_taxa: selectedGroup || undefined,
-    selectedGroup,
-    willBeSent: selectedGroup || undefined
-  });
+  // DEBUG: console.log('📤 Params being sent to useSpecies:', { iconic_taxa: selectedGroup, selectedGroup });
 
   const { data, isLoading, isError, error, isFetching } = useSpecies({
     page,
@@ -521,8 +517,8 @@ export default function Explorer() {
         ) : (
           <div className="space-y-8">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {speciesList.map((species: Taxon) => (
-                <SpeciesCard key={species.id} species={species} />
+              {speciesList.map((species: Taxon, index: number) => (
+                <SpeciesCard key={`${species.id}-${index}`} species={species} />
               ))}
             </div>
 

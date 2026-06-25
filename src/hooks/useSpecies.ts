@@ -35,7 +35,7 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
       // Si no, usamos el endpoint de exploración de Colombia
       const endpoint = cleanParams.q
         ? '/api/taxa/search'
-        : '/api/taxa/explore/colombia';
+        : '/api/taxa/explore';
 
       const { data } = await api.get<ExploreResponse>(endpoint, {
         params: { ...cleanParams, enrich: 0 }, // Optimize load time by skipping heavy details

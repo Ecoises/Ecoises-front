@@ -8,58 +8,51 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, MapPin, Calendar, Clock, Heart, MessageCircle, Send, Star, Cloud, Eye, Share2, User, Music } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Observation, Comment } from "@/types/observation";
+import { Observation, Comment, ApiObservation } from "@/types/observation";
 import { useToast } from "@/hooks/use-toast";
 import RecentObservations from "@/components/observations/RecentObservations";
-
-// Mock data
-const MOCK_OBSERVATION: Observation = {
-  id: 101,
-  species_name: "American Robin",
-  scientific_name: "Turdus migratorius",
-  image: "https://inaturalist-open-data.s3.amazonaws.com/photos/176519930/original.jpeg",
-  location: "Central Park, New York",
-  date: "May 15, 2024",
-  time: "10:23 AM",
-  user: {
-    id: 1,
-    name: "Maria García",
-    avatar: "https://randomuser.me/api/portraits/women/12.jpg",
-  },
-  description: "Spotted this beautiful American Robin gathering nesting materials early in the morning. It was very active and seemed undisturbed by my presence. The bird showed typical territorial behavior and was singing loudly from a nearby branch.",
-  weather: "Sunny, slight breeze, 18°C",
-  notes: "Bird was singing loudly and displaying territorial behavior. Nest building activity observed.",
-  is_favorite: false,
-  comments: [
-    {
-      id: 1,
-      user: {
-        id: 2,
-        name: "John Smith",
-        avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-      },
-      content: "Great observation! I've been seeing increased robin activity in this area too.",
-      created_at: "2024-05-15T14:30:00Z"
-    },
-    {
-      id: 2,
-      user: {
-        id: 3,
-        name: "Emma Johnson",
-        avatar: "https://randomuser.me/api/portraits/women/22.jpg",
-      },
-      content: "The nesting behavior is fascinating at this time of year. Did you notice if there was a mate nearby?",
-      created_at: "2024-05-15T16:45:00Z"
-    }
-  ]
-};
+import { observationService } from "@/api/services/ObservationService";
 
 const CURRENT_USER_ID = 999;
+
+// Convierte ApiObservation → formato Observation que usa el render existente
+function mapApiToObservation(api: ApiObservation): Observation {
+  const primaryPhoto = api.photos?.find((p) => p.is_primary) ?? api.photos?.[0];
+  const observedDate = api.observed_at ? new Date(api.observed_at) : new Date(api.created_at);
+
+  return {
+    id: api.id,
+    species_name: api.taxon?.common_name || api.taxon?.scientific_name || "Especie no identificada",
+    scientific_name: api.taxon?.scientific_name,
+    image: primaryPhoto?.photo_url || "https://images.unsplash.com/photo-1550159930-40066082a4fc?w=800",
+    location: api.location_name || (api.latitude != null ? `${api.latitude?.toFixed(4)}, ${api.longitude?.toFixed(4)}` : "Ubicación no registrada"),
+    date: observedDate.toLocaleDateString("es-CO", { year: "numeric", month: "long", day: "numeric" }),
+    time: observedDate.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }),
+    user: {
+      id: api.user?.id ?? 0,
+      name: api.user?.name ?? "Usuario",
+      avatar: api.user?.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(api.user?.name ?? "U")}&background=84cc16&color=fff`,
+    },
+    description: api.description || "",
+    notes: api.notes || undefined,
+    is_favorite: false,
+    comments: (api.comments ?? []).map((c: any) => ({
+      id: c.id,
+      user: {
+        id: c.user?.id ?? 0,
+        name: c.user?.name ?? "Usuario",
+        avatar: c.user?.avatar ?? "",
+      },
+      content: c.content ?? "",
+      created_at: c.created_at ?? new Date().toISOString(),
+    })),
+  };
+}
 
 // Componente para un comentario individual
 const CommentItem = ({ comment }: { comment: Comment }) => {
   const formattedDate = useMemo(() => {
-    return new Date(comment.created_at).toLocaleDateString('en-US', {
+    return new Date(comment.created_at).toLocaleDateString('es-CO', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -101,19 +94,18 @@ const ObservationDetail = () => {
     const loadObservation = async () => {
       setLoading(true);
       setError(null);
-      
       try {
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        if (!id || id === 'invalid') {
-          throw new Error('Observation not found');
-        }
-        
-        setObservation(MOCK_OBSERVATION);
-        setIsFavorite(MOCK_OBSERVATION.is_favorite || false);
-        setComments(MOCK_OBSERVATION.comments || []);
+        if (!id) throw new Error("ID de observación no válido");
+
+        const apiObs = await observationService.getById(id);
+        if (!apiObs) throw new Error("Observación no encontrada");
+
+        const mapped = mapApiToObservation(apiObs);
+        setObservation(mapped);
+        setIsFavorite(false);
+        setComments(mapped.comments || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load observation');
+        setError(err instanceof Error ? err.message : "Error al cargar la observación");
       } finally {
         setLoading(false);
       }

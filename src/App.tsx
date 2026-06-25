@@ -11,6 +11,7 @@ import SpeciesDetail from "./pages/species/SpeciesDetail";
 import Map from "./pages/tools/Map";
 import Species from "./pages/species/Species";
 import Sightings from "./pages/sightings/Sightings";
+import NewSighting from "./pages/sightings/NewSighting";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import Login from "./pages/auth/Login";
@@ -98,6 +99,9 @@ const App = () => (
             }>
               {/* Learning Progress - Protected */}
               <Route path="/learn/course/:courseSlug/lesson/:lessonSlug" element={<LessonPlayer />} />
+
+              {/* Registrar avistamiento - requiere auth */}
+              <Route path="/sightings/new" element={<NewSighting />} />
 
               {/* Educator Routes */}
               <Route path="/educator" element={<EducatorDashboard />} />
