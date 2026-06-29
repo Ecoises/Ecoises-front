@@ -3,12 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Calendar, ArrowRight, Eye, Camera, Edit, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Camera, Edit, Trash2, AlertTriangle, Loader2, MoreVertical } from "lucide-react";
 import { observationService } from "@/api/services/ObservationService";
 import type { ApiObservation } from "@/types/observation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import ReportModal from "@/components/observations/ReportModal";
 
@@ -143,6 +150,63 @@ export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: Re
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+
+                    {/* Menú de tres puntos flotante sobre la imagen */}
+                    {currentUser && (
+                      <div
+                        className="absolute top-2 right-2 z-20"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              className="h-7 w-7 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/65 backdrop-blur-sm text-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                              aria-label="Opciones de avistamiento"
+                            >
+                              <MoreVertical className="h-3.5 w-3.5" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-40 rounded-2xl shadow-lg border-lime-100 bg-white/95 backdrop-blur-md p-1"
+                          >
+                            {observation.user_id === currentUser.id ? (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() => navigate(`/observations/edit/${observation.id}`)}
+                                  className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer px-3 py-2"
+                                >
+                                  <Edit className="h-3.5 w-3.5" />
+                                  Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="my-1 bg-lime-100" />
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setObservationToDelete(observation);
+                                    setDeleteConfirmOpen(true);
+                                  }}
+                                  className="flex items-center gap-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl cursor-pointer px-3 py-2"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              </>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setObservationToReport(observation);
+                                  setReportModalOpen(true);
+                                }}
+                                className="flex items-center gap-2 text-sm font-medium text-amber-600 hover:bg-amber-50 rounded-xl cursor-pointer px-3 py-2"
+                              >
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                Reportar
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    )}
                   </div>
 
                   <CardContent className="pt-7 pb-4 px-4 flex-1 flex flex-col justify-between relative">
@@ -157,7 +221,7 @@ export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: Re
                       <h3 className="font-semibold text-forest-950 text-base mb-2 group-hover:text-lime-600 transition-colors line-clamp-1">
                         {userName}
                       </h3>
-                      
+
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-1.5 text-xs text-forest-750 font-medium">
                           <MapPin className="h-3.5 w-3.5 text-lime-600 flex-shrink-0" />
@@ -169,58 +233,6 @@ export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: Re
                         </div>
                       </div>
                     </div>
-
-                    {/* Botones de acción contextuales en la tarjeta */}
-                    {currentUser && (
-                      <div className="mt-4 pt-3 border-t border-lime-50/50 flex justify-end gap-2 z-20">
-                        {observation.user_id === currentUser.id ? (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                navigate(`/observations/edit/${observation.id}`);
-                              }}
-                              className="h-7 text-[10px] font-semibold text-blue-600 border-blue-200 hover:bg-blue-50 px-2.5 rounded-full"
-                            >
-                              <Edit className="h-3 w-3 mr-1" />
-                              Editar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setObservationToDelete(observation);
-                                setDeleteConfirmOpen(true);
-                              }}
-                              className="h-7 text-[10px] font-semibold text-red-655 border-red-200 hover:bg-red-50 px-2.5 rounded-full"
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Eliminar
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setObservationToReport(observation);
-                              setReportModalOpen(true);
-                            }}
-                            className="h-7 text-[10px] font-semibold text-amber-600 border-amber-200 hover:bg-amber-50 px-2.5 rounded-full ml-auto"
-                          >
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Reportar
-                          </Button>
-                        )}
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               </Link>
