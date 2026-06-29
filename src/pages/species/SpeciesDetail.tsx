@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, Calendar, ArrowLeft, Circle, Clock, Ruler, Music, Star, Eye, Info, TreePine, Sparkles, CornerRightDown, Loader2, X, Maximize2 } from "lucide-react"
+import { MapPin, Calendar, ArrowLeft, Circle, Clock, Ruler, Music, Star, Eye, Info, TreePine, Sparkles, CornerRightDown, Loader2, X, Maximize2, User, BookOpen, Database } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -288,38 +288,147 @@ const SpeciesDetail = () => {
             </TabsContent>
 
             <TabsContent value="habitat" className="animate-fade-in mt-4">
-              <Card className="border-lime-200 p-4">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium text-forest-900 mb-1">Habitat</h3>
-                    <p className="text-forest-700 italic">Información no disponible por el momento</p>
+              <Card className="border-lime-200 p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Información Ecológica */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-forest-950 flex items-center gap-2 pb-2 border-b border-lime-100">
+                      <TreePine className="h-5 w-5 text-lime-600" />
+                      Ecología
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-semibold text-forest-900 text-sm">Hábitat</h4>
+                        <p className="text-forest-700 text-sm italic mt-1">Información no disponible por el momento</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-forest-900 text-sm">Dieta</h4>
+                        <p className="text-forest-700 text-sm italic mt-1">Información no disponible por el momento</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-medium text-forest-900 mb-1">Dieta</h3>
-                    <p className="text-forest-700 italic">Información no disponible por el momento</p>
+
+                  {/* Datos del Catálogo Local */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-forest-950 flex items-center gap-2 pb-2 border-b border-lime-100">
+                      <Info className="h-5 w-5 text-lime-600" />
+                      Detalles del Catálogo
+                    </h3>
+                    <div className="space-y-4">
+                      {species.taxon_author && (
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-lime-50 text-lime-700 mt-0.5 shadow-sm">
+                            <User className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-forest-900 text-sm">Autor de la descripción</h4>
+                            <p className="text-forest-750 text-sm mt-0.5">
+                              {species.taxon_author}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {species.inventory_author && (
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-lime-50 text-lime-700 mt-0.5 shadow-sm">
+                            <BookOpen className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-forest-900 text-sm">Registrado por</h4>
+                            <p className="text-forest-750 text-sm mt-0.5">
+                              {species.inventory_author}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {species.local_records_count != null && species.local_records_count > 0 && (
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-lime-50 text-lime-700 mt-0.5 shadow-sm">
+                            <Database className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-forest-900 text-sm">Registros locales (campus)</h4>
+                            <p className="text-forest-750 text-sm mt-0.5">
+                              {species.local_records_count} {species.local_records_count === 1 ? 'registro documentado' : 'registros documentados'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Card>
             </TabsContent>
 
             <TabsContent value="atribution" className="animate-fade-in mt-4">
-              <Card className="border-lime-200 p-4">
-                <div className="space-y-4">
+              <Card className="border-lime-200 p-6">
+                <div className="space-y-6">
+
+                  {/* Cita bibliográfica local */}
                   <div>
-                    <h3 className="font-medium text-forest-900 mb-1">Fuente de datos</h3>
-                    <p className="text-forest-700">iNaturalist API</p>
+                    <h3 className="font-semibold text-forest-900 mb-2 flex items-center gap-2">
+                      <span className="inline-block w-2 h-2 rounded-full bg-lime-500" />
+                      Fuente del inventario local
+                    </h3>
+                    {species.attribution ? (
+                      <blockquote className="border-l-4 border-lime-400 pl-4 py-2 bg-lime-50 rounded-r-lg">
+                        <p className="text-forest-800 text-sm leading-relaxed italic">
+                          {species.attribution}
+                        </p>
+                      </blockquote>
+                    ) : (
+                      <p className="text-forest-500 text-sm italic">Sin atribución registrada para esta especie.</p>
+                    )}
                   </div>
-                  {species.wikipedia_url && (
-                    <div>
-                      <h3 className="font-medium text-forest-900 mb-1">Enlaces externos</h3>
-                      <a href={species.wikipedia_url} target="_blank" rel="noopener noreferrer" className="text-lime-600 hover:underline">
-                        Wikipedia
+
+                  <hr className="border-lime-100" />
+
+                  {/* Fuentes externas */}
+                  <div>
+                    <h3 className="font-semibold text-forest-900 mb-3 flex items-center gap-2">
+                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
+                      Consultar en fuentes externas
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {/* Enlace a iNaturalist */}
+                      <a
+                        href={species.inaturalist_id 
+                          ? `https://www.inaturalist.org/taxa/${species.inaturalist_id}` 
+                          : `https://www.inaturalist.org/taxa/search?q=${encodeURIComponent(species.scientific_name)}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                        </svg>
+                        Ver en iNaturalist
                       </a>
+
+                      {/* Wikipedia si disponible */}
+                      {species.wikipedia_url && (
+                        <a
+                          href={species.wikipedia_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-forest-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+                          </svg>
+                          Wikipedia
+                        </a>
+                      )}
                     </div>
-                  )}
+                  </div>
+
                 </div>
               </Card>
             </TabsContent>
+
           </Tabs>
         </div>
       </div>

@@ -78,6 +78,12 @@ export interface Taxon {
   observation_count: number;
   default_photo: TaxonPhoto | null;
   wikipedia_url?: string | null;
+  // Trazabilidad local del catálogo UNAL La Paz
+  taxon_author?: string | null;        // Quien describió la especie (ej: "Linnaeus, 1758")
+  inventory_author?: string | null;    // Grupo/semillero responsable del registro
+  local_records_count?: number;        // Registros documentados en el sitio
+  attribution?: string | null;         // Cita bibliográfica de la fuente de los datos
+  inaturalist_id?: number | null;
 }
 
 export interface ExploreResponse {
