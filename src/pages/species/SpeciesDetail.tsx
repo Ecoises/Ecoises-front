@@ -143,7 +143,7 @@ const SpeciesDetail = () => {
 
           {/* Gallery thubnails */}
           {gallery.length > 0 && (
-            <div className="grid grid-cols-4 md:grid-cols-5 gap-2">
+            <div className="flex overflow-x-auto gap-2 pb-2 snap-x snap-mandatory md:grid md:grid-cols-5 md:overflow-x-visible md:pb-0 md:snap-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {gallery.map((item: any, index: number) => {
                 const thumbUrl = item.medium_url || item.url;
                 // Pre-calculate the high res url for this item
@@ -152,7 +152,7 @@ const SpeciesDetail = () => {
                   <button
                     key={index}
                     onClick={() => setActiveImage(highResUrl)}
-                    className={`relative overflow-hidden rounded-md border-2 transition-all hover:scale-105 ${activeImage === highResUrl ? 'border-primary ring-2 ring-primary/50' : 'border-border hover:border-primary/50'
+                    className={`relative overflow-hidden rounded-md border-2 transition-all hover:scale-105 w-20 md:w-auto flex-shrink-0 snap-start ${activeImage === highResUrl ? 'border-primary ring-2 ring-primary/50' : 'border-border hover:border-primary/50'
                       }`}
                   >
                     <img
