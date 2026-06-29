@@ -1,11 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Calendar, ArrowRight, Eye, Camera } from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Eye, Camera, Edit, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { observationService } from "@/api/services/ObservationService";
 import type { ApiObservation } from "@/types/observation";
+import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import ReportModal from "@/components/observations/ReportModal";
 
 interface RecentObservationsProps {
   taxonId?: number;
@@ -13,8 +18,18 @@ interface RecentObservationsProps {
 }
 
 export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: RecentObservationsProps) => {
+  const { user: currentUser } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const [observationToDelete, setObservationToDelete] = useState<ApiObservation | null>(null);
+  const [observationToReport, setObservationToReport] = useState<ApiObservation | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   // Fetch latest 4 observations for the given taxon or overall
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ["recent-observations", taxonId],
     queryFn: async () => {
       const response = await observationService.getAll({
@@ -25,6 +40,33 @@ export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: Re
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  const handleDelete = async () => {
+    if (!observationToDelete || deleting) return;
+    setDeleting(true);
+    try {
+      const response = await observationService.delete(observationToDelete.id);
+      if (response.success) {
+        toast({
+          title: "Observación eliminada",
+          description: "La observación ha sido eliminada correctamente.",
+        });
+        refetch();
+      } else {
+        throw new Error(response.message || "Error al eliminar");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error al eliminar",
+        description: err?.message || "No se pudo eliminar el registro.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleting(false);
+      setDeleteConfirmOpen(false);
+      setObservationToDelete(null);
+    }
+  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Fecha no registrada";
@@ -127,6 +169,58 @@ export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: Re
                         </div>
                       </div>
                     </div>
+
+                    {/* Botones de acción contextuales en la tarjeta */}
+                    {currentUser && (
+                      <div className="mt-4 pt-3 border-t border-lime-50/50 flex justify-end gap-2 z-20">
+                        {observation.user_id === currentUser.id ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                navigate(`/observations/edit/${observation.id}`);
+                              }}
+                              className="h-7 text-[10px] font-semibold text-blue-600 border-blue-200 hover:bg-blue-50 px-2.5 rounded-full"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setObservationToDelete(observation);
+                                setDeleteConfirmOpen(true);
+                              }}
+                              className="h-7 text-[10px] font-semibold text-red-655 border-red-200 hover:bg-red-50 px-2.5 rounded-full"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Eliminar
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setObservationToReport(observation);
+                              setReportModalOpen(true);
+                            }}
+                            className="h-7 text-[10px] font-semibold text-amber-600 border-amber-200 hover:bg-amber-50 px-2.5 rounded-full ml-auto"
+                          >
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Reportar
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </Link>
@@ -144,7 +238,7 @@ export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: Re
               <p className="text-sm text-forest-700 mb-6">
                 Sé la primera persona en compartir una observación de {speciesName} en nuestro campus.
               </p>
-              <Link to="/sightings/new">
+              <Link to="/observations/create">
                 <Button className="bg-lime-500 hover:bg-lime-600 text-white rounded-full px-6 font-medium shadow-sm transition-all hover:scale-102">
                   Registrar Avistamiento
                 </Button>
@@ -153,6 +247,60 @@ export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: Re
           </div>
         </Card>
       )}
+
+      {/* Modal de Reporte */}
+      {observationToReport && (
+        <ReportModal
+          open={reportModalOpen}
+          onOpenChange={setReportModalOpen}
+          observationId={observationToReport.id}
+          observationSpecies={observationToReport.taxon?.common_name || observationToReport.taxon?.scientific_name || "Especie"}
+        />
+      )}
+
+      {/* Diálogo de Confirmación de Eliminación */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="max-w-md bg-white border-red-150 rounded-3xl p-6">
+          <DialogHeader className="space-y-2">
+            <div className="mx-auto bg-red-100 text-red-700 h-12 w-12 rounded-full flex items-center justify-center shadow-sm">
+              <Trash2 className="h-6 w-6" />
+            </div>
+            <DialogTitle className="text-xl font-bold font-heading text-center text-forest-950">
+              ¿Estás seguro de eliminar este avistamiento?
+            </DialogTitle>
+            <DialogDescription className="text-sm text-center text-forest-750">
+              Esta acción eliminará de forma permanente el avistamiento junto con todas sus imágenes.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex sm:justify-end gap-2.5 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={deleting}
+              onClick={() => setDeleteConfirmOpen(false)}
+              className="border-lime-200 hover:bg-lime-50 text-forest-700 rounded-full px-5 h-10 text-sm font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={deleting}
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white rounded-full px-5 h-10 text-sm font-semibold gap-1.5 shadow-sm"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                "Eliminar Registro"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

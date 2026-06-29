@@ -19,6 +19,8 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import About from "./pages/About";
 import ObservationDetail from "./pages/observations/ObservationDetail";
+import ObservationCreate from "./pages/observations/ObservationCreate";
+import ObservationEdit from "./pages/observations/ObservationEdit";
 import Learn from "./pages/learn/Learn";
 import CourseDetail from "./pages/learn/CourseDetail";
 import ArticleDetail from "./pages/learn/ArticleDetail";
@@ -100,8 +102,10 @@ const App = () => (
               {/* Learning Progress - Protected */}
               <Route path="/learn/course/:courseSlug/lesson/:lessonSlug" element={<LessonPlayer />} />
 
-              {/* Registrar avistamiento - requiere auth */}
+              {/* Registrar / Editar avistamiento - requiere auth */}
               <Route path="/sightings/new" element={<NewSighting />} />
+              <Route path="/observations/create" element={<ObservationCreate />} />
+              <Route path="/observations/edit/:id" element={<ObservationEdit />} />
 
               {/* Educator Routes */}
               <Route path="/educator" element={<EducatorDashboard />} />

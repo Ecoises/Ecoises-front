@@ -377,7 +377,7 @@ const Index = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2">Welcome to Ecoises</h1>
           <p className="text-forest-700">Track, explore, and discover the fascinating world of birds</p>
         </div>
-        <Link to="/sightings/new" onClick={handleRecordSighting}>
+        <Link to="/observations/create" onClick={handleRecordSighting}>
           <Button className="bg-lime-500 hover:bg-lime-600 text-white gap-2 rounded-full">
             <Plus className="h-4 w-4" />
             Record Sighting

@@ -22,7 +22,7 @@ const ActionDialog = ({ open, onOpenChange }: ActionDialogProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2 mb-4">
           {/* Registrar Avistamiento */}
           <Link 
-            to="/sightings/new"
+            to="/observations/create"
             onClick={() => onOpenChange(false)}
           >
             <Card className="p-6 hover:shadow-md transition-all duration-300 hover:transform hover:-translate-y-1  bg-gradient-to-br from-sky-50 to-sky-100 h-full">
