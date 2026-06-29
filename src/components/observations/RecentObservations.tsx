@@ -1,210 +1,154 @@
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Calendar, Clock, ArrowLeft, Info, Eye } from "lucide-react";
-
-type ObservationType = {
-  id: number;
-  image: string;
-  location: string;
-  date: string;
-  time: string;
-  user: {
-    name: string;
-    avatar: string;
-  };
-  description: string;
-  weather: string;
-  notes: string;
-};
-
-const mockObservations: ObservationType[] = [
-  {
-    id: 101,
-    image: "https://images.unsplash.com/photo-1621105249905-39e9d9b1367f?auto=format&fit=crop&w=800&h=600",
-    location: "Central Park, New York",
-    date: "May 5, 2023",
-    time: "10:23 AM",
-    user: {
-      name: "Maria García",
-      avatar: "https://randomuser.me/api/portraits/women/12.jpg",
-    },
-    description: "Spotted this beautiful American Robin gathering nesting materials early in the morning. It was very active and seemed undisturbed by my presence.",
-    weather: "Sunny, slight breeze",
-    notes: "Bird was singing loudly and displaying territorial behavior.",
-  },
-  {
-    id: 102,
-    image: "https://images.unsplash.com/photo-1591198936750-db8b93cb7491?auto=format&fit=crop&w=800&h=600",
-    location: "Riverside Trail, Boston",
-    date: "April 28, 2023", 
-    time: "9:15 AM",
-    user: {
-      name: "John Smith",
-      avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-    },
-    description: "Observed a pair of American Robins building a nest in a maple tree about 8 feet off the ground. They were taking turns bringing materials.",
-    weather: "Cloudy, mild temperature",
-    notes: "The pair seemed to be working together efficiently, suggesting they may have nested together before.",
-  },
-  {
-    id: 103,
-    image: "https://images.unsplash.com/photo-1550029402-226115b7c579?auto=format&fit=crop&w=800&h=600",
-    location: "Oakwood Garden, Chicago",
-    date: "April 15, 2023",
-    time: "12:45 PM",
-    user: {
-      name: "Emma Johnson",
-      avatar: "https://randomuser.me/api/portraits/women/22.jpg",
-    },
-    description: "Found an American Robin foraging on the lawn after a light rain. It was pulling up earthworms with great success and seemed very healthy.",
-    weather: "Partly cloudy, recent light rain",
-    notes: "This individual had particularly vibrant coloring, possibly a mature male in breeding plumage.",
-  }
-];
+import { MapPin, Calendar, ArrowRight, Eye, Camera } from "lucide-react";
+import { observationService } from "@/api/services/ObservationService";
+import type { ApiObservation } from "@/types/observation";
 
 interface RecentObservationsProps {
+  taxonId?: number;
   speciesName?: string;
 }
 
-const RecentObservations = ({ speciesName = "this species" }: RecentObservationsProps) => {
-  const [selectedObservation, setSelectedObservation] = useState<ObservationType | null>(null);
+export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: RecentObservationsProps) => {
+  // Fetch latest 4 observations for the given taxon or overall
+  const { data, isLoading } = useQuery({
+    queryKey: ["recent-observations", taxonId],
+    queryFn: async () => {
+      const response = await observationService.getAll({
+        taxon_id: taxonId,
+        per_page: 4,
+      });
+      return response.data;
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Fecha no registrada";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-CO", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const formatLocation = (obs: ApiObservation) => {
+    if (obs.location_name) return obs.location_name;
+    if (obs.latitude != null && obs.longitude != null) {
+      return `${obs.latitude.toFixed(4)}, ${obs.longitude.toFixed(4)}`;
+    }
+    return "Ubicación no registrada";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="mt-12 mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-forest-950 font-heading">Observaciones Recientes</h2>
+          <div className="h-5 w-20 bg-gray-200 animate-pulse rounded" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="border border-lime-100 rounded-2xl overflow-hidden shadow-sm bg-white">
+              <div className="h-44 bg-gray-150 animate-pulse" />
+              <CardContent className="pt-7 pb-4 px-4 space-y-3">
+                <div className="h-5 w-2/3 bg-gray-200 animate-pulse rounded" />
+                <div className="h-4 w-1/2 bg-gray-100 animate-pulse rounded" />
+                <div className="h-4 w-1/3 bg-gray-100 animate-pulse rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const observations = data || [];
 
   return (
-    <div className="mt-12 mb-8">
-      <h2 className="text-2xl font-bold text-forest-950 mb-6">Observaciones Recientes</h2>
-      
-      {mockObservations.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockObservations.map((observation) => (
-            <Dialog key={observation.id} onOpenChange={(open) => !open && setSelectedObservation(null)}>
-              <DialogTrigger asChild>
-                <Card 
-                  className="group cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] border-lime-200"
-                  onClick={() => setSelectedObservation(observation)}
-                >
-                  <div className="relative overflow-hidden rounded-t-xl">
+    <div className="mt-12 mb-8 animate-fade-in">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-forest-950 font-heading">Observaciones Recientes</h2>
+        <Link 
+          to="/sightings" 
+          className="text-lime-600 hover:text-lime-700 text-sm font-semibold flex items-center gap-1 group transition-colors"
+        >
+          Ver todas
+          <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+        </Link>
+      </div>
+
+      {observations.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {observations.map((observation) => {
+            const primaryPhoto = observation.photos?.find((p) => p.is_primary) ?? observation.photos?.[0];
+            const imageUrl = primaryPhoto?.photo_url ?? "https://images.unsplash.com/photo-1550159930-40066082a4fc?w=800";
+            const userName = observation.user?.name ?? "Usuario";
+            const userAvatar = observation.user?.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=84cc16&color=fff`;
+
+            return (
+              <Link key={observation.id} to={`/observations/${observation.id}`}>
+                <Card className="group cursor-pointer border border-lime-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 bg-white h-full flex flex-col">
+                  <div className="relative h-44 overflow-hidden bg-lime-50">
                     <img
-                      src={observation.image}
-                      alt={`Observation by ${observation.user.name}`}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      src={imageUrl}
+                      alt={`Observación de ${userName}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8 border-2 border-white/80">
-                          <AvatarImage src={observation.user.avatar} alt={observation.user.name} />
-                          <AvatarFallback className="text-xs">{observation.user.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <div className="text-white text-sm">
-                          <p className="font-medium">{observation.user.name}</p>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+                  </div>
+
+                  <CardContent className="pt-7 pb-4 px-4 flex-1 flex flex-col justify-between relative">
+                    {/* Floating overlapping Avatar */}
+                    <Avatar className="absolute -top-5 left-4 h-10 w-10 border-4 border-white shadow-md z-10 bg-lime-100">
+                      <AvatarImage src={userAvatar} alt={userName} />
+                      <AvatarFallback className="font-bold text-xs text-lime-700 bg-lime-50">
+                        {userName[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold text-forest-950 text-base mb-2 group-hover:text-lime-600 transition-colors line-clamp-1">
+                        {userName}
+                      </h3>
+                      
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1.5 text-xs text-forest-750 font-medium">
+                          <MapPin className="h-3.5 w-3.5 text-lime-600 flex-shrink-0" />
+                          <span className="truncate">{formatLocation(observation)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs text-forest-700 font-normal">
+                          <Calendar className="h-3.5 w-3.5 text-lime-650 flex-shrink-0" />
+                          <span>{formatDate(observation.observed_at || observation.created_at)}</span>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-forest-600">
-                        <MapPin className="h-4 w-4 text-lime-600" />
-                        <span>{observation.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-forest-600">
-                        <Calendar className="h-4 w-4 text-lime-600" />
-                        <span>{observation.date}</span>
-                        <Clock className="h-4 w-4 text-lime-600 ml-2" />
-                        <span>{observation.time}</span>
-                      </div>
-                      <p className="text-forest-800 text-sm line-clamp-2">{observation.description}</p>
                     </div>
                   </CardContent>
                 </Card>
-              </DialogTrigger>
-              
-              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-xl text-forest-950">Observation Details</DialogTitle>
-                </DialogHeader>
-                
-                {selectedObservation && (
-                  <div className="space-y-4">
-                    <img
-                      src={selectedObservation.image}
-                      alt={`Observation by ${selectedObservation.user.name}`}
-                      className="w-full h-64 object-cover rounded-lg"
-                    />
-                    
-                    <div className="flex items-center gap-3 pb-2 border-b border-lime-200">
-                      <Avatar className="h-12 w-12 border-2 border-lime-200">
-                        <AvatarImage src={selectedObservation.user.avatar} alt={selectedObservation.user.name} />
-                        <AvatarFallback className="bg-lime-100 text-lime-700 font-bold">
-                          {selectedObservation.user.name[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold text-forest-900">{selectedObservation.user.name}</p>
-                        <p className="text-sm text-forest-600">Observer & Naturalist</p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-lime-600" />
-                        <div>
-                          <h3 className="font-medium text-forest-900">Location</h3>
-                          <p className="text-forest-700">{selectedObservation.location}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-5 w-5 text-lime-600" />
-                        <div>
-                          <h3 className="font-medium text-forest-900">Date & Time</h3>
-                          <p className="text-forest-700">{selectedObservation.date} at {selectedObservation.time}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Info className="h-5 w-5 text-lime-600" />
-                        <div>
-                          <h3 className="font-medium text-forest-900">Weather</h3>
-                          <p className="text-forest-700">{selectedObservation.weather}</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium text-forest-900 mb-2">Description</h3>
-                      <p className="text-forest-700">{selectedObservation.description}</p>
-                    </div>
-                    
-                    {selectedObservation.notes && (
-                      <div>
-                        <h3 className="font-medium text-forest-900 mb-2">Field Notes</h3>
-                        <div className="bg-lime-50 p-3 rounded-lg">
-                          <p className="text-forest-700 text-sm italic">{selectedObservation.notes}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       ) : (
-        <Card className="border-lime-200 text-center py-12">
-          <div className="space-y-4">
-            <Eye className="h-16 w-16 text-lime-500 mx-auto opacity-50" />
+        <Card className="border border-dashed border-lime-200 text-center py-12 bg-lime-50/20 rounded-2xl">
+          <div className="max-w-md mx-auto space-y-4 px-4">
+            <div className="bg-lime-100 h-16 w-16 rounded-full flex items-center justify-center mx-auto shadow-sm">
+              <Camera className="h-8 w-8 text-lime-600" />
+            </div>
             <div>
-              <h3 className="text-lg font-medium text-forest-900 mb-2">No observations yet</h3>
-              <p className="text-forest-700 mb-4">Be the first to share an observation of {speciesName}!</p>
-              <Button className="bg-lime-500 hover:bg-lime-600 text-white">
-                Share Your Observation
-              </Button>
+              <h3 className="text-lg font-bold text-forest-950 mb-1">Sin observaciones aún</h3>
+              <p className="text-sm text-forest-700 mb-6">
+                Sé la primera persona en compartir una observación de {speciesName} en nuestro campus.
+              </p>
+              <Link to="/sightings/new">
+                <Button className="bg-lime-500 hover:bg-lime-600 text-white rounded-full px-6 font-medium shadow-sm transition-all hover:scale-102">
+                  Registrar Avistamiento
+                </Button>
+              </Link>
             </div>
           </div>
         </Card>

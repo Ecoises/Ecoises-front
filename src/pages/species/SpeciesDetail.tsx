@@ -13,6 +13,7 @@ import { useSpeciesDetail, useRelatedSpecies } from "@/hooks/useSpecies"
 import SpeciesDistributionMap from "@/components/maps/SpeciesDistributionMap"
 import { AnimatePresence, motion } from "framer-motion"
 import TaxonomyGame from "@/components/species/TaxonomyGame"
+import RecentObservations from "@/components/observations/RecentObservations"
 
 
 const SpeciesDetail = () => {
@@ -507,6 +508,8 @@ const SpeciesDetail = () => {
         </div>
       </div>
 
+      {/* Recent Observations */}
+      <RecentObservations taxonId={Number(id)} speciesName={species.common_name || species.scientific_name} />
 
       {/* Fullscreen Image Viewer */}
       <AnimatePresence>
