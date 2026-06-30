@@ -8,7 +8,8 @@ const apiClient: AxiosInstance = axios.create({
   baseURL: `${API_BASE_URL}/api`, // Asume que tus rutas de API están bajo /api en Laravel
   headers: {
     'Accept': 'application/json',
-    'Content-Type': 'application/json',
+    // Do not set a default Content-Type so axios can automatically
+    // choose multipart/form-data for FormData requests.
   },
 });
 

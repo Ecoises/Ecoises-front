@@ -67,9 +67,7 @@ class ObservationService {
       payload.photos.forEach((file) => form.append('photos[]', file));
     }
 
-    const response = await apiClient.post<ObservationCreateResponse>(`/${this.endpoint}`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await apiClient.post<ObservationCreateResponse>(`/${this.endpoint}`, form);
     return response.data;
   }
 
@@ -111,9 +109,7 @@ class ObservationService {
       payload.delete_photos.forEach((photoId) => form.append('delete_photos[]', String(photoId)));
     }
 
-    const response = await apiClient.post<ObservationCreateResponse>(`/${this.endpoint}/${id}`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await apiClient.post<ObservationCreateResponse>(`/${this.endpoint}/${id}`, form);
     return response.data;
   }
 

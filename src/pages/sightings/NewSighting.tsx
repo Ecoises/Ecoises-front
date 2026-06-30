@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+import type { LaravelValidationError } from "@/types/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +22,20 @@ function formatLocalDatetime(date: Date): string {
   // Formato ISO sin zona horaria para el input datetime-local
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function getApiErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error) && error.response?.data) {
+    console.error("API error response:", error.response.data);
+    const data = error.response.data as LaravelValidationError | { message?: string; errors?: Record<string, string[]> };
+    if (data.errors) {
+      return Object.values(data.errors).flat().join(' ') || data.message || "Error de validación en los datos.";
+    }
+    if (data.message) {
+      return data.message;
+    }
+  }
+  return (error as any)?.message || "Intenta nuevamente.";
 }
 
 // ── Subcomponentes ─────────────────────────────────────────────────────────
@@ -177,10 +193,10 @@ const NewSighting = () => {
 
       setSubmitted(true);
       setTimeout(() => navigate("/sightings"), 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: "Error al registrar el avistamiento",
-        description: err?.message || "Intenta nuevamente.",
+        description: getApiErrorMessage(err),
         variant: "destructive",
       });
     } finally {

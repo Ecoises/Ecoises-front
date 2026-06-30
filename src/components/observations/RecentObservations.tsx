@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Calendar, ArrowRight, Camera, Edit, Trash2, AlertTriangle, Loader2, MoreVertical } from "lucide-react";
 import { observationService } from "@/api/services/ObservationService";
+import { getStorageUrl } from "@/lib/utils";
 import type { ApiObservation } from "@/types/observation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -135,7 +136,7 @@ export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: Re
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {observations.map((observation) => {
             const primaryPhoto = observation.photos?.find((p) => p.is_primary) ?? observation.photos?.[0];
-            const imageUrl = primaryPhoto?.photo_url ?? "https://images.unsplash.com/photo-1550159930-40066082a4fc?w=800";
+            const imageUrl = getStorageUrl(primaryPhoto?.photo_url) ?? "https://images.unsplash.com/photo-1550159930-40066082a4fc?w=800";
             const userName = observation.user?.name ?? "Usuario";
             const userAvatar = observation.user?.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=84cc16&color=fff`;
 

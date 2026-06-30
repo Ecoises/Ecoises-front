@@ -18,6 +18,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { AnimatePresence, motion } from "framer-motion";
 import ReportModal from "@/components/observations/ReportModal";
+import { getStorageUrl } from "@/lib/utils";
 
 // Fix for default marker icons in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -44,7 +45,7 @@ function mapApiToObservation(api: ApiObservation): ExtendedObservation {
     species_name: api.taxon?.common_name || api.taxon?.scientific_name || "Especie no identificada",
     scientific_name: api.taxon?.scientific_name,
     points_awarded: api.points_awarded,
-    image: primaryPhoto?.photo_url || "https://images.unsplash.com/photo-1550159930-40066082a4fc?w=800",
+    image: getStorageUrl(primaryPhoto?.photo_url) || "https://images.unsplash.com/photo-1550159930-40066082a4fc?w=800",
     location: api.location_name || (api.latitude != null ? `${api.latitude?.toFixed(4)}, ${api.longitude?.toFixed(4)}` : "Ubicación no registrada"),
     date: observedDate.toLocaleDateString("es-CO", { year: "numeric", month: "long", day: "numeric" }),
     time: observedDate.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }),
@@ -175,7 +176,7 @@ const ObservationDetail = () => {
 
         // Establecer imagen activa inicial
         const primaryPhoto = apiObs.photos?.find((p) => p.is_primary) ?? apiObs.photos?.[0];
-        setActiveImage(primaryPhoto?.photo_url || "https://images.unsplash.com/photo-1550159930-40066082a4fc?w=800");
+        setActiveImage(getStorageUrl(primaryPhoto?.photo_url) || "https://images.unsplash.com/photo-1550159930-40066082a4fc?w=800");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error al cargar la observación");
       } finally {
@@ -325,18 +326,19 @@ const ObservationDetail = () => {
             {observation.photos && observation.photos.length > 1 && (
               <div className="flex overflow-x-auto gap-2 pb-2 snap-x snap-mandatory md:grid md:grid-cols-5 md:overflow-x-visible md:pb-0 md:snap-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {observation.photos.map((photo, index) => {
+                  const photoUrl = getStorageUrl(photo.photo_url) || "";
                   return (
                     <button
                       key={photo.id || index}
-                      onClick={() => setActiveImage(photo.photo_url)}
+                      onClick={() => setActiveImage(photoUrl)}
                       className={`relative overflow-hidden rounded-xl border-2 transition-all hover:scale-105 w-20 md:w-auto flex-shrink-0 snap-start ${
-                        activeImage === photo.photo_url
+                        activeImage === photoUrl
                           ? "border-lime-500 ring-2 ring-lime-500/50"
                           : "border-gray-200 hover:border-lime-500/50"
                       }`}
                     >
                       <img
-                        src={photo.photo_url}
+                        src={photoUrl}
                         alt={`Imagen ${index + 1} del avistamiento`}
                         className="w-full aspect-square object-cover"
                       />

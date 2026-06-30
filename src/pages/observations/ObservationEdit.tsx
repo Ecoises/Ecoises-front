@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { taxonService, Taxon } from "@/api/services/TaxonService";
 import { observationService } from "@/api/services/ObservationService";
 import LocationMapModal from "@/components/observations/LocationMapModal";
+import { getStorageUrl } from "@/lib/utils";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -512,7 +513,7 @@ export const ObservationEdit = () => {
                 {existingPhotos.map((photo) => (
                   <div key={photo.id} className="relative group">
                     <img
-                      src={photo.photo_url}
+                      src={getStorageUrl(photo.photo_url)}
                       alt="Existente"
                       className="h-24 w-24 object-cover rounded-xl border border-lime-200"
                     />

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapPin, Search, LocateFixed, Loader2, Compass, Map, Layers } from "lucide-react";
@@ -200,17 +200,14 @@ export const LocationMapModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl h-[85vh] p-0 flex flex-col overflow-hidden rounded-3xl border-lime-200 bg-white">
         
-        {/* Header */}
-        <div className="p-5 border-b border-lime-100 flex-shrink-0 flex items-center justify-between">
-          <div>
-            <DialogTitle className="text-xl font-bold text-forest-950 font-heading">
-              Seleccionar Ubicación
-            </DialogTitle>
-            <p className="text-xs text-forest-600 mt-0.5">
-              Haz clic en el mapa para marcar el punto exacto de la observación
-            </p>
-          </div>
-        </div>
+        <DialogHeader className="p-5 border-b border-lime-100 flex-shrink-0">
+          <DialogTitle className="text-xl font-bold text-forest-950 font-heading">
+            Seleccionar Ubicación
+          </DialogTitle>
+          <DialogDescription className="text-xs text-forest-600 mt-0.5">
+            Haz clic en el mapa para marcar el punto exacto de la observación
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Search and control bar */}
         <div className="px-5 py-3 bg-lime-50/50 border-b border-lime-100/60 flex-shrink-0 flex flex-col md:flex-row gap-3">
