@@ -31,11 +31,14 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
         Object.entries(params).filter(([_, v]) => v !== undefined && v !== '' && v !== 'Todas' && v !== 'Todos' && v !== 'all' && v !== false)
       );
 
-      // Si hay un término de búsqueda ('q'), usamos el endpoint de búsqueda global
-      // Si no, usamos el endpoint de exploración de Colombia
-      const endpoint = cleanParams.q
-        ? '/api/taxa/search'
-        : '/api/taxa/explore';
+      // Si hay coordenadas, usar el endpoint optimizado de caché por celda
+      // Si hay búsqueda, usar búsqueda global
+      // Si no, usar exploración nacional
+      const endpoint = cleanParams.lat && cleanParams.lng
+        ? '/api/explorer/nearby'
+        : cleanParams.q
+          ? '/api/taxa/search'
+          : '/api/taxa/explore';
 
       const { data } = await api.get<ExploreResponse>(endpoint, {
         params: { ...cleanParams, enrich: 0 }, // Optimize load time by skipping heavy details

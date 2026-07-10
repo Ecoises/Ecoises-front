@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams, useLocation } from "react-router-dom";
 import { 
-  Search, Filter, X, ShieldAlert, Loader2, MapPin, Star, Sparkles, Shuffle, Navigation, Map, CornerRightDown, Leaf,
+  Search, Filter, X, ShieldAlert, Loader2, MapPin, Star, Sparkles, Shuffle, Navigation, Map, CornerRightDown, Leaf, ListOrdered, Globe,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { useSpecies } from "@/hooks/useSpecies";
 import { useQueryClient } from "@tanstack/react-query";
 import { Taxon } from "@/types/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { LocationMapModal } from "@/components/observations/LocationMapModal";
 
 
 const groups = [
@@ -295,6 +296,21 @@ export default function Explorer() {
     setLocationError(null);
   };
 
+  const [mapModalOpen, setMapModalOpen] = useState(false);
+
+  const handleMapConfirm = (coords: { lat: number; lng: number; address?: string }) => {
+    const locationData = { lat: coords.lat, lng: coords.lng };
+    setUserLocation(locationData);
+    localStorage.setItem('userLocation', JSON.stringify(locationData));
+
+    const name = coords.address ? coords.address.split(',').slice(0, 2).join(',') : 'Ubicación seleccionada';
+    setLocationName(name);
+    localStorage.setItem('locationName', name);
+    setLocationError(null);
+
+    updateParams({ page: 1 });
+  };
+
   const ITEMS_PER_PAGE = 25;
 
   // DEBUG: console.log('📤 Params being sent to useSpecies:', { iconic_taxa: selectedGroup, selectedGroup });
@@ -361,23 +377,30 @@ export default function Explorer() {
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          {!userLocation ? (
-            <Button onClick={requestLocation} disabled={isLocating} className="bg-lime-600 hover:bg-lime-700 text-white gap-2 shadow-lg shadow-lime-200/50">
-              {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
-              Usar mi ubicación
+          <div className="flex gap-2">
+            {!userLocation ? (
+              <Button onClick={requestLocation} disabled={isLocating} className="bg-lime-600 hover:bg-lime-700 text-white gap-2 shadow-lg shadow-lime-200/50">
+                {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
+                Mi ubicación
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={clearLocation} className="text-red-600 border-red-200 hover:bg-red-50 gap-2">
+                <X className="h-4 w-4" /> Dejar de usar ubicación
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setMapModalOpen(true)} className="border-lime-300 text-lime-700 hover:bg-lime-50 gap-2">
+              <Globe className="h-4 w-4" />
+              Elegir en el mapa
             </Button>
-          ) : (
-            <Button variant="outline" onClick={clearLocation} className="text-red-600 border-red-200 hover:bg-red-50 gap-2">
-              <X className="h-4 w-4" /> Dejar de usar ubicación
-            </Button>
-          )}
+          </div>
           {locationError && <span className="text-xs text-red-500">{locationError}</span>}
         </div>
       </div>
 
       {/* Main Controls */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md py-4 -mx-4 px-4 border-b border-lime-100 flex flex-col gap-4">
-        <div className="flex flex-col md:flex-row gap-3">
+        {/* Search row - with filter button inline */}
+        <div className="flex gap-3 items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-forest-400 h-4 w-4" />
             <Input
@@ -397,102 +420,118 @@ export default function Explorer() {
             )}
           </div>
 
-          <div className="flex gap-2 justify-end overflow-x-auto pb-1 md:pb-0 font-medium">
-            {/* Sort Toggle */}
-            <div className="flex bg-gray-100 p-1 rounded-lg">
-              <button
-                className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition-all ${sortBy !== 'random' ? 'bg-white shadow text-lime-700' : 'text-gray-500 hover:text-gray-900'}`}
-                onClick={() => updateParams({ order_by: 'observed_on', page: 1 })}
-              >
-                <Sparkles className="h-3.5 w-3.5" /> Recientes
-              </button>
-              <button
-                onClick={() => {
-                  queryClient.invalidateQueries({ queryKey: ['species'] });
-                  updateParams({ order_by: 'random', page: 1 });
-                }}
-                className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition-all ${sortBy === 'random' ? 'bg-white shadow text-purple-700' : 'text-gray-500 hover:text-gray-900'}`}
-              >
-                <Shuffle className="h-3.5 w-3.5" /> Aleatorio
-              </button>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              className={`border-lime-200 gap-2 rounded-lg ${filtersVisible ? 'bg-lime-50 text-lime-700' : ''}`}
-              onClick={toggleFilters}
-            >
-              <Filter className="h-4 w-4" />
-              Filtros
-            </Button>
-          </div>
+          {/* Filter Button - Inline with search */}
+          <Button
+            variant="outline"
+            size="icon"
+            className={`border-lime-200 rounded-xl h-10 w-10 flex-shrink-0 ${filtersVisible ? 'bg-lime-50 text-lime-700 border-lime-500' : ''}`}
+            onClick={toggleFilters}
+            aria-label="Filtros"
+          >
+            <Filter className="h-4 w-4" />
+          </Button>
         </div>
 
-        {/* Expanded Filters */}
+        {/* Expanded Filters - With Close Button */}
         {filtersVisible && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4 bg-lime-50/50 rounded-xl border border-lime-100 animate-in slide-in-from-top-2">
-            <div>
-              <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Grupo</h4>
-              <div className="flex flex-col gap-1">
-                {groups.map(group => (
-                  <label key={group.value || 'all'} className="flex items-center gap-2 text-sm text-forest-700 cursor-pointer hover:text-forest-900">
-                    <input
-                      type="radio"
-                      name="group"
-                      checked={selectedGroup === group.value}
-                      onChange={() => updateParams({ iconic_taxa: group.value || undefined, page: 1 })}
-                      className="accent-lime-600"
-                    />
-                    {group.label}
-                  </label>
-                ))}
-              </div>
-            </div>
+          <div className="relative p-4 bg-lime-50/50 rounded-xl border border-lime-100 animate-in slide-in-from-top-2">
+            {/* Close button - positioned top right */}
+            <button
+              onClick={() => setFiltersVisible(false)}
+              className="absolute top-2 right-2 p-1.5 hover:bg-lime-200/50 rounded-lg transition-colors"
+              aria-label="Cerrar filtros"
+            >
+              <X className="h-5 w-5 text-lime-700" />
+            </button>
 
-            <div>
-              <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Estado</h4>
-              <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-2">
+              <div>
+                <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Grupo</h4>
+                <div className="flex flex-col gap-1">
+                  {groups.map(group => (
+                    <label key={group.value || 'all'} className="flex items-center gap-2 text-sm text-forest-700 cursor-pointer hover:text-forest-900">
+                      <input
+                        type="radio"
+                        name="group"
+                        checked={selectedGroup === group.value}
+                        onChange={() => updateParams({ iconic_taxa: group.value || undefined, page: 1 })}
+                        className="accent-lime-600"
+                      />
+                      {group.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Estado</h4>
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant={selectedConservationStatus === 'threatened' ? 'destructive' : 'outline'}
+                    size="sm"
+                    className="justify-start"
+                    onClick={() => updateParams({ threatened: selectedConservationStatus === 'threatened' ? 'Todos' : 'threatened', page: 1 })}
+                  >
+                    <ShieldAlert className="h-3 w-3 mr-2" />
+                    Solo Amenazadas
+                  </Button>
+                  <Button
+                    variant={nativeFilter === 'endemic' ? 'default' : 'outline'}
+                    size="sm"
+                    className="justify-start"
+                    onClick={() => updateParams({ native: nativeFilter === 'endemic' ? 'all' : 'endemic', page: 1 })}
+                  >
+                    <Sparkles className="h-3 w-3 mr-2" />
+                    Solo Endémicas
+                  </Button>
+                  <Button
+                    variant={nativeFilter === 'native' ? 'default' : 'outline'}
+                    size="sm"
+                    className="justify-start"
+                    onClick={() => updateParams({ native: nativeFilter === 'native' ? 'all' : 'native', page: 1 })}
+                  >
+                    <Star className="h-3 w-3 mr-2" />
+                    Solo Nativas
+                  </Button>
+                </div>
+              </div>
+
+              {/* Sort buttons moved inside filters */}
+              <div className="lg:col-span-2">
+                <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Ordenar por</h4>
+                <div className="flex gap-2">
+                  <div className="flex bg-gray-100 p-1 rounded-lg">
+                    <button
+                      className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition-all whitespace-nowrap ${sortBy !== 'random' ? 'bg-white shadow text-lime-700' : 'text-gray-500 hover:text-gray-900'}`}
+                      onClick={() => updateParams({ order_by: 'observed_on', page: 1 })}
+                    >
+                      <ListOrdered className="h-3.5 w-3.5" /> Predeterminada
+                    </button>
+                    <button
+                      onClick={() => {
+                        queryClient.invalidateQueries({ queryKey: ['species'] });
+                        updateParams({ order_by: 'random', page: 1 });
+                      }}
+                      className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition-all whitespace-nowrap ${sortBy === 'random' ? 'bg-white shadow text-purple-700' : 'text-gray-500 hover:text-gray-900'}`}
+                    >
+                      <Shuffle className="h-3.5 w-3.5" /> Aleatorio
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="col-span-full flex justify-center pt-4">
                 <Button
-                  variant={selectedConservationStatus === 'threatened' ? 'destructive' : 'outline'}
-                  size="sm"
-                  className="justify-start"
-                  onClick={() => updateParams({ threatened: selectedConservationStatus === 'threatened' ? 'Todos' : 'threatened', page: 1 })}
+                  variant="outline"
+                  onClick={() => {
+                    clearAllFilters();
+                    setFiltersVisible(false);
+                  }}
+                  className="border-red-200 text-red-600 hover:bg-red-50"
                 >
-                  <ShieldAlert className="h-3 w-3 mr-2" />
-                  Solo Amenazadas
-                </Button>
-                <Button
-                  variant={nativeFilter === 'endemic' ? 'default' : 'outline'}
-                  size="sm"
-                  className="justify-start"
-                  onClick={() => updateParams({ native: nativeFilter === 'endemic' ? 'all' : 'endemic', page: 1 })}
-                >
-                  <Sparkles className="h-3 w-3 mr-2" />
-                  Solo Endémicas
-                </Button>
-                <Button
-                  variant={nativeFilter === 'native' ? 'default' : 'outline'}
-                  size="sm"
-                  className="justify-start"
-                  onClick={() => updateParams({ native: nativeFilter === 'native' ? 'all' : 'native', page: 1 })}
-                >
-                  Solo Nativas
+                  Limpiar filtros
                 </Button>
               </div>
-            </div>
-
-            <div className="col-span-full flex justify-center pt-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  clearAllFilters();
-                  setFiltersVisible(false);
-                }}
-                className="border-red-200 text-red-600 hover:bg-red-50"
-              >
-                Limpiar filtros
-              </Button>
             </div>
           </div>
         )}
@@ -545,6 +584,15 @@ export default function Explorer() {
           </div>
         )}
       </div>
+
+      <LocationMapModal
+        open={mapModalOpen}
+        onOpenChange={setMapModalOpen}
+        initialLat={userLocation?.lat}
+        initialLng={userLocation?.lng}
+        initialLocationName={locationName || ''}
+        onConfirm={handleMapConfirm}
+      />
     </div>
   );
 }
