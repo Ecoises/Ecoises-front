@@ -2,9 +2,14 @@ import BaseService from './BaseService';
 import apiClient from '../apiClient';
 
 export interface Photo {
+  id?: number;
   url: string;
+  medium_url?: string | null;
+  square_url?: string | null;
+  large_url?: string | null;
+  small_url?: string | null;
   attribution?: string;
-  license_code?: string;
+  license_code?: string | null;
   original_dimensions?: {
     width: number;
     height: number;

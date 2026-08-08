@@ -59,8 +59,14 @@ export interface INatResponse {
 }
 
 export interface TaxonPhoto {
+  id?: number;
   url: string;
+  medium_url?: string | null;
+  square_url?: string | null;
+  large_url?: string | null;
+  small_url?: string | null;
   attribution?: string;
+  license_code?: string | null;
 }
 
 export interface Taxon {

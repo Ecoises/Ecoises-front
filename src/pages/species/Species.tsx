@@ -41,20 +41,33 @@ const getConservationStatusColor = (status: string) => {
 
 const SpeciesCard: FC<{ species: Taxon }> = ({ species }) => {
   const location = useLocation();
-  const imageUrl = species.default_photo?.url || 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?auto=format&fit=crop&w=600&h=400';
+  const imageUrl = species.default_photo?.medium_url || species.default_photo?.square_url || species.default_photo?.url || null;
 
   return (
     <Link to={`/taxa/${species.id}`} state={{ from: location }}>
       <Card className="overflow-hidden card-hover h-full">
-        <div className="relative h-48">
-          <img
-            src={imageUrl}
-            alt={species.common_name || species.scientific_name}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.src = 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?auto=format&fit=crop&w=600&h=400';
-            }}
-          />
+        <div className="relative h-48 bg-gray-100 overflow-hidden">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={species.common_name || species.scientific_name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.currentTarget;
+                const fallback = species.default_photo?.square_url || species.default_photo?.url;
+                if (fallback && target.src !== fallback) {
+                  target.src = fallback;
+                } else {
+                  target.style.display = 'none';
+                }
+              }}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-forest-300 bg-forest-50/50">
+              <span className="text-3xl mb-1">🌿</span>
+              <span className="text-xs">Sin imagen</span>
+            </div>
+          )}
         </div>
         <div className="p-4">
           <h3 className="font-heading font-bold text-forest-900 text-lg mb-1">

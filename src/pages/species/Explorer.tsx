@@ -113,12 +113,28 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
     <Link to={`/taxa/${species.id}`} state={{ from: location }} className="w-full block h-full">
       <Card className="w-full overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full cursor-pointer flex flex-col group border-lime-100/60 bg-white">
         <div className="relative h-48 bg-gray-100 overflow-hidden">
-          {species.default_photo?.url ? (
+          {species.default_photo ? (
             <img
-              src={species.default_photo.url.replace("square", "medium")}
+              src={
+                species.default_photo.medium_url ||
+                species.default_photo.square_url ||
+                species.default_photo.url?.replace("square", "medium") ||
+                species.default_photo.url
+              }
               alt={species.common_name || species.scientific_name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               loading="lazy"
+              onError={(e) => {
+                // Si medium_url falla, intentar con square_url o url original
+                const target = e.currentTarget;
+                const fallback = species.default_photo?.square_url || species.default_photo?.url;
+                if (fallback && target.src !== fallback) {
+                  target.src = fallback;
+                } else {
+                  target.style.display = 'none';
+                  target.parentElement?.classList.add('photo-error');
+                }
+              }}
             />
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-forest-300 bg-forest-50/50">
