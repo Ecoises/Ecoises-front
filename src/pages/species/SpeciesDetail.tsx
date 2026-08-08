@@ -243,12 +243,18 @@ const SpeciesDetail = () => {
                   }
                 };
                 const config = getConservationConfig(status);
+                const scope = species.conservation_status_scope || statusObj.scope;
+                const scopeLabel = scope === 'colombia' ? 'Colombia' : scope === 'global' ? 'Global' : null;
+                const authority = species.conservation_status_authority || statusObj.authority;
+
                 return (
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${config.className}`}>
-                    {config.label}
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${config.className}`}
+                    title={authority ? `Fuente: ${authority}` : undefined}
+                  >
+                    {config.label}{scopeLabel ? ` · ${scopeLabel}` : ''}
                   </span>
-                );
-              })()}
+                );              })()}
             </div>
 
             {(() => {

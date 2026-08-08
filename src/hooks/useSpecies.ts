@@ -18,6 +18,7 @@ interface UseSpeciesParams {
   lat?: number;
   lng?: number;
   radius?: number;
+  random_seed?: string;
 }
 
 export const useSpecies = (params: UseSpeciesParams = {}) => {
@@ -36,9 +37,7 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
       // Si no, usar exploración nacional
       const endpoint = cleanParams.lat && cleanParams.lng
         ? '/api/explorer/nearby'
-        : cleanParams.q
-          ? '/api/taxa/search'
-          : '/api/taxa/explore';
+        : '/api/explorer/national';
 
       const { data } = await api.get<ExploreResponse>(endpoint, {
         params: { ...cleanParams, enrich: 0 }, // Optimize load time by skipping heavy details
@@ -49,6 +48,8 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
     // Si es random, NO cachear y siempre refetch
     staleTime: isRandom ? 0 : 5 * 60 * 1000,
     gcTime: isRandom ? 0 : 5 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
+    retry: 1,
     refetchOnMount: isRandom ? 'always' : true,
   });
 };

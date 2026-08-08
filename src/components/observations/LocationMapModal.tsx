@@ -144,12 +144,6 @@ export const LocationMapModal = ({
     );
   }, [toast, reverseGeocode]);
 
-  // Ejecutar geolocalización automática al abrir si no hay posición inicial
-  useEffect(() => {
-    if (open && !initialLat && !initialLng) {
-      handleGeolocate();
-    }
-  }, [open, initialLat, initialLng, handleGeolocate]);
 
   // Buscar dirección usando Nominatim
   const handleSearch = async (e: React.FormEvent) => {
@@ -205,7 +199,7 @@ export const LocationMapModal = ({
             Seleccionar Ubicación
           </DialogTitle>
           <DialogDescription className="text-xs text-forest-600 mt-0.5">
-            Haz clic en el mapa para marcar el punto exacto de la observación
+            Busca un lugar o haz clic en el mapa para definir el centro de exploración
           </DialogDescription>
         </DialogHeader>
 

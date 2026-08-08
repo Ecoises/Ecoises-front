@@ -69,6 +69,16 @@ export interface TaxonPhoto {
   license_code?: string | null;
 }
 
+export interface ConservationStatusDetails {
+  status: string;
+  status_name?: string | null;
+  iucn?: number | null;
+  authority?: string | null;
+  url?: string | null;
+  place_id?: number | null;
+  scope?: 'colombia' | 'global' | null;
+}
+
 export interface Taxon {
   id: number;
   scientific_name: string;
@@ -77,11 +87,19 @@ export interface Taxon {
   family: string | null;
   order_name: string | null;
   rank: string | null;
-  conservation_status: { status_name: string; iucn: number } | null; // e.g., { status_name: "VU", iucn: 40 }
+  conservation_status: string | ConservationStatusDetails | null;
+  conservation_status_details?: ConservationStatusDetails | null;
+  conservation_status_source?: 'inaturalist' | 'legacy' | null;
+  conservation_status_scope?: 'colombia' | 'global' | null;
+  conservation_status_authority?: string | null;
+  conservation_status_url?: string | null;
+  conservation_status_synced_at?: string | null;
   establishment_status_colombia?: string | null; // e.g., "native", "endemic", "introduced"
   native: boolean;
   endemic: boolean;
   observation_count: number;
+  occurrence_count?: number;
+  nearby_radius_km?: number;
   default_photo: TaxonPhoto | null;
   wikipedia_url?: string | null;
   // Trazabilidad local del catálogo UNAL La Paz
@@ -101,7 +119,16 @@ export interface ExploreResponse {
       per_page: number;
       current_page: number;
       last_page: number;
+      from?: number;
+      to?: number;
     };
+    source?: string;
+    cached?: boolean;
+    radius_km?: number;
+    occurrence_total?: number;
+    catalog_truncated?: boolean;
+    enriching_count?: number;
+    enrichment_filter_applied?: boolean;
     [key: string]: any;
   };
   // Keeping this optional just in case we have mixed responses during transition, 

@@ -22,6 +22,34 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LocationMapModal } from "@/components/observations/LocationMapModal";
 
 
+const LOCATION_STORAGE_KEY = 'ecoises.explorer.location.v1';
+const LOCATION_TTL_MS = 24 * 60 * 60 * 1000;
+
+type StoredLocation = {
+  coords: { lat: number; lng: number };
+  name: string;
+  savedAt: number;
+};
+
+const readStoredLocation = (): StoredLocation | null => {
+  try {
+    const value = localStorage.getItem(LOCATION_STORAGE_KEY);
+    if (!value) return null;
+    const parsed = JSON.parse(value) as StoredLocation;
+    const validCoords = Number.isFinite(parsed?.coords?.lat) && Number.isFinite(parsed?.coords?.lng);
+    if (!validCoords || Date.now() - parsed.savedAt > LOCATION_TTL_MS) {
+      localStorage.removeItem(LOCATION_STORAGE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const persistLocation = (coords: { lat: number; lng: number }, name: string) => {
+  localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify({ coords, name, savedAt: Date.now() }));
+};
 const groups = [
   { label: "Todas", value: "" },
   { label: "Aves", value: "Aves" },
@@ -112,7 +140,7 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
   return (
     <Link to={`/taxa/${species.id}`} state={{ from: location }} className="w-full block h-full">
       <Card className="w-full overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full cursor-pointer flex flex-col group border-lime-100/60 bg-white">
-        <div className="relative h-48 bg-gray-100 overflow-hidden">
+        <div className="relative h-52 min-[430px]:h-48 bg-gray-100 overflow-hidden">
           {species.default_photo ? (
             <img
               src={
@@ -166,8 +194,12 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
           {/* Changed typography: removed font-serif, kept italic */}
           <p className="text-forest-600/80 text-sm italic mb-3 line-clamp-1">{species.scientific_name}</p>
 
-          {/* Spacer to push tags to bottom */}
           <div className="flex-grow"></div>
+          {typeof species.occurrence_count === 'number' && (
+            <p className="mt-3 text-xs font-medium text-forest-600">
+              {species.occurrence_count.toLocaleString('es-CO')} {species.occurrence_count === 1 ? 'registro' : 'registros'} en GBIF
+            </p>
+          )}
         </div>
       </Card>
     </Link>
@@ -177,7 +209,7 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
 // Update SkeletonCard
 const SkeletonCard = () => (
   <Card className="overflow-hidden h-full border-lime-100/50 bg-white">
-    <div className="h-48 bg-gray-200 animate-pulse"></div>
+    <div className="h-52 min-[430px]:h-48 bg-gray-200 animate-pulse"></div>
     <div className="p-4 space-y-3">
       <div className="h-5 bg-gray-200 rounded w-3/4 animate-pulse"></div>
       <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
@@ -193,18 +225,10 @@ export default function Explorer() {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const queryClient = useQueryClient();
 
-  // Geolocation State - Persisted
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(() => {
-    try {
-      const saved = localStorage.getItem('userLocation');
-      return saved ? JSON.parse(saved) : null;
-    } catch (e) {
-      return null;
-    }
-  });
-  const [locationName, setLocationName] = useState<string | null>(() => {
-    return localStorage.getItem('locationName');
-  });
+  // La ubicación se conserva por 24 horas y puede eliminarse desde la interfaz.
+  const [storedLocation] = useState(readStoredLocation);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(storedLocation?.coords ?? null);
+  const [locationName, setLocationName] = useState<string | null>(storedLocation?.name ?? null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
 
@@ -217,7 +241,11 @@ export default function Explorer() {
   // DEBUG: console.log('🔍 DEBUG selectedGroup:', selectedGroup, 'from URL param:', searchParams.get("iconic_taxa"));
   const selectedConservationStatus = searchParams.get("threatened") === "true" ? "threatened" : "Todos";
   const nativeFilter = searchParams.get("native") === "true" ? "native" : (searchParams.get("endemic") === "true" ? "endemic" : "all");
-  const sortBy = searchParams.get("order_by") || "observations_count";
+  const sortBy = searchParams.get("order_by") || (userLocation ? "occurrence_count" : "random");
+  const radiusOptions = [10, 25, 50, 100];
+  const requestedRadius = Number(searchParams.get("radius") || 25);
+  const radius = radiusOptions.includes(requestedRadius) ? requestedRadius : 25;
+  const randomSeed = searchParams.get("random_seed") || (!userLocation ? `national-${new Date().toISOString().slice(0, 10)}` : undefined);
 
   // Local search input
   const [searchTerm, setSearchTerm] = useState(q);
@@ -227,11 +255,15 @@ export default function Explorer() {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
       if (searchTerm !== q) {
-        updateParams({ q: searchTerm, page: 1 });
+        const nextParams = new URLSearchParams(searchParams);
+        if (searchTerm.trim()) nextParams.set("q", searchTerm.trim());
+        else nextParams.delete("q");
+        nextParams.set("page", "1");
+        setSearchParams(nextParams);
       }
     }, 500);
     return () => clearTimeout(handler);
-  }, [searchTerm]);
+  }, [q, searchParams, searchTerm, setSearchParams]);
 
   const updateParams = (newParams: Record<string, any>) => {
     const current = Object.fromEntries(searchParams.entries());
@@ -274,7 +306,7 @@ export default function Explorer() {
         const { latitude, longitude } = position.coords;
         const locationData = { lat: latitude, lng: longitude };
         setUserLocation(locationData);
-        localStorage.setItem('userLocation', JSON.stringify(locationData));
+        persistLocation(locationData, 'Tu ubicación');
 
         try {
           // Reverse geocoding to get place name
@@ -284,10 +316,11 @@ export default function Explorer() {
           // Prioritize: city -> town -> village -> county -> state
           const name = address.city || address.town || address.village || address.municipality || address.county || address.state || "Tu ubicación";
           setLocationName(name);
-          localStorage.setItem('locationName', name);
+          persistLocation(locationData, name);
         } catch (error) {
           console.error("Error getting location name:", error);
-          setLocationName("Tu ubicación"); // Fallback
+          setLocationName("Tu ubicación");
+          persistLocation(locationData, "Tu ubicación");
         }
 
         setIsLocating(false);
@@ -307,8 +340,7 @@ export default function Explorer() {
   const clearLocation = () => {
     setUserLocation(null);
     setLocationName(null);
-    localStorage.removeItem('userLocation');
-    localStorage.removeItem('locationName');
+    localStorage.removeItem(LOCATION_STORAGE_KEY);
     setLocationError(null);
   };
 
@@ -317,11 +349,10 @@ export default function Explorer() {
   const handleMapConfirm = (coords: { lat: number; lng: number; address?: string }) => {
     const locationData = { lat: coords.lat, lng: coords.lng };
     setUserLocation(locationData);
-    localStorage.setItem('userLocation', JSON.stringify(locationData));
 
     const name = coords.address ? coords.address.split(',').slice(0, 2).join(',') : 'Ubicación seleccionada';
     setLocationName(name);
-    localStorage.setItem('locationName', name);
+    persistLocation(locationData, name);
     setLocationError(null);
 
     updateParams({ page: 1 });
@@ -340,14 +371,18 @@ export default function Explorer() {
     endemic: nativeFilter === 'endemic',
     threatened: selectedConservationStatus === 'threatened',
     order_by: sortBy,
+    random_seed: randomSeed,
     lat: userLocation?.lat,
     lng: userLocation?.lng,
-    radius: 50
+    radius
   });
 
   const speciesList = data?.data || [];
   const pagination = data?.meta?.pagination || data?.pagination || { total: 0, last_page: 1, current_page: 1 };
   const totalPages = pagination.last_page;
+  const occurrenceTotal = data?.meta?.occurrence_total || 0;
+  const catalogTruncated = data?.meta?.catalog_truncated || false;
+  const errorMessage = error instanceof Error ? error.message : "No fue posible consultar las especies. Intenta nuevamente.";
 
   const toggleFilters = () => setFiltersVisible(!filtersVisible);
 
@@ -377,37 +412,52 @@ export default function Explorer() {
     <div className="max-w-7xl mx-auto space-y-6 min-h-screen">
 
       {/* Header & Location Control */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <Badge variant="outline" className="mb-2 border-lime-500 text-lime-700 bg-lime-50">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 min-w-0">
+        <div className="min-w-0">
+          <Badge variant="outline" className="mb-2 max-w-full border-lime-500 text-lime-700 bg-lime-50">
             {userLocation ? (
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {locationName || "Cerca de ti"}</span>
-            ) : "Exploración Nacional"}
+              <span className="flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0" /> {locationName || "Área seleccionada"} · {radius} km</span>
+            ) : "Catálogo Nacional"}
           </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2 leading-none">
-            {getHeaderTitle()}
+          <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2 leading-tight">
+            {userLocation ? "Biodiversidad documentada cerca de ti" : getHeaderTitle()}
           </h1>
-          <p className="text-forest-700/80 text-lg">
-            {userLocation ? `Descubre qué especies viven en ${locationName || "tu zona"}` : "Catálogo general de biodiversidad"}
+          <p className="text-forest-700/80 text-base md:text-lg max-w-3xl">
+            {userLocation
+              ? `Especies con registros documentados dentro de ${radius} km de ${locationName || "la ubicación seleccionada"}.`
+              : "Especies documentadas en Colombia a partir de registros de GBIF, enriquecidas con información de iNaturalist."}
           </p>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex gap-2">
+        <div className="flex flex-col items-stretch md:items-end gap-2 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full md:w-auto">
             {!userLocation ? (
-              <Button onClick={requestLocation} disabled={isLocating} className="bg-lime-600 hover:bg-lime-700 text-white gap-2 shadow-lg shadow-lime-200/50">
+              <Button onClick={requestLocation} disabled={isLocating} className="bg-lime-600 hover:bg-lime-700 text-white gap-2 shadow-lg shadow-lime-200/50 w-full sm:w-auto">
                 {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
                 Mi ubicación
               </Button>
             ) : (
-              <Button variant="outline" onClick={clearLocation} className="text-red-600 border-red-200 hover:bg-red-50 gap-2">
+              <Button variant="outline" onClick={clearLocation} className="text-red-600 border-red-200 hover:bg-red-50 gap-2 w-full sm:w-auto">
                 <X className="h-4 w-4" /> Dejar de usar ubicación
               </Button>
             )}
-            <Button variant="outline" onClick={() => setMapModalOpen(true)} className="border-lime-300 text-lime-700 hover:bg-lime-50 gap-2">
+            <Button variant="outline" onClick={() => setMapModalOpen(true)} className="border-lime-300 text-lime-700 hover:bg-lime-50 gap-2 w-full sm:w-auto">
               <Globe className="h-4 w-4" />
               Elegir en el mapa
             </Button>
+            {userLocation && (
+              <label className="flex items-center justify-between gap-2 rounded-md border border-lime-200 bg-white px-3 h-10 text-sm text-forest-700">
+                <span>Radio</span>
+                <select
+                  aria-label="Radio de búsqueda"
+                  value={radius}
+                  onChange={(event) => updateParams({ radius: Number(event.target.value), page: 1 })}
+                  className="bg-transparent font-semibold text-lime-700 outline-none"
+                >
+                  {radiusOptions.map((option) => <option key={option} value={option}>{option} km</option>)}
+                </select>
+              </label>
+            )}
           </div>
           {locationError && <span className="text-xs text-red-500">{locationError}</span>}
         </div>
@@ -446,6 +496,11 @@ export default function Explorer() {
           >
             <Filter className="h-4 w-4" />
           </Button>
+          {isFetching && !isLoading && (
+            <span className="hidden sm:flex items-center gap-1 text-xs text-forest-500" role="status">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Actualizando
+            </span>
+          )}
         </div>
 
         {/* Expanded Filters - With Close Button */}
@@ -526,7 +581,7 @@ export default function Explorer() {
                     <button
                       onClick={() => {
                         queryClient.invalidateQueries({ queryKey: ['species'] });
-                        updateParams({ order_by: 'random', page: 1 });
+                        updateParams({ order_by: 'random', random_seed: String(Date.now()), page: 1 });
                       }}
                       className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition-all whitespace-nowrap ${sortBy === 'random' ? 'bg-white shadow text-purple-700' : 'text-gray-500 hover:text-gray-900'}`}
                     >
@@ -553,16 +608,26 @@ export default function Explorer() {
         )}
       </div>
 
+      {data?.meta && !showLoading && !isError && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl border border-lime-100 bg-lime-50/60 px-4 py-3 text-sm text-forest-700" role="status">
+          <span>
+            <strong>{pagination.total.toLocaleString('es-CO')}</strong> especies documentadas
+            {occurrenceTotal > 0 && <> a partir de <strong>{occurrenceTotal.toLocaleString('es-CO')}</strong> registros de GBIF</>}.
+          </span>
+          {catalogTruncated && <span className="text-amber-700">Resultado parcial: aplica filtros{userLocation ? " o reduce el radio" : " para acotar el catálogo"}.</span>}
+        </div>
+      )}
+
       {/* Grid */}
       <div>
         {showLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 min-[430px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : isError ? (
           <Alert variant="destructive">
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{String(error)}</AlertDescription>
+            <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
         ) : speciesList.length === 0 ? (
           <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
@@ -571,7 +636,7 @@ export default function Explorer() {
           </div>
         ) : (
           <div className="space-y-8">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 min-[430px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {speciesList.map((species: Taxon, index: number) => (
                 <SpeciesCard key={`${species.id}-${index}`} species={species} />
               ))}
@@ -586,8 +651,8 @@ export default function Explorer() {
                     className={currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                   />
                 </PaginationItem>
-                <span className="text-sm text-gray-500 px-4">
-                  Página {currentPage}
+                <span className="text-sm text-gray-500 px-2 sm:px-4 whitespace-nowrap">
+                  Página {currentPage} de {totalPages}
                 </span>
                 <PaginationItem>
                   <PaginationNext
