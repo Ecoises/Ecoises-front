@@ -63,7 +63,8 @@ export const useSpeciesDetail = (id: string, options?: { enabled?: boolean }) =>
       return data.data;
     },
     enabled: options?.enabled !== false && !!id,
-    staleTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 5 * 1000, // 5 seconds
+    refetchOnMount: 'always',
   });
 };
 
@@ -75,6 +76,6 @@ export const useRelatedSpecies = (id: string, options?: { enabled?: boolean }) =
       return data.data;
     },
     enabled: options?.enabled !== false && !!id,
-    staleTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

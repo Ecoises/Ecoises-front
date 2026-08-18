@@ -95,15 +95,14 @@ const SpeciesDetail = () => {
   const defaultPhoto = species.default_photo || (gallery.length > 0 ? gallery[0] : null);
   const ecologyProfile = species.ecology_profile;
   const ecologicalRole = ecologyProfile?.role;
-  // Este bloque solo comunica una funcion ecologica respaldada por evidencia.
-  // Habitat, dieta y descripciones generales pertenecen a Historia natural.
-  const ecologicalHighlight = ecologicalRole || null;
-  const habitat = ecologyProfile?.habitat && ['es', null, undefined].includes(ecologyProfile.habitat.language)
-    ? ecologyProfile.habitat
-    : null;
-  const diet = ecologyProfile?.diet && ['es', null, undefined].includes(ecologyProfile.diet.language)
-    ? ecologyProfile.diet
-    : null;
+  const habitat = ecologyProfile?.habitat || null;
+  const diet = ecologyProfile?.diet || null;
+  const naturalHistory = ecologyProfile?.natural_history || null;
+
+  const ecologicalHighlight = ecologicalRole || 
+    (habitat ? { name: 'Hábitat y Nicho Ecológico', text: habitat.text, provider: habitat.provider, source_url: habitat.source_url } : null) || 
+    (diet ? { name: 'Dieta y Red Trófica', text: diet.text, provider: diet.provider, source_url: diet.source_url } : null) ||
+    (naturalHistory ? { name: 'Historia Natural', text: naturalHistory.text, provider: naturalHistory.provider, source_url: naturalHistory.source_url } : null);
 
   // Determinar la foto activa para mostrar su atribución correcta
   const activePhotoData = gallery.find(img => getHighResUrl(img.url || img.medium_url) === activeImage) || defaultPhoto;
@@ -337,14 +336,15 @@ const SpeciesDetail = () => {
           </div>
 
           <Tabs defaultValue="info" className="w-full">
-            <TabsList className="bg-lime-50 p-1 rounded-xl">
-              <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-white">
+            <TabsList className="bg-lime-50 p-1 rounded-xl w-full grid grid-cols-3">
+              <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-white font-medium">
                 Taxonomía
               </TabsTrigger>
-              <TabsTrigger value="habitat" className="rounded-lg data-[state=active]:bg-white">
-                Historia natural
+              <TabsTrigger value="habitat" className="rounded-lg data-[state=active]:bg-white font-medium flex items-center justify-center gap-1.5">
+                <TreePine className="h-4 w-4 text-lime-700" />
+                Ecología e Historia
               </TabsTrigger>
-              <TabsTrigger value="atribution" className="rounded-lg data-[state=active]:bg-white">
+              <TabsTrigger value="atribution" className="rounded-lg data-[state=active]:bg-white font-medium">
                 Atribución
               </TabsTrigger>
             </TabsList>
@@ -367,19 +367,55 @@ const SpeciesDetail = () => {
                     <div className="space-y-4">
                       {habitat && (
                         <div>
-                          <h4 className="font-semibold text-forest-900 text-sm">Hábitat</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-forest-900 text-sm">Hábitat</h4>
+                            {habitat.language && habitat.language !== 'es' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
+                                {habitat.language}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-forest-700 text-sm leading-relaxed mt-1">{habitat.text}</p>
+                          {habitat.provider && (
+                            <p className="text-forest-500 text-xs mt-0.5 italic">Fuente: {habitat.provider}</p>
+                          )}
                         </div>
                       )}
                       {diet && (
                         <div>
-                          <h4 className="font-semibold text-forest-900 text-sm">Dieta</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-forest-900 text-sm">Dieta</h4>
+                            {diet.language && diet.language !== 'es' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
+                                {diet.language}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-forest-700 text-sm leading-relaxed mt-1">{diet.text}</p>
+                          {diet.provider && (
+                            <p className="text-forest-500 text-xs mt-0.5 italic">Fuente: {diet.provider}</p>
+                          )}
                         </div>
                       )}
-                      {!habitat && !diet && (
+                      {naturalHistory && !habitat && !diet && (
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-forest-900 text-sm">Historia Natural</h4>
+                            {naturalHistory.language && naturalHistory.language !== 'es' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
+                                {naturalHistory.language}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-forest-700 text-sm leading-relaxed mt-1">{naturalHistory.text}</p>
+                          {naturalHistory.provider && (
+                            <p className="text-forest-500 text-xs mt-0.5 italic">Fuente: {naturalHistory.provider}</p>
+                          )}
+                        </div>
+                      )}
+                      {!habitat && !diet && !naturalHistory && (
                         <p className="text-forest-600 text-sm">
-                          Aún no hay información ecológica verificable en español para esta especie.
+                          Aún no hay información ecológica verificable para esta especie.
                         </p>
                       )}
                     </div>
@@ -500,17 +536,15 @@ const SpeciesDetail = () => {
                         </a>
                       )}
 
-                      {ecologyProfile?.eol_url && (
-                        <a
-                          href={ecologyProfile.eol_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-lime-300 text-forest-700 text-sm font-medium hover:bg-lime-50 transition-colors"
-                        >
-                          <TreePine className="h-4 w-4" />
-                          Encyclopedia of Life
-                        </a>
-                      )}
+                      <a
+                        href={ecologyProfile?.eol_url || `https://eol.org/search?q=${encodeURIComponent(species.scientific_name)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-lime-300 text-forest-700 text-sm font-medium hover:bg-lime-50 transition-colors shadow-sm"
+                      >
+                        <TreePine className="h-4 w-4 text-lime-600" />
+                        Encyclopedia of Life
+                      </a>
                     </div>
                   </div>
 
