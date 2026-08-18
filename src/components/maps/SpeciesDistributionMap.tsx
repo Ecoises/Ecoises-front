@@ -41,7 +41,7 @@ const SpeciesDistributionMap = ({
 
     // iNaturalist tile URL for heatmap with bright red/orange color for better visibility
     // Color: #FF4500 (OrangeRed) encoded as %23FF4500
-    const iNatTileUrl = `https://api.inaturalist.org/v1/colored_heatmap/{z}/{x}/{y}.png?taxon_id=${taxonId}&color=%23FF4500`;
+    const iNatTileUrl = `https://tiles.inaturalist.org/v1/colored_heatmap/{z}/{x}/{y}.png?taxon_id=${taxonId}&color=%23FF4500`;
 
     return (
         <div className="h-full w-full rounded-xl overflow-hidden border border-lime-200 shadow-md relative z-0">

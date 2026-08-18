@@ -48,7 +48,6 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
     // Si es random, NO cachear y siempre refetch
     staleTime: isRandom ? 0 : 5 * 60 * 1000,
     gcTime: isRandom ? 0 : 5 * 60 * 1000,
-    placeholderData: (previousData) => previousData,
     retry: 1,
     refetchOnMount: isRandom ? 'always' : true,
   });

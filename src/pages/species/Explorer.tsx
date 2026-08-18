@@ -138,7 +138,11 @@ const SpeciesCard = ({ species }: { species: Taxon }) => {
   const establishment = getEstablishmentBadge(species);
 
   return (
-    <Link to={`/taxa/${species.id}`} state={{ from: location }} className="w-full block h-full">
+    <Link
+      to={`/taxa/${species.id}`}
+      state={{ from: location, explorerCommonName: species.common_name }}
+      className="w-full block h-full"
+    >
       <Card className="w-full overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full cursor-pointer flex flex-col group border-lime-100/60 bg-white">
         <div className="relative h-52 min-[430px]:h-48 bg-gray-100 overflow-hidden">
           {species.default_photo ? (
@@ -380,8 +384,6 @@ export default function Explorer() {
   const speciesList = data?.data || [];
   const pagination = data?.meta?.pagination || data?.pagination || { total: 0, last_page: 1, current_page: 1 };
   const totalPages = pagination.last_page;
-  const occurrenceTotal = data?.meta?.occurrence_total || 0;
-  const catalogTruncated = data?.meta?.catalog_truncated || false;
   const errorMessage = error instanceof Error ? error.message : "No fue posible consultar las especies. Intenta nuevamente.";
 
   const toggleFilters = () => setFiltersVisible(!filtersVisible);
@@ -403,16 +405,14 @@ export default function Explorer() {
     return "Especies de Colombia";
   };
 
-  // Determines if we should show skeleton loading
-  // FIX: Only show full skeleton on initial load (isLoading). 
-  // Ignore isFetching to avoid layout thrashing when returning from cache.
-  const showLoading = isLoading;
+  // Mostrar el estado de carga también al buscar, filtrar, paginar o cambiar ubicación.
+  const showLoading = isLoading || isFetching;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 min-h-screen">
 
       {/* Header & Location Control */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 min-w-0">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] items-end gap-4 min-w-0">
         <div className="min-w-0">
           <Badge variant="outline" className="mb-2 max-w-full border-lime-500 text-lime-700 bg-lime-50">
             {userLocation ? (
@@ -424,29 +424,29 @@ export default function Explorer() {
           </h1>
           <p className="text-forest-700/80 text-base md:text-lg max-w-3xl">
             {userLocation
-              ? `Especies con registros documentados dentro de ${radius} km de ${locationName || "la ubicación seleccionada"}.`
-              : "Especies documentadas en Colombia a partir de registros de GBIF, enriquecidas con información de iNaturalist."}
+              ? `Descubre las especies registradas alrededor de ${locationName || "la ubicación seleccionada"}.`
+              : "Explora y conoce la biodiversidad de Colombia."}
           </p>
         </div>
 
-        <div className="flex flex-col items-stretch md:items-end gap-2 w-full md:w-auto">
-          <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full md:w-auto">
+        <div className="flex flex-col items-start lg:items-end gap-2 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             {!userLocation ? (
-              <Button onClick={requestLocation} disabled={isLocating} className="bg-lime-600 hover:bg-lime-700 text-white gap-2 shadow-lg shadow-lime-200/50 w-full sm:w-auto">
+              <Button size="sm" onClick={requestLocation} disabled={isLocating} className="bg-lime-600 hover:bg-lime-700 text-white gap-2 shadow-sm">
                 {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
                 Mi ubicación
               </Button>
             ) : (
-              <Button variant="outline" onClick={clearLocation} className="text-red-600 border-red-200 hover:bg-red-50 gap-2 w-full sm:w-auto">
-                <X className="h-4 w-4" /> Dejar de usar ubicación
+              <Button size="sm" variant="outline" onClick={clearLocation} className="text-red-600 border-red-200 hover:bg-red-50 gap-2">
+                <X className="h-4 w-4" /> Quitar ubicación
               </Button>
             )}
-            <Button variant="outline" onClick={() => setMapModalOpen(true)} className="border-lime-300 text-lime-700 hover:bg-lime-50 gap-2 w-full sm:w-auto">
+            <Button size="sm" variant="outline" onClick={() => setMapModalOpen(true)} className="border-lime-300 text-lime-700 hover:bg-lime-50 gap-2">
               <Globe className="h-4 w-4" />
-              Elegir en el mapa
+              Cambiar en el mapa
             </Button>
             {userLocation && (
-              <label className="flex items-center justify-between gap-2 rounded-md border border-lime-200 bg-white px-3 h-10 text-sm text-forest-700">
+              <label className="flex items-center gap-2 rounded-md border border-lime-200 bg-white px-3 h-9 text-sm text-forest-700">
                 <span>Radio</span>
                 <select
                   aria-label="Radio de búsqueda"
@@ -496,11 +496,6 @@ export default function Explorer() {
           >
             <Filter className="h-4 w-4" />
           </Button>
-          {isFetching && !isLoading && (
-            <span className="hidden sm:flex items-center gap-1 text-xs text-forest-500" role="status">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Actualizando
-            </span>
-          )}
         </div>
 
         {/* Expanded Filters - With Close Button */}
@@ -607,16 +602,6 @@ export default function Explorer() {
           </div>
         )}
       </div>
-
-      {data?.meta && !showLoading && !isError && (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl border border-lime-100 bg-lime-50/60 px-4 py-3 text-sm text-forest-700" role="status">
-          <span>
-            <strong>{pagination.total.toLocaleString('es-CO')}</strong> especies documentadas
-            {occurrenceTotal > 0 && <> a partir de <strong>{occurrenceTotal.toLocaleString('es-CO')}</strong> registros de GBIF</>}.
-          </span>
-          {catalogTruncated && <span className="text-amber-700">Resultado parcial: aplica filtros{userLocation ? " o reduce el radio" : " para acotar el catálogo"}.</span>}
-        </div>
-      )}
 
       {/* Grid */}
       <div>

@@ -24,6 +24,7 @@ const SpeciesDetail = () => {
   const { data: relatedSpecies, isLoading: isLoadingRelated } = useRelatedSpecies(id!, { enabled: !!id });
   const [activeImage, setActiveImage] = useState("")
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
 
   // Cerrar con tecla escape
   useEffect(() => {
@@ -46,6 +47,7 @@ const SpeciesDetail = () => {
 
   useEffect(() => {
     if (species) {
+      setIsSummaryExpanded(false);
       if (species.gallery && species.gallery.length > 0) {
         // Prefer the first gallery image (usually original quality in API references)
         // or transform the URL if it's not
@@ -85,8 +87,23 @@ const SpeciesDetail = () => {
   }
 
   // Construct gallery from API data
+  const explorerCommonName = typeof location.state?.explorerCommonName === 'string'
+    ? location.state.explorerCommonName.trim()
+    : '';
+  const displayCommonName = explorerCommonName || species.common_name || species.scientific_name;
   const gallery = species.gallery || (species.default_photo ? [species.default_photo] : []);
   const defaultPhoto = species.default_photo || (gallery.length > 0 ? gallery[0] : null);
+  const ecologyProfile = species.ecology_profile;
+  const ecologicalRole = ecologyProfile?.role;
+  // Este bloque solo comunica una funcion ecologica respaldada por evidencia.
+  // Habitat, dieta y descripciones generales pertenecen a Historia natural.
+  const ecologicalHighlight = ecologicalRole || null;
+  const habitat = ecologyProfile?.habitat && ['es', null, undefined].includes(ecologyProfile.habitat.language)
+    ? ecologyProfile.habitat
+    : null;
+  const diet = ecologyProfile?.diet && ['es', null, undefined].includes(ecologyProfile.diet.language)
+    ? ecologyProfile.diet
+    : null;
 
   // Determinar la foto activa para mostrar su atribución correcta
   const activePhotoData = gallery.find(img => getHighResUrl(img.url || img.medium_url) === activeImage) || defaultPhoto;
@@ -123,7 +140,7 @@ const SpeciesDetail = () => {
           >
             <img
               src={activeImage || "/placeholder.svg"}
-              alt={species.common_name}
+              alt={displayCommonName}
               className="w-full aspect-[4/3] md:aspect-[4/4] object-cover bg-gray-100 transition-transform duration-500 group-hover:scale-105"
             />
 
@@ -157,7 +174,7 @@ const SpeciesDetail = () => {
                   >
                     <img
                       src={thumbUrl}
-                      alt={`${species.common_name} - imagen ${index + 1}`}
+                      alt={`${displayCommonName} - imagen ${index + 1}`}
                       className="w-full aspect-square object-cover"
                     />
                   </button>
@@ -170,7 +187,7 @@ const SpeciesDetail = () => {
         {/* Right Column: Details */}
         <div className="lg:col-span-1 space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-forest-950 mb-1 capitalize">{species.common_name || species.scientific_name}</h1>
+            <h1 className="text-3xl font-bold text-forest-950 mb-1 capitalize">{displayCommonName}</h1>
             <p className="text-forest-700 italic mb-4">{species.scientific_name}</p>
 
             <div className="flex flex-wrap gap-2 mb-4">
@@ -261,18 +278,62 @@ const SpeciesDetail = () => {
               const summary = species.api_references?.[0]?.data?.wikipedia_summary || species.wikipedia_summary;
               if (summary && summary.trim() !== '') {
                 return (
-                  <div
-                    className="text-forest-800 mb-6 text-justify prose prose-sm max-w-none prose-lime"
-                    dangerouslySetInnerHTML={{ __html: summary }}
-                  />
+                  <div className="mb-6">
+                    <div
+                      className={`text-forest-800 text-justify prose prose-sm max-w-none prose-lime ${
+                        isSummaryExpanded ? '' : 'line-clamp-4'
+                      }`}
+                      dangerouslySetInnerHTML={{ __html: summary }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
+                      className="mt-2 text-sm font-semibold text-lime-700 hover:text-lime-800"
+                    >
+                      {isSummaryExpanded ? 'Ver menos' : 'Leer más'}
+                    </button>
+                  </div>
                 );
               }
               return (
                 <p className="text-forest-800 mb-6 text-justify">
-                  <strong>{species.common_name || species.scientific_name}</strong> ({species.scientific_name}) es una especie perteneciente a la familia <strong>{species.family}</strong>.
+                  <strong>{displayCommonName}</strong> ({species.scientific_name}) es una especie perteneciente a la familia <strong>{species.family}</strong>.
                 </p>
               );
             })()}
+
+            {ecologicalHighlight && (
+              <Card className="mb-6 overflow-hidden border-lime-200 bg-gradient-to-br from-lime-50/90 to-emerald-50/70 shadow-sm">
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-white p-2.5 text-lime-700 shadow-sm ring-1 ring-lime-100">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-semibold text-forest-950">Su papel en la naturaleza</h3>
+                        {ecologicalRole?.name && (
+                          <span className="rounded-full bg-lime-200/70 px-2.5 py-0.5 text-xs font-semibold text-lime-900">
+                            {ecologicalRole.name}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-forest-800">
+                        {ecologicalHighlight.text}
+                      </p>
+                      <a
+                        href={ecologicalHighlight.source_url || ecologyProfile.eol_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex text-xs font-medium text-forest-600 underline decoration-lime-400 underline-offset-4 hover:text-forest-900"
+                      >
+                        Fuente: {ecologicalHighlight.provider || 'Encyclopedia of Life'}
+                      </a>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <Tabs defaultValue="info" className="w-full">
@@ -281,7 +342,7 @@ const SpeciesDetail = () => {
                 Taxonomía
               </TabsTrigger>
               <TabsTrigger value="habitat" className="rounded-lg data-[state=active]:bg-white">
-                + Info
+                Historia natural
               </TabsTrigger>
               <TabsTrigger value="atribution" className="rounded-lg data-[state=active]:bg-white">
                 Atribución
@@ -304,14 +365,23 @@ const SpeciesDetail = () => {
                       Ecología
                     </h3>
                     <div className="space-y-4">
-                      <div>
-                        <h4 className="font-semibold text-forest-900 text-sm">Hábitat</h4>
-                        <p className="text-forest-700 text-sm italic mt-1">Información no disponible por el momento</p>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-forest-900 text-sm">Dieta</h4>
-                        <p className="text-forest-700 text-sm italic mt-1">Información no disponible por el momento</p>
-                      </div>
+                      {habitat && (
+                        <div>
+                          <h4 className="font-semibold text-forest-900 text-sm">Hábitat</h4>
+                          <p className="text-forest-700 text-sm leading-relaxed mt-1">{habitat.text}</p>
+                        </div>
+                      )}
+                      {diet && (
+                        <div>
+                          <h4 className="font-semibold text-forest-900 text-sm">Dieta</h4>
+                          <p className="text-forest-700 text-sm leading-relaxed mt-1">{diet.text}</p>
+                        </div>
+                      )}
+                      {!habitat && !diet && (
+                        <p className="text-forest-600 text-sm">
+                          Aún no hay información ecológica verificable en español para esta especie.
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -429,6 +499,18 @@ const SpeciesDetail = () => {
                           Wikipedia
                         </a>
                       )}
+
+                      {ecologyProfile?.eol_url && (
+                        <a
+                          href={ecologyProfile.eol_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-lime-300 text-forest-700 text-sm font-medium hover:bg-lime-50 transition-colors"
+                        >
+                          <TreePine className="h-4 w-4" />
+                          Encyclopedia of Life
+                        </a>
+                      )}
                     </div>
                   </div>
 
@@ -450,12 +532,12 @@ const SpeciesDetail = () => {
             {(() => {
               const externalId = species?.api_references?.find(
                 (ref: any) => ref.api_source === 'inaturalist'
-              )?.external_id || species?.id;
+              )?.external_id || species?.inaturalist_id || species?.inat_taxon_id || species?.id;
 
               return (
                 <SpeciesDistributionMap
                   taxonId={externalId}
-                  speciesName={species.common_name || species.scientific_name}
+                  speciesName={displayCommonName}
                   center={[4.5709, -74.2973]} // Colombia center
                   zoom={6}
                 />
@@ -515,7 +597,7 @@ const SpeciesDetail = () => {
       </div>
 
       {/* Recent Observations */}
-      <RecentObservations taxonId={Number(id)} speciesName={species.common_name || species.scientific_name} />
+      <RecentObservations taxonId={Number(id)} speciesName={displayCommonName} />
 
       {/* Fullscreen Image Viewer */}
       <AnimatePresence>
@@ -547,7 +629,7 @@ const SpeciesDetail = () => {
             >
               <img
                 src={activeImage || "/placeholder.svg"}
-                alt={species.common_name}
+                alt={displayCommonName}
                 className="max-w-full max-h-full object-contain rounded-lg shadow-2xl pointer-events-auto" // Re-enable pointer events for the image if we want context menu etc
               />
 
