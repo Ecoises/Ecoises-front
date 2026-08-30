@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, Calendar, ArrowLeft, Circle, Clock, Ruler, Music, Star, Eye, Info, TreePine, Sparkles, CornerRightDown, Loader2, X, Maximize2, User, BookOpen, Database } from "lucide-react"
+import { MapPin, Calendar, ArrowLeft, Utensils, Star, Eye, Info, TreePine, Sparkles, CornerRightDown, Loader2, X, Maximize2, User, BookOpen, Database } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -97,12 +97,35 @@ const SpeciesDetail = () => {
   const ecologicalRole = ecologyProfile?.role;
   const habitat = ecologyProfile?.habitat || null;
   const diet = ecologyProfile?.diet || null;
-  const naturalHistory = ecologyProfile?.natural_history || null;
+  const ecology = ecologyProfile?.ecology || null;
+  const eolSummary = ecologyProfile?.natural_history || null;
+  const summary = species.api_references?.find((ref: any) => ref.api_source === 'inaturalist')?.data?.wikipedia_summary
+    || species.wikipedia_summary
+    || eolSummary?.text
+    || null;
+  const comparableText = (value?: string | null) => (value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+  const isDuplicateText = (first?: string | null, second?: string | null) => {
+    const normalizedFirst = comparableText(first);
+    const normalizedSecond = comparableText(second);
 
-  const ecologicalHighlight = ecologicalRole || 
-    (habitat ? { name: 'Hábitat y Nicho Ecológico', text: habitat.text, provider: habitat.provider, source_url: habitat.source_url } : null) || 
-    (diet ? { name: 'Dieta y Red Trófica', text: diet.text, provider: diet.provider, source_url: diet.source_url } : null) ||
-    (naturalHistory ? { name: 'Historia Natural', text: naturalHistory.text, provider: naturalHistory.provider, source_url: naturalHistory.source_url } : null);
+    if (!normalizedFirst || !normalizedSecond) return false;
+    if (normalizedFirst === normalizedSecond) return true;
+
+    const minimumLength = Math.min(normalizedFirst.length, normalizedSecond.length);
+    return minimumLength >= 120 && (
+      normalizedFirst.includes(normalizedSecond) || normalizedSecond.includes(normalizedFirst)
+    );
+  };
+  const naturalHistoryCandidate = ecologyProfile?.natural_history || null;
+  const naturalHistory = naturalHistoryCandidate && !isDuplicateText(naturalHistoryCandidate.text, summary)
+    ? naturalHistoryCandidate
+    : null;
+
+  const ecologicalHighlight = ecologicalRole;
 
   // Determinar la foto activa para mostrar su atribución correcta
   const activePhotoData = gallery.find(img => getHighResUrl(img.url || img.medium_url) === activeImage) || defaultPhoto;
@@ -274,7 +297,6 @@ const SpeciesDetail = () => {
             </div>
 
             {(() => {
-              const summary = species.api_references?.[0]?.data?.wikipedia_summary || species.wikipedia_summary;
               if (summary && summary.trim() !== '') {
                 return (
                   <div className="mb-6">
@@ -320,14 +342,6 @@ const SpeciesDetail = () => {
                       <p className="mt-2 text-sm leading-relaxed text-forest-800">
                         {ecologicalHighlight.text}
                       </p>
-                      <a
-                        href={ecologicalHighlight.source_url || ecologyProfile.eol_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 inline-flex text-xs font-medium text-forest-600 underline decoration-lime-400 underline-offset-4 hover:text-forest-900"
-                      >
-                        Fuente: {ecologicalHighlight.provider || 'Encyclopedia of Life'}
-                      </a>
                     </div>
                   </div>
                 </CardContent>
@@ -341,8 +355,7 @@ const SpeciesDetail = () => {
                 Taxonomía
               </TabsTrigger>
               <TabsTrigger value="habitat" className="rounded-lg data-[state=active]:bg-white font-medium flex items-center justify-center gap-1.5">
-                <TreePine className="h-4 w-4 text-lime-700" />
-                Ecología e Historia
+                Historia Natural
               </TabsTrigger>
               <TabsTrigger value="atribution" className="rounded-lg data-[state=active]:bg-white font-medium">
                 Atribución
@@ -357,17 +370,18 @@ const SpeciesDetail = () => {
 
             <TabsContent value="habitat" className="animate-fade-in mt-4">
               <Card className="border-lime-200 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Información Ecológica */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-forest-950 flex items-center gap-2 pb-2 border-b border-lime-100">
-                      <TreePine className="h-5 w-5 text-lime-600" />
-                      Ecología
-                    </h3>
-                    <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Contenedor principal que adapta columnas según datos disponibles */}
+                  {(habitat || diet || naturalHistory) ? (
+                    <div className={`
+                      grid gap-6
+                      ${habitat && diet ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}
+                    `}>
+                      {/* Hábitat */}
                       {habitat && (
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 pb-2 border-b border-lime-100">
+                            <TreePine className="h-5 w-5 text-lime-600" />
                             <h4 className="font-semibold text-forest-900 text-sm">Hábitat</h4>
                             {habitat.language && habitat.language !== 'es' && (
                               <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
@@ -375,15 +389,15 @@ const SpeciesDetail = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-forest-700 text-sm leading-relaxed mt-1">{habitat.text}</p>
-                          {habitat.provider && (
-                            <p className="text-forest-500 text-xs mt-0.5 italic">Fuente: {habitat.provider}</p>
-                          )}
+                          <p className="text-forest-700 text-sm leading-relaxed">{habitat.text}</p>
                         </div>
                       )}
+
+                      {/* Dieta */}
                       {diet && (
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 pb-2 border-b border-lime-100">
+                            <Utensils className="h-5 w-5 text-lime-600" />
                             <h4 className="font-semibold text-forest-900 text-sm">Dieta</h4>
                             {diet.language && diet.language !== 'es' && (
                               <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
@@ -391,15 +405,15 @@ const SpeciesDetail = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-forest-700 text-sm leading-relaxed mt-1">{diet.text}</p>
-                          {diet.provider && (
-                            <p className="text-forest-500 text-xs mt-0.5 italic">Fuente: {diet.provider}</p>
-                          )}
+                          <p className="text-forest-700 text-sm leading-relaxed">{diet.text}</p>
                         </div>
                       )}
-                      {naturalHistory && !habitat && !diet && (
-                        <div>
-                          <div className="flex items-center gap-2">
+
+                      {/* Historia Natural */}
+                      {naturalHistory && (
+                        <div className="col-span-full space-y-2">
+                          <div className="flex items-center gap-2 pb-2 border-b border-lime-100">
+                            <BookOpen className="h-5 w-5 text-lime-600" />
                             <h4 className="font-semibold text-forest-900 text-sm">Historia Natural</h4>
                             {naturalHistory.language && naturalHistory.language !== 'es' && (
                               <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
@@ -407,70 +421,31 @@ const SpeciesDetail = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-forest-700 text-sm leading-relaxed mt-1">{naturalHistory.text}</p>
-                          {naturalHistory.provider && (
-                            <p className="text-forest-500 text-xs mt-0.5 italic">Fuente: {naturalHistory.provider}</p>
-                          )}
-                        </div>
-                      )}
-                      {!habitat && !diet && !naturalHistory && (
-                        <p className="text-forest-600 text-sm">
-                          Aún no hay información ecológica verificable para esta especie.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Datos del Catálogo Local */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-forest-950 flex items-center gap-2 pb-2 border-b border-lime-100">
-                      <Info className="h-5 w-5 text-lime-600" />
-                      Detalles del Catálogo
-                    </h3>
-                    <div className="space-y-4">
-                      {species.taxon_author && (
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 rounded-lg bg-lime-50 text-lime-700 mt-0.5 shadow-sm">
-                            <User className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-forest-900 text-sm">Autor de la descripción</h4>
-                            <p className="text-forest-750 text-sm mt-0.5">
-                              {species.taxon_author}
-                            </p>
-                          </div>
+                          <p className="text-forest-700 text-sm leading-relaxed">{naturalHistory.text}</p>
                         </div>
                       )}
 
-                      {species.inventory_author && (
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 rounded-lg bg-lime-50 text-lime-700 mt-0.5 shadow-sm">
-                            <BookOpen className="h-4 w-4" />
+                      {/* Ecología y comportamiento */}
+                      {ecology && !isDuplicateText(ecology.text, summary) && !isDuplicateText(ecology.text, naturalHistory?.text) && (
+                        <div className="col-span-full space-y-2">
+                          <div className="flex items-center gap-2 pb-2 border-b border-lime-100">
+                            <BookOpen className="h-5 w-5 text-lime-600" />
+                            <h4 className="font-semibold text-forest-900 text-sm">Ecología y comportamiento</h4>
+                            {ecology.language && ecology.language !== 'es' && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
+                                {ecology.language}
+                              </span>
+                            )}
                           </div>
-                          <div>
-                            <h4 className="font-semibold text-forest-900 text-sm">Registrado por</h4>
-                            <p className="text-forest-750 text-sm mt-0.5">
-                              {species.inventory_author}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {species.local_records_count != null && species.local_records_count > 0 && (
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 rounded-lg bg-lime-50 text-lime-700 mt-0.5 shadow-sm">
-                            <Database className="h-4 w-4" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-forest-900 text-sm">Registros locales (campus)</h4>
-                            <p className="text-forest-750 text-sm mt-0.5">
-                              {species.local_records_count} {species.local_records_count === 1 ? 'registro documentado' : 'registros documentados'}
-                            </p>
-                          </div>
+                          <p className="text-forest-700 text-sm leading-relaxed">{ecology.text}</p>
                         </div>
                       )}
                     </div>
-                  </div>
+                  ) : (
+                    <p className="text-forest-600 text-sm">
+                      Aún no hay información ecológica verificable para esta especie.
+                    </p>
+                  )}
                 </div>
               </Card>
             </TabsContent>
@@ -479,22 +454,99 @@ const SpeciesDetail = () => {
               <Card className="border-lime-200 p-6">
                 <div className="space-y-6">
 
-                  {/* Cita bibliográfica local */}
-                  <div>
-                    <h3 className="font-semibold text-forest-900 mb-2 flex items-center gap-2">
-                      <span className="inline-block w-2 h-2 rounded-full bg-lime-500" />
-                      Fuente del inventario local
-                    </h3>
-                    {species.attribution ? (
-                      <blockquote className="border-l-4 border-lime-400 pl-4 py-2 bg-lime-50 rounded-r-lg">
-                        <p className="text-forest-800 text-sm leading-relaxed italic">
-                          {species.attribution}
-                        </p>
-                      </blockquote>
-                    ) : (
-                      <p className="text-forest-500 text-sm italic">Sin atribución registrada para esta especie.</p>
-                    )}
-                  </div>
+                  {/* Créditos de información ecológica (EOL) */}
+                  {ecologyProfile && (
+                    <div>
+                      <h3 className="font-semibold text-forest-900 mb-3 flex items-center gap-2">
+                        <span className="inline-block w-2 h-2 rounded-full bg-lime-500" />
+                        Créditos de información ecológica (Encyclopedia of Life)
+                      </h3>
+                      <div className="bg-lime-50/70 border border-lime-200/80 rounded-xl p-4 space-y-3">
+                        {ecologicalRole && (
+                          <div className="text-xs text-forest-800">
+                            <span className="font-semibold text-forest-900">Rol ecológico: </span>
+                            {ecologicalRole.provider || 'Encyclopedia of Life'}
+                            {ecologicalRole.license && (
+                              <span className="text-forest-600 ml-1">({ecologicalRole.license})</span>
+                            )}
+                          </div>
+                        )}
+                        {habitat?.provider && (
+                          <div className="text-xs text-forest-800">
+                            <span className="font-semibold text-forest-900">Datos de hábitat: </span>
+                            {habitat.provider}
+                            {habitat.rights_holder && ` · ${habitat.rights_holder}`}
+                            {habitat.license && <span className="text-forest-600 ml-1">({habitat.license})</span>}
+                          </div>
+                        )}
+                        {diet?.provider && (
+                          <div className="text-xs text-forest-800">
+                            <span className="font-semibold text-forest-900">Datos de dieta: </span>
+                            {diet.provider}
+                            {diet.rights_holder && ` · ${diet.rights_holder}`}
+                            {diet.license && <span className="text-forest-600 ml-1">({diet.license})</span>}
+                          </div>
+                        )}
+                        {naturalHistory?.provider && (
+                          <div className="text-xs text-forest-800">
+                            <span className="font-semibold text-forest-900">Historia natural: </span>
+                            {naturalHistory.provider}
+                            {naturalHistory.rights_holder && ` · ${naturalHistory.rights_holder}`}
+                            {naturalHistory.license && <span className="text-forest-600 ml-1">({naturalHistory.license})</span>}
+                          </div>
+                        )}
+                        {ecologyProfile.eol_url && (
+                          <div className="pt-1">
+                            <a
+                              href={ecologyProfile.eol_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-medium text-lime-700 hover:text-lime-900 underline inline-flex items-center gap-1"
+                            >
+                              Ver ficha completa en Encyclopedia of Life (EOL)
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cita bibliográfica / Inventario local */}
+                  {(species.attribution || species.taxon_author || species.inventory_author || (species.local_records_count != null && species.local_records_count > 0)) && (
+                    <div>
+                      <h3 className="font-semibold text-forest-900 mb-3 flex items-center gap-2">
+                        <span className="inline-block w-2 h-2 rounded-full bg-forest-500" />
+                        Inventario y registro local
+                      </h3>
+                      <div className="bg-forest-50/50 border border-forest-100 rounded-xl p-4 space-y-3">
+                        {species.attribution && (
+                          <blockquote className="border-l-3 border-lime-500 pl-3 py-1">
+                            <p className="text-forest-800 text-xs italic leading-relaxed">
+                              {species.attribution}
+                            </p>
+                          </blockquote>
+                        )}
+                        {species.taxon_author && (
+                          <div className="text-xs text-forest-800">
+                            <span className="font-semibold text-forest-900">Autor de la descripción: </span>
+                            {species.taxon_author}
+                          </div>
+                        )}
+                        {species.inventory_author && (
+                          <div className="text-xs text-forest-800">
+                            <span className="font-semibold text-forest-900">Registrado por: </span>
+                            {species.inventory_author}
+                          </div>
+                        )}
+                        {species.local_records_count != null && species.local_records_count > 0 && (
+                          <div className="text-xs text-forest-800">
+                            <span className="font-semibold text-forest-900">Registros en campus: </span>
+                            {species.local_records_count} {species.local_records_count === 1 ? 'registro documentado' : 'registros documentados'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <hr className="border-lime-100" />
 
