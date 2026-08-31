@@ -18,6 +18,7 @@ import { getEducationalContent, startContent, EducationalContent } from "@/api/s
 import { CourseProgress } from "@/components/learn/CourseProgress";
 import { LessonCard } from "@/components/learn/LessonCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { ContentFeedback } from "@/components/learn/ContentFeedback";
 
 const CourseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -420,6 +421,11 @@ const CourseDetail = () => {
           </div>
         </div>
       </section>
+      <ContentFeedback
+        contentId={content.id}
+        initialRating={content.enrollment?.user_rating}
+        initialComment={content.enrollment?.user_feedback}
+      />
     </div>
   );
 };

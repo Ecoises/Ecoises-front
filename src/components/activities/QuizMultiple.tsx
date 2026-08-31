@@ -1,39 +1,45 @@
 import { useState } from "react";
 import { CheckCircle2, XCircle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Activity } from "@/api/services/educationalContentService";
+import { Activity, ActivityAnswers, ActivityAttemptResponse } from "@/api/services/educationalContentService";
 import { cn } from "@/lib/utils";
 
 interface QuizMultipleProps {
     activity: Activity;
-    onComplete: (correct: boolean, points: number, badge?: string) => void;
+    onSubmit: (answers: ActivityAnswers) => Promise<ActivityAttemptResponse>;
     isCompleted?: boolean;
 }
 
 import { useSoundEffect } from "@/hooks/useSoundEffect";
 
-export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: QuizMultipleProps) => {
+export const QuizMultiple = ({ activity, onSubmit, isCompleted = false }: QuizMultipleProps) => {
     const { playCorrect, playIncorrect } = useSoundEffect();
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
+    const [feedback, setFeedback] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleOptionSelect = (index: number) => {
-        if (showResult || isCompleted) return; // Already answered or completed
+    const handleOptionSelect = async (index: number) => {
+        if (showResult || isCompleted || isSubmitting) return;
 
         setSelectedIndex(index);
         const option = activity.options?.[index];
-        const correct = option?.isCorrect ?? option?.is_correct ?? false;
-        setIsCorrect(correct);
-        setShowResult(true);
+        if (!option) return;
 
-        if (correct) {
-            playCorrect();
-            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 800);
-        } else {
-            playIncorrect();
-            // Still call onComplete but with false, so it's recorded
-            setTimeout(() => onComplete(false, 0), 1500);
+        setIsSubmitting(true);
+        setError(null);
+        try {
+            const result = await onSubmit({ option_id: option.id });
+            setIsCorrect(result.is_correct);
+            setFeedback(result.feedback ?? null);
+            setShowResult(true);
+            result.is_correct ? playCorrect() : playIncorrect();
+        } catch {
+            setError("No fue posible comprobar la respuesta. Inténtalo nuevamente.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -41,10 +47,9 @@ export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: Quiz
         setSelectedIndex(null);
         setShowResult(false);
         setIsCorrect(false);
+        setFeedback(null);
+        setError(null);
     };
-
-    // Safe access to selected option's feedback
-    const selectedFeedback = selectedIndex !== null ? activity.options?.[selectedIndex]?.feedback : null;
 
     return (
         <div className="glass-card p-6 space-y-6">
@@ -68,41 +73,39 @@ export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: Quiz
 
             <div className="space-y-3">
                 {activity.options?.map((option, index) => {
-                    // Check both camelCase (frontend mock) and snake_case (backend)
-                    const isOptCorrect = option.isCorrect ?? option.is_correct ?? false;
                     const isSelected = selectedIndex === index;
 
                     return (
                         <button
                             key={index}
                             onClick={() => handleOptionSelect(index)}
-                            disabled={showResult || isCompleted}
+                            disabled={showResult || isCompleted || isSubmitting}
                             className={cn(
                                 "w-full text-left p-4 rounded-xl border-2 transition-all duration-300",
                                 !showResult && isSelected && "border-accent bg-accent/10",
                                 !showResult && !isSelected && !isCompleted && "border-border/50 hover:border-accent/50 hover:bg-secondary/50",
-                                (showResult || isCompleted) && isOptCorrect && "border-primary bg-primary/20",
-                                showResult && !isOptCorrect && isSelected && "border-destructive bg-destructive/10",
-                                (showResult || isCompleted) && !isSelected && !isOptCorrect && "opacity-50",
+                                showResult && isSelected && isCorrect && "border-primary bg-primary/20",
+                                showResult && isSelected && !isCorrect && "border-destructive bg-destructive/10",
+                                showResult && !isSelected && "opacity-50",
                                 (showResult || isCompleted) && "cursor-default"
                             )}
                         >
                             <div className="flex items-center justify-between">
                                 <span className={cn(
                                     "font-medium",
-                                    (showResult || isCompleted) && isOptCorrect && "text-primary"
+                                    showResult && isSelected && isCorrect && "text-primary"
                                 )}>
                                     {option.text}
                                 </span>
-                                {(showResult || isCompleted) && isOptCorrect && <CheckCircle2 className="w-5 h-5 text-primary" />}
-                                {showResult && !isOptCorrect && isSelected && <XCircle className="w-5 h-5 text-destructive" />}
+                                {showResult && isSelected && isCorrect && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                                {showResult && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-destructive" />}
                             </div>
                         </button>
                     );
                 })}
             </div>
 
-            {showResult && selectedFeedback && (
+            {showResult && feedback && (
                 <div className={cn(
                     "p-4 rounded-xl animate-fade-in",
                     isCorrect ? "bg-primary/10 border border-primary/20" : "bg-destructive/10 border border-destructive/20"
@@ -111,10 +114,12 @@ export const QuizMultiple = ({ activity, onComplete, isCompleted = false }: Quiz
                         "text-sm",
                         isCorrect ? "text-primary" : "text-destructive"
                     )}>
-                        {selectedFeedback}
+                        {feedback}
                     </p>
                 </div>
             )}
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
             {showResult && !isCorrect && (
                 <div className="flex justify-center">

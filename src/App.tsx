@@ -24,6 +24,8 @@ import ObservationEdit from "./pages/observations/ObservationEdit";
 import Learn from "./pages/learn/Learn";
 import CourseDetail from "./pages/learn/CourseDetail";
 import ArticleDetail from "./pages/learn/ArticleDetail";
+import ResourceDetail from "./pages/learn/ResourceDetail";
+import AnnouncementDetail from "./pages/AnnouncementDetail";
 import LessonPlayer from "./pages/learn/LessonPlayer";
 import EducatorDashboard from "./pages/educator/EducatorDashboard";
 import LessonEditor from "./pages/educator/LessonEditor";
@@ -33,6 +35,7 @@ import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import ScrollToTop from "./components/ScrollToTop";
+import Feedback from "./pages/Feedback";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +73,7 @@ const App = () => (
             <Route element={<Layout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/home" element={<Dashboard />} />
+              <Route path="/announcements/:slug" element={<AnnouncementDetail />} />
 
               <Route path="/explorer" element={<Explorer />} />
               <Route path="/taxa" element={<Species />} />
@@ -89,8 +93,10 @@ const App = () => (
               <Route path="/learn" element={<Learn />} />
               <Route path="/learn/course/:slug" element={<CourseDetail />} />
               <Route path="/learn/article/:slug" element={<ArticleDetail />} />
+              <Route path="/learn/resource/:slug" element={<ResourceDetail />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/feedback" element={<Feedback />} />
             </Route>
 
             {/* Protected Routes */}

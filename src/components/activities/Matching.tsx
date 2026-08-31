@@ -1,59 +1,32 @@
 import { useState } from "react";
 import { CheckCircle2, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Activity } from "@/api/services/educationalContentService";
+import { Activity, ActivityAnswers, ActivityAttemptResponse } from "@/api/services/educationalContentService";
 import { cn } from "@/lib/utils";
 
 interface MatchingProps {
     activity: Activity;
-    onComplete: (correct: boolean, points: number, badge?: string) => void;
+    onSubmit: (answers: ActivityAnswers) => Promise<ActivityAttemptResponse>;
     isCompleted?: boolean;
 }
 
 import { useSoundEffect } from "@/hooks/useSoundEffect";
 
-export const Matching = ({ activity, onComplete, isCompleted = false }: MatchingProps) => {
+export const Matching = ({ activity, onSubmit, isCompleted = false }: MatchingProps) => {
     const { playCorrect, playIncorrect } = useSoundEffect();
-    // Normalize data structure handles both {Key: Value} object and [{id, term, match}] array
-    const normalizedPairs = (() => {
-        if (activity.pairs && !Array.isArray(activity.pairs) && typeof activity.pairs === 'object') {
-            // Handle { "Term": "Match", ... } if passed as object
-            return Object.entries(activity.pairs).map(([key, value], index) => ({
-                id: `pair-${index}`,
-                term: key,
-                match: String(value)
-            }));
-        }
-        if (Array.isArray(activity.pairs)) {
-            // Handle existing array format, ensure IDs
-            return activity.pairs.map((p, index) => ({
-                id: p.id ? String(p.id) : `pair-${index}`,
-                term: p.term || p.element, // Fallback
-                match: p.match || p.target // Fallback
-            }));
-        }
-        // Fallback for key-value items if pairs is empty/undefined but items exists
-        if (activity.items && !Array.isArray(activity.items) && typeof activity.items === 'object') {
-            return Object.entries(activity.items).map(([key, value], index) => ({
-                id: `pair-${index}`,
-                term: key,
-                match: String(value)
-            }));
-        }
-        return [];
-    })();
-
     const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
     const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
     const [connections, setConnections] = useState<Record<string, string>>({});
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const [shuffledTerms] = useState(() =>
-        [...normalizedPairs].sort(() => Math.random() - 0.5)
+        [...(activity.terms ?? [])].sort(() => Math.random() - 0.5)
     );
     const [shuffledMatches] = useState(() =>
-        [...normalizedPairs].sort(() => Math.random() - 0.5)
+        [...(activity.matches ?? [])].sort(() => Math.random() - 0.5)
     );
 
     const handleTermClick = (termId: string) => {
@@ -117,22 +90,18 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
         setSelectedMatch(prev => prev === matchId ? null : matchId);
     };
 
-    const handleSubmit = () => {
-        let allCorrect = true;
-        normalizedPairs.forEach(pair => {
-            if (connections[pair.id] !== pair.id) {
-                allCorrect = false;
-            }
-        });
-
-        setIsCorrect(allCorrect);
-        setShowResult(true);
-
-        if (allCorrect) {
-            playCorrect();
-            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 800);
-        } else {
-            playIncorrect();
+    const handleSubmit = async () => {
+        setIsSubmitting(true);
+        setError(null);
+        try {
+            const result = await onSubmit({ connections });
+            setIsCorrect(result.is_correct);
+            setShowResult(true);
+            result.is_correct ? playCorrect() : playIncorrect();
+        } catch {
+            setError("No fue posible comprobar las conexiones. Inténtalo nuevamente.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -142,9 +111,10 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
         setSelectedMatch(null);
         setShowResult(false);
         setIsCorrect(false);
+        setError(null);
     };
 
-    const allConnected = Object.keys(connections).length === (normalizedPairs.length || 0);
+    const allConnected = Object.keys(connections).length === shuffledTerms.length;
 
     const getConnectionColor = (termId: string) => {
         const colors = [
@@ -186,8 +156,8 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
                         {shuffledTerms.map((pair) => {
                             const isConnected = !!connections[pair.id];
                             const isSelected = selectedTerm === pair.id;
-                            const isCorrectMatch = showResult && connections[pair.id] === pair.id;
-                            const isWrongMatch = showResult && connections[pair.id] && connections[pair.id] !== pair.id;
+                            const isCorrectMatch = showResult && isCorrect && isConnected;
+                            const isWrongMatch = showResult && !isCorrect && isConnected;
 
                             return (
                                 <button
@@ -209,7 +179,7 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
                                         "text-foreground",
                                         isCorrectMatch && "text-green-700 font-medium"
                                     )}>
-                                        {pair.term}
+                                        {pair.text}
                                     </span>
                                     {isConnected && (
                                         <span className={cn(
@@ -234,8 +204,8 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
                         {shuffledMatches.map((pair) => {
                             const connectedTermId = Object.keys(connections).find(t => connections[t] === pair.id);
                             const isConnected = !!connectedTermId;
-                            const isCorrectMatch = showResult && connectedTermId === pair.id;
-                            const isWrongMatch = showResult && connectedTermId && connectedTermId !== pair.id;
+                            const isCorrectMatch = showResult && isCorrect && isConnected;
+                            const isWrongMatch = showResult && !isCorrect && isConnected;
 
                             const isSelectedMatchNode = selectedMatch === pair.id;
 
@@ -269,7 +239,7 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
                                         "text-foreground text-sm",
                                         isCorrectMatch && "text-green-700 font-medium"
                                     )}>
-                                        {pair.match}
+                                        {pair.text}
                                     </span>
                                 </button>
                             );
@@ -292,6 +262,8 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
                 </div>
             )}
 
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
             <div className="flex justify-end gap-3">
                 {showResult && !isCorrect && (
                     <Button variant="outline" onClick={handleRetry}>
@@ -302,7 +274,7 @@ export const Matching = ({ activity, onComplete, isCompleted = false }: Matching
                     <Button
                         variant="default"
                         onClick={handleSubmit}
-                        disabled={!allConnected}
+                        disabled={!allConnected || isSubmitting}
                         className="bg-purple-600 hover:bg-purple-700 text-white"
                     >
                         Comprobar respuesta

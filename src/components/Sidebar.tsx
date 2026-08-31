@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Home, Map, Search, BookOpen, Calendar, User, GraduationCap,
-  Settings, LogOut, ChevronDown, Trophy
+  Settings, LogOut, ChevronDown, Trophy, MessageSquareText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -108,6 +108,10 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
         <div className="mt-auto pt-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 pb-2">
           <div className="flex flex-col items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex flex-wrap justify-center gap-2">
+              <Link to="/feedback" className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
+                <MessageSquareText className="h-3 w-3" /> Sugerencias
+              </Link>
+              <span className="text-gray-400 dark:text-gray-500">•</span>
               <a href="/privacy" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Privacidad</a>
               <span className="text-gray-400 dark:text-gray-500">•</span>
               <a href="/terms" className="hover:text-gray-700 dark:hover:text-gray-200 transition-colors">Condiciones</a>

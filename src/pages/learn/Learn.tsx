@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, X, BookOpen, Clock, FileText, GraduationCap } from "lucide-react";
+import { Search, Filter, X, BookOpen, Clock, FileText, GraduationCap, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -10,11 +10,11 @@ import { getEducationalContents, EducationalContent } from "@/api/services/educa
 const CourseCard = ({ course }: { course: EducationalContent }) => {
   const getLevelColor = (level: string) => {
     switch (level) {
-      case "beginner":
+      case "principiante":
         return "bg-green-100 text-green-800";
-      case "intermediate":
+      case "intermedio":
         return "bg-yellow-100 text-yellow-800";
-      case "advanced":
+      case "avanzado":
         return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -23,9 +23,9 @@ const CourseCard = ({ course }: { course: EducationalContent }) => {
 
   const getLevelLabel = (level: string) => {
     switch (level) {
-      case "beginner": return "Principiante";
-      case "intermediate": return "Intermedio";
-      case "advanced": return "Avanzado";
+      case "principiante": return "Principiante";
+      case "intermedio": return "Intermedio";
+      case "avanzado": return "Avanzado";
       default: return level;
     }
   };
@@ -37,9 +37,9 @@ const CourseCard = ({ course }: { course: EducationalContent }) => {
     : "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&h=400"; // Generic nature image
 
   const getDetailLink = (content: EducationalContent) => {
-    return content.content_type === 'article'
-      ? `/learn/article/${content.slug}`
-      : `/learn/course/${content.slug}`;
+    if (content.content_type === 'article') return `/learn/article/${content.slug}`;
+    if (content.content_type === 'resource') return `/learn/resource/${content.slug}`;
+    return `/learn/course/${content.slug}`;
   };
 
   const linkTo = getDetailLink(course);
@@ -83,6 +83,11 @@ const CourseCard = ({ course }: { course: EducationalContent }) => {
                 <>
                   <FileText className="h-3 w-3" />
                   <span>Artículo</span>
+                </>
+              ) : course.content_type === 'resource' ? (
+                <>
+                  <Images className="h-3 w-3" />
+                  <span>Recurso multimedia</span>
                 </>
               ) : (
                 <>

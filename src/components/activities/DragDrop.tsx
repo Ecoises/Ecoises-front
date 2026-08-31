@@ -1,19 +1,19 @@
 import { useState, useRef } from "react";
 import { CheckCircle2, GripVertical, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Activity } from "@/api/services/educationalContentService";
+import { Activity, ActivityAnswers, ActivityAttemptResponse } from "@/api/services/educationalContentService";
 import { cn } from "@/lib/utils";
 import { useSoundEffect } from "@/hooks/useSoundEffect";
 
 interface DragDropProps {
     activity: Activity;
-    onComplete: (correct: boolean, points: number, badge?: string) => void;
+    onSubmit: (answers: ActivityAnswers) => Promise<ActivityAttemptResponse>;
     isCompleted?: boolean;
 }
 
 interface CategoryState {
+    id: string;
     name: string;
-    correctItems: string[]; // the items that belong here
 }
 
 interface ItemState {
@@ -22,7 +22,7 @@ interface ItemState {
     categoryName: string | null; // which bucket the user dropped it into (null = unplaced)
 }
 
-export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDropProps) => {
+export const DragDrop = ({ activity, onSubmit, isCompleted = false }: DragDropProps) => {
     const { playCorrect, playIncorrect } = useSoundEffect();
 
     // Build categories & shuffled item list from activity data
@@ -30,26 +30,12 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
         const cats: CategoryState[] = [];
         const items: ItemState[] = [];
 
-        if (Array.isArray(activity.categories) && activity.categories.length > 0) {
-            // New format: [{ name, items: string[] }]
-            activity.categories.forEach((cat) => {
-                cats.push({ name: cat.name, correctItems: cat.items ?? [] });
-                (cat.items ?? []).forEach((label, i) => {
-                    items.push({ id: `${cat.name}-${i}`, label, categoryName: null });
-                });
-            });
-        } else if (activity.items && !Array.isArray(activity.items) && typeof activity.items === "object") {
-            // Legacy key-value format: { word: category }
-            const groups: Record<string, string[]> = {};
-            Object.entries(activity.items as Record<string, string>).forEach(([word, cat]) => {
-                if (!groups[cat]) groups[cat] = [];
-                groups[cat].push(word);
-                items.push({ id: `item-${word}`, label: word, categoryName: null });
-            });
-            Object.entries(groups).forEach(([name, words]) => {
-                cats.push({ name, correctItems: words });
-            });
-        }
+        (activity.categories ?? []).forEach((cat) => cats.push({ id: cat.id, name: cat.name }));
+        (activity.items ?? []).forEach((item) => items.push({
+            id: item.id,
+            label: item.label,
+            categoryName: null,
+        }));
 
         // Shuffle items
         const shuffled = [...items].sort(() => Math.random() - 0.5);
@@ -60,6 +46,8 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
     const [draggedId, setDraggedId] = useState<string | null>(null);
     const [showResult, setShowResult] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const dragOverCategory = useRef<string | null>(null);
 
     // ─── Drag handlers ───────────────────────────────────────────
@@ -105,22 +93,19 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
     };
 
     // ─── Submit ───────────────────────────────────────────────────
-    const handleSubmit = () => {
-        let allCorrect = true;
-        categories.forEach(cat => {
-            const placed = items.filter(it => it.categoryName === cat.name).map(it => it.label);
-            const correct = [...cat.correctItems].sort().join("|");
-            const actual = [...placed].sort().join("|");
-            if (correct !== actual) allCorrect = false;
-        });
-
-        setIsCorrect(allCorrect);
-        setShowResult(true);
-        if (allCorrect) {
-            playCorrect();
-            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 800);
-        } else {
-            playIncorrect();
+    const handleSubmit = async () => {
+        setIsSubmitting(true);
+        setError(null);
+        try {
+            const placements = Object.fromEntries(items.map(item => [item.id, item.categoryName]));
+            const result = await onSubmit({ placements });
+            setIsCorrect(result.is_correct);
+            setShowResult(true);
+            result.is_correct ? playCorrect() : playIncorrect();
+        } catch {
+            setError("No fue posible comprobar la clasificación. Inténtalo nuevamente.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -128,6 +113,7 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
         setItems(prev => prev.map(it => ({ ...it, categoryName: null })));
         setShowResult(false);
         setIsCorrect(false);
+        setError(null);
     };
 
     const unplacedItems = items.filter(it => it.categoryName === null);
@@ -135,8 +121,7 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
 
     const getItemCorrectness = (item: ItemState) => {
         if (!showResult || item.categoryName === null) return null;
-        const expectedCat = categories.find(c => c.correctItems.includes(item.label));
-        return expectedCat?.name === item.categoryName;
+        return isCorrect;
     };
 
     return (
@@ -207,14 +192,14 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
                 categories.length >= 4 ? "md:grid-cols-2 lg:grid-cols-4" : "grid-cols-1"
             )}>
                 {categories.map((cat) => {
-                    const placedHere = items.filter(it => it.categoryName === cat.name);
+                    const placedHere = items.filter(it => it.categoryName === cat.id);
                     const isDragTarget = draggedId !== null;
 
                     return (
                         <div
-                            key={cat.name}
-                            onDragOver={(e) => handleDragOver(e, cat.name)}
-                            onDrop={(e) => handleDropOnCategory(e, cat.name)}
+                            key={cat.id}
+                            onDragOver={(e) => handleDragOver(e, cat.id)}
+                            onDrop={(e) => handleDropOnCategory(e, cat.id)}
                             className={cn(
                                 "rounded-xl border-2 transition-all duration-200 overflow-hidden",
                                 !showResult && isDragTarget
@@ -294,6 +279,8 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
                 </div>
             )}
 
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
             {/* Actions */}
             <div className="flex justify-end gap-3">
                 {showResult && !isCorrect && (
@@ -305,7 +292,7 @@ export const DragDrop = ({ activity, onComplete, isCompleted = false }: DragDrop
                     <Button
                         variant="default"
                         onClick={handleSubmit}
-                        disabled={!allPlaced}
+                        disabled={!allPlaced || isSubmitting}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white"
                     >
                         {!allPlaced

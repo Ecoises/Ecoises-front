@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Github, Linkedin, Bird, Users, MapPin, Camera } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const About = () => {
   const teamMembers = [
@@ -182,6 +184,9 @@ const About = () => {
               <span>github.com/Ecoises</span>
             </div>
           </div>
+          <Button asChild variant="outline" className="rounded-full border-lime-300">
+            <Link to="/feedback">Enviar una sugerencia</Link>
+          </Button>
         </CardContent>
       </Card>
     </div>

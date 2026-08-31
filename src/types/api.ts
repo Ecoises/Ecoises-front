@@ -5,6 +5,26 @@ export interface User {
   full_name: string;
   email: string;
   avatar?: string;
+  total_score?: number;
+  level?: number;
+  current_level?: {
+    id: number;
+    name: string;
+    min_points: number;
+    icon?: string;
+    color?: string;
+  };
+  achievements?: Array<{
+    id: number;
+    earned_at: string;
+    achievement: {
+      id: number;
+      name: string;
+      description?: string;
+      icon_url?: string;
+      rarity: string;
+    };
+  }>;
   created_at?: string;
   updated_at?: string;
 }

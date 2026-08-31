@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Activity } from "@/api/services/educationalContentService";
+import {
+    Activity,
+    ActivityAnswers,
+    ActivityAttemptResponse,
+    attemptActivity,
+} from "@/api/services/educationalContentService";
 import { QuizMultiple } from "./QuizMultiple";
 import { QuizTrueFalse } from "./QuizTrueFalse";
 import { DragDrop } from "./DragDrop";
@@ -23,36 +28,27 @@ export const ActivitiesSection = ({ activities, lessonTitle, completedActivities
     const [showReward, setShowReward] = useState(false);
     const [lastReward, setLastReward] = useState({ points: 0, badge: "" });
 
-    const handleActivityComplete = async (index: number, correct: boolean, points: number, badge?: string) => {
+    const handleActivitySubmit = async (index: number, answers: ActivityAnswers): Promise<ActivityAttemptResponse> => {
         const activity = activities[index];
-        const isAlreadyCompleted = completedActivities.includes(activity.id);
+        const response = await attemptActivity(activity.id, answers);
 
-        // Record attempt in backend
-        try {
-            const response = await import("@/api/services/educationalContentService").then(m =>
-                m.attemptActivity(activity.id, correct, points)
-            );
-
-            // Check if points were actually awarded (backend returns this info)
-            const pointsAwarded = response.points_awarded || 0;
-
-            if (correct && !isAlreadyCompleted) {
-                setLocalCompletedActivities(prev => new Set([...prev, index]));
-                setTotalPoints(prev => prev + pointsAwarded);
-                if (badge && pointsAwarded > 0) {
-                    setEarnedBadges(prev => [...prev, badge]);
-                }
-                setLastReward({ points: pointsAwarded, badge: badge || "" });
-                setShowReward(true);
-
-                // Notify parent to refresh data
-                if (onActivityComplete) {
-                    onActivityComplete();
-                }
+        if (response.is_correct) {
+            setLocalCompletedActivities(prev => new Set([...prev, index]));
+            setTotalPoints(prev => prev + response.total_points_awarded);
+            const achievementIcons = response.achievements.map(achievement => achievement.icon_url || "🏅");
+            if (achievementIcons.length > 0) {
+                setEarnedBadges(prev => [...prev, ...achievementIcons]);
             }
-        } catch (e) {
-            console.error("Failed to record activity attempt", e);
+
+            if (!response.already_completed) {
+                setLastReward({ points: response.total_points_awarded, badge: achievementIcons[0] || "" });
+                setShowReward(true);
+            }
+
+            onActivityComplete?.();
         }
+
+        return response;
     };
 
     const handleRewardClose = () => {
@@ -71,7 +67,7 @@ export const ActivitiesSection = ({ activities, lessonTitle, completedActivities
                 return (
                     <QuizMultiple
                         activity={activity}
-                        onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
+                        onSubmit={(answers) => handleActivitySubmit(index, answers)}
                         isCompleted={isCompleted}
                     />
                 );
@@ -79,7 +75,7 @@ export const ActivitiesSection = ({ activities, lessonTitle, completedActivities
                 return (
                     <QuizTrueFalse
                         activity={activity}
-                        onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
+                        onSubmit={(answers) => handleActivitySubmit(index, answers)}
                         isCompleted={isCompleted}
                     />
                 );
@@ -87,7 +83,7 @@ export const ActivitiesSection = ({ activities, lessonTitle, completedActivities
                 return (
                     <DragDrop
                         activity={activity}
-                        onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
+                        onSubmit={(answers) => handleActivitySubmit(index, answers)}
                         isCompleted={isCompleted}
                     />
                 );
@@ -95,7 +91,7 @@ export const ActivitiesSection = ({ activities, lessonTitle, completedActivities
                 return (
                     <Matching
                         activity={activity}
-                        onComplete={(correct, points, badge) => handleActivityComplete(index, correct, points, badge)}
+                        onSubmit={(answers) => handleActivitySubmit(index, answers)}
                         isCompleted={isCompleted}
                     />
                 );

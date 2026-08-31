@@ -6,27 +6,38 @@ export interface Activity {
     title: string;
     instruction?: string;
     max_points: number;
+    attempts_allowed: number;
+    is_mandatory: boolean;
     badge?: string;
+    options?: Array<{ id: string; text: string }>;
+    categories?: Array<{ id: string; name: string }>;
+    items?: Array<{ id: string; label: string }>;
+    terms?: Array<{ id: string; text: string }>;
+    matches?: Array<{ id: string; text: string }>;
+}
 
-    // Mapped fields from backend accessors
-    options?: any[]; // For quiz_multiple
-    categories?: { name: string; items: string[] }[]; // For drag_drop (new category format)
-    items?: any[]; // For drag_drop (legacy key-value format)
-    pairs?: any[]; // For matching
+export type ActivityAnswers = Record<string, unknown>;
 
-    // True/False specific
-    is_true?: string | boolean;
-    true_false_feedback?: string;
-
-    // New Feedback structure
-    correct_answer?: string | boolean;
-    feedback_correct?: string;
-    feedback_incorrect?: string;
-
-    // Legacy fields (can be deprecated or mapped if needed, but backend sends above)
-    statement?: string;
-    answer?: boolean;
-    explanation?: string;
+export interface ActivityAttemptResponse {
+    attempt: {
+        id: number;
+        attempt_number: number;
+        is_correct: boolean;
+        points_earned: number;
+    };
+    is_correct: boolean;
+    already_completed: boolean;
+    points_awarded: number;
+    total_points_awarded: number;
+    feedback?: string | null;
+    attempts_remaining: number;
+    achievements: Array<{
+        id: number;
+        name: string;
+        description?: string;
+        icon_url?: string;
+        rarity: string;
+    }>;
 }
 
 export interface Lesson {
@@ -65,6 +76,32 @@ export interface Enrollment {
     enrolled_at: string;
     completed_at?: string;
     progress_percentage: number;
+    total_points_earned?: number;
+    total_points_possible?: number;
+    final_score?: number;
+    user_rating?: number;
+    user_feedback?: string;
+}
+
+export interface EducationalAsset {
+    id: number;
+    asset_type: 'image' | 'infographic' | 'document' | 'external_link';
+    title: string;
+    description?: string;
+    file_path?: string;
+    external_url?: string;
+    is_downloadable: boolean;
+    asset_order: number;
+}
+
+export interface ArticleProgress {
+    id: number;
+    status: 'no_iniciada' | 'en_progreso' | 'completada';
+    reading_progress: number;
+    last_position?: number;
+    completed_at?: string;
+    time_spent: number;
+    achievements?: ActivityAttemptResponse['achievements'];
 }
 
 export interface LessonProgress {
@@ -88,8 +125,8 @@ export interface EducationalContent {
     slug: string;
     description: string;
     thumbnail_url: string;
-    content_type: 'course' | 'article';
-    difficulty_level: 'beginner' | 'intermediate' | 'advanced';
+    content_type: 'course' | 'article' | 'resource';
+    difficulty_level: 'principiante' | 'intermedio' | 'avanzado';
     estimated_duration: number;
     categories: Array<{
         id: number;
@@ -108,9 +145,11 @@ export interface EducationalContent {
     lessons?: Lesson[];
     article_details?: ArticleDetails;
     course_details?: CourseDetails;
+    assets?: EducationalAsset[];
 
     // Progress fields (attached if authenticated)
     enrollment?: Enrollment;
+    article_progress?: ArticleProgress;
     lesson_progress?: Record<number, LessonProgress>;
     completed_activities?: number[]; // Backward compatibility
     activity_progress?: ActivityProgress[];
@@ -136,7 +175,62 @@ export const completeLesson = async (slugOrId: string | number) => {
     return response.data;
 };
 
-export const attemptActivity = async (id: number, is_correct: boolean, score: number, answers?: any) => {
-    const response = await apiClient.post(`/activities/${id}/attempt`, { is_correct, score, answers });
+export const attemptActivity = async (id: number, answers: ActivityAnswers, timeTaken?: number): Promise<ActivityAttemptResponse> => {
+    const response = await apiClient.post<ActivityAttemptResponse>(`/activities/${id}/attempt`, {
+        answers,
+        time_taken: timeTaken,
+    });
+    return response.data;
+};
+
+export interface Announcement {
+    id: number;
+    title: string;
+    slug: string;
+    summary?: string;
+    body?: string;
+    cover_image?: string;
+    cta_label?: string;
+    cta_url?: string;
+    is_pinned: boolean;
+    published_at: string;
+    starts_at?: string;
+    ends_at?: string;
+    author?: {
+        id: number;
+        full_name: string;
+        avatar?: string;
+    };
+}
+
+export const getAnnouncements = async (limit = 3): Promise<Announcement[]> => {
+    const response = await apiClient.get<Announcement[]>('/announcements', { params: { limit } });
+    return response.data;
+};
+
+export const getAnnouncement = async (slug: string): Promise<Announcement> => {
+    const response = await apiClient.get<Announcement>(`/announcements/${slug}`);
+    return response.data;
+};
+
+export const updateArticleProgress = async (
+    slugOrId: string | number,
+    progress: { reading_progress: number; last_position?: number; time_spent?: number },
+): Promise<ArticleProgress> => {
+    const response = await apiClient.patch<ArticleProgress>(
+        `/educational-contents/${slugOrId}/article-progress`,
+        progress,
+    );
+    return response.data;
+};
+
+export const submitContentFeedback = async (
+    contentId: number | string,
+    feedback: { rating?: number; comment?: string },
+): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.post<{ success: boolean; message: string }>(
+        `/educational-contents/${contentId}/feedback`,
+        feedback,
+    );
     return response.data;
 };

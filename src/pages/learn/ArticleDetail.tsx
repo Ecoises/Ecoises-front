@@ -1,23 +1,39 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { getEducationalContent, EducationalContent } from "@/api/services/educationalContentService";
+import { useEffect, useRef, useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+    getEducationalContent,
+    startContent,
+    updateArticleProgress,
+    EducationalContent,
+} from "@/api/services/educationalContentService";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Clock, Tag, Volume2, ChevronLeft } from "lucide-react";
+import { Clock, Tag, Volume2, ChevronLeft, CheckCircle2, BookOpenCheck } from "lucide-react";
 import { LessonContent } from "@/components/learn/LessonContent";
 import { References } from "@/components/learn/References";
 import { AudioPlayer } from "@/components/ui/AudioPlayer";
+import { useAuth } from "@/contexts/AuthContext";
+import { ContentFeedback } from "@/components/learn/ContentFeedback";
 
 const ArticleDetail = () => {
     const { slug } = useParams<{ slug: string }>();
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     const [content, setContent] = useState<EducationalContent | null>(null);
     const [loading, setLoading] = useState(true);
     const [isAudioPlayerOpen, setIsAudioPlayerOpen] = useState(false);
+    const [savingProgress, setSavingProgress] = useState(false);
+    const [earnedAchievement, setEarnedAchievement] = useState<{ name: string; icon_url?: string } | null>(null);
+    const readingStartedAt = useRef(Date.now());
 
     useEffect(() => {
         const fetchContent = async () => {
             if (!slug) return;
             try {
-                const data = await getEducationalContent(slug);
+                let data = await getEducationalContent(slug);
+                if (isAuthenticated && !data.enrollment) {
+                    await startContent(slug);
+                    data = await getEducationalContent(slug);
+                }
                 setContent(data);
             } catch (error) {
                 console.error("Error fetching article:", error);
@@ -26,7 +42,36 @@ const ArticleDetail = () => {
             }
         };
         fetchContent();
-    }, [slug]);
+    }, [slug, isAuthenticated]);
+
+    const handleCompleteArticle = async () => {
+        if (!slug || !content) return;
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
+        setSavingProgress(true);
+        try {
+            const elapsedSeconds = Math.min(3600, Math.max(0, Math.round((Date.now() - readingStartedAt.current) / 1000)));
+            const articleProgress = await updateArticleProgress(slug, {
+                reading_progress: 100,
+                time_spent: elapsedSeconds,
+            });
+            setEarnedAchievement(articleProgress.achievements?.[0] ?? null);
+            setContent(current => current ? {
+                ...current,
+                article_progress: articleProgress,
+                enrollment: current.enrollment ? {
+                    ...current.enrollment,
+                    progress_percentage: 100,
+                    completed_at: articleProgress.completed_at,
+                } : current.enrollment,
+            } : current);
+        } finally {
+            setSavingProgress(false);
+        }
+    };
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
@@ -99,6 +144,36 @@ const ArticleDetail = () => {
 
                         {/* References */}
                         <References references={content.article_details?.references} className="animate-slide-up" />
+
+                        <div className="mt-10 rounded-2xl border border-lime-200 bg-lime-50/70 p-5">
+                            {content.article_progress?.status === 'completada' ? (
+                                <div className="flex items-center gap-3 text-lime-800">
+                                    <CheckCircle2 className="h-6 w-6 shrink-0" />
+                                    <div>
+                                        <p className="font-semibold">Artículo completado</p>
+                                        <p className="text-sm text-lime-700">Tu progreso quedó guardado en tu perfil de aprendizaje.</p>
+                                        {earnedAchievement && (
+                                            <p className="mt-2 text-sm font-medium text-amber-700">
+                                                {earnedAchievement.icon_url || '🏅'} Logro desbloqueado: {earnedAchievement.name}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <BookOpenCheck className="h-6 w-6 shrink-0 text-lime-700" />
+                                        <div>
+                                            <p className="font-semibold text-forest-900">¿Terminaste la lectura?</p>
+                                            <p className="text-sm text-muted-foreground">Guárdala como completada para continuar tu ruta educativa.</p>
+                                        </div>
+                                    </div>
+                                    <Button onClick={handleCompleteArticle} disabled={savingProgress} className="shrink-0">
+                                        {savingProgress ? 'Guardando…' : isAuthenticated ? 'Marcar como leído' : 'Inicia sesión para guardar'}
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                     </article>
 
                     {/* Sidebar - Mobile: Second (Bottom), Desktop: Second (Right) */}
@@ -181,6 +256,12 @@ const ArticleDetail = () => {
                     </aside>
                 </div>
             </div>
+
+            <ContentFeedback
+                contentId={content.id}
+                initialRating={content.enrollment?.user_rating}
+                initialComment={content.enrollment?.user_feedback}
+            />
 
             {/* Audio Player */}
             {hasAudio && content.article_details?.audio_url && (

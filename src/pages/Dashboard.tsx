@@ -11,6 +11,7 @@ import LeaderboardSection from "@/components/home/LeaderboardSection";
 import RecentSightingsSection from "@/components/home/RecentSightingsSection";
 import FeaturesSection from "@/components/home/FeaturesSection";
 import EcosystemGridGallery from "@/components/home/EcosystemGridGallery";
+import AnnouncementsSection from "@/components/home/AnnouncementsSection";
 
 const Index = () => {
   return (
@@ -27,6 +28,8 @@ const Index = () => {
             <p className="text-forest-700">Sigue, explora y descubre el fascinante mundo que te rodea.</p>
           </div>
         </div>
+
+        <AnnouncementsSection />
 
         {/* Stats 
       <StatsSection />

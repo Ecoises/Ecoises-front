@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { CheckCircle2, XCircle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Activity } from "@/api/services/educationalContentService";
+import { Activity, ActivityAnswers, ActivityAttemptResponse } from "@/api/services/educationalContentService";
 import { cn } from "@/lib/utils";
 
 interface QuizTrueFalseProps {
     activity: Activity;
-    onComplete: (correct: boolean, points: number, badge?: string) => void;
+    onSubmit: (answers: ActivityAnswers) => Promise<ActivityAttemptResponse>;
     isCompleted?: boolean;
 }
 
 import { useSoundEffect } from "@/hooks/useSoundEffect";
 
-export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: QuizTrueFalseProps) => {
+export const QuizTrueFalse = ({ activity, onSubmit, isCompleted = false }: QuizTrueFalseProps) => {
     const { playCorrect, playIncorrect } = useSoundEffect();
     const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
     const [showResult, setShowResult] = useState(false);
@@ -20,27 +20,25 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
     const [dragX, setDragX] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
+    const [feedback, setFeedback] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleAnswer = (answer: boolean) => {
-        if (showResult || isCompleted) return;
+    const handleAnswer = async (answer: boolean) => {
+        if (showResult || isCompleted || isSubmitting) return;
         setSelectedAnswer(answer);
-
-        // Backend might send "true"/"false" strings or booleans
-        // Fix: prioritize correct_answer over is_true
-        const correctAnswer = activity.correct_answer !== undefined
-            ? (activity.correct_answer === true || activity.correct_answer === "true")
-            : (activity.is_true === true || activity.is_true === "true");
-
-        const correct = answer === correctAnswer;
-
-        setIsCorrect(correct);
-        setShowResult(true);
-
-        if (correct) {
-            playCorrect();
-            setTimeout(() => onComplete(true, activity.max_points, activity.badge), 800);
-        } else {
-            playIncorrect();
+        setIsSubmitting(true);
+        setError(null);
+        try {
+            const result = await onSubmit({ answer });
+            setIsCorrect(result.is_correct);
+            setFeedback(result.feedback ?? null);
+            setShowResult(true);
+            result.is_correct ? playCorrect() : playIncorrect();
+        } catch {
+            setError("No fue posible comprobar la respuesta. Inténtalo nuevamente.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -49,11 +47,13 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
         setShowResult(false);
         setIsCorrect(false);
         setDragX(0);
+        setFeedback(null);
+        setError(null);
     };
 
     // Touch/Mouse drag handlers
     const handleDragStart = (clientX: number) => {
-        if (showResult || isCompleted) return;
+        if (showResult || isCompleted || isSubmitting) return;
         setIsDragging(true);
         setStartX(clientX);
     };
@@ -142,7 +142,7 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
                     )}
                     style={{
                         transform: showResult
-                            ? `translateX(${isCorrect === ((activity.correct_answer !== undefined ? (activity.correct_answer === true || activity.correct_answer === "true") : (activity.is_true === true || activity.is_true === "true")) === true) ? ((activity.correct_answer !== undefined ? (activity.correct_answer === true || activity.correct_answer === "true") : (activity.is_true === true || activity.is_true === "true")) ? 50 : -50) : 0}px)`
+                            ? `translateX(${selectedAnswer === true ? 50 : selectedAnswer === false ? -50 : 0}px)`
                             : `translateX(${dragX}px) rotate(${rotation}deg)`,
                         transition: isDragging ? 'none' : 'transform 0.3s ease-out'
                     }}
@@ -208,28 +208,26 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
             <div className="flex justify-center gap-6">
                 <button
                     onClick={() => handleAnswer(false)}
-                    disabled={showResult || isCompleted}
+                    disabled={showResult || isCompleted || isSubmitting}
                     className={cn(
                         "w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-2xl transition-all duration-300",
                         !showResult && !isCompleted && "border-red-200 text-red-500 hover:border-red-500 hover:bg-red-50 cursor-pointer hover:scale-110",
                         showResult && selectedAnswer === false && isCorrect && "border-green-500 bg-green-100 text-green-500",
                         showResult && selectedAnswer === false && !isCorrect && "border-red-500 bg-red-100 text-red-500",
-                        (showResult || isCompleted) && selectedAnswer !== false && "border-muted text-muted-foreground opacity-50 cursor-default",
-                        showResult && (activity.correct_answer !== undefined ? (activity.correct_answer === "false" || activity.correct_answer === false) : (activity.is_true === "false" || activity.is_true === false)) && selectedAnswer !== false && "border-green-500 text-green-500 opacity-50 cursor-default"
+                        (showResult || isCompleted) && selectedAnswer !== false && "border-muted text-muted-foreground opacity-50 cursor-default"
                     )}
                 >
                     F
                 </button>
                 <button
                     onClick={() => handleAnswer(true)}
-                    disabled={showResult || isCompleted}
+                    disabled={showResult || isCompleted || isSubmitting}
                     className={cn(
                         "w-16 h-16 rounded-full border-4 flex items-center justify-center font-bold text-2xl transition-all duration-300",
                         !showResult && !isCompleted && "border-green-200 text-green-500 hover:border-green-500 hover:bg-green-50 cursor-pointer hover:scale-110",
                         showResult && selectedAnswer === true && isCorrect && "border-green-500 bg-green-100 text-green-500",
                         showResult && selectedAnswer === true && !isCorrect && "border-red-500 bg-red-100 text-red-500",
-                        (showResult || isCompleted) && selectedAnswer !== true && "border-muted text-muted-foreground opacity-50 cursor-default",
-                        showResult && (activity.correct_answer !== undefined ? (activity.correct_answer === "true" || activity.correct_answer === true) : (activity.is_true === "true" || activity.is_true === true)) && selectedAnswer !== true && "border-green-500 text-green-500 opacity-50 cursor-default"
+                        (showResult || isCompleted) && selectedAnswer !== true && "border-muted text-muted-foreground opacity-50 cursor-default"
                     )}
                 >
                     V
@@ -246,12 +244,12 @@ export const QuizTrueFalse = ({ activity, onComplete, isCompleted = false }: Qui
                         "text-sm",
                         isCorrect ? "text-green-700" : "text-red-700"
                     )}>
-                        {isCorrect
-                            ? (activity.feedback_correct || activity.true_false_feedback || "¡Correcto!")
-                            : (activity.feedback_incorrect || activity.true_false_feedback || "Incorrecto")}
+                        {feedback || (isCorrect ? "¡Correcto!" : "Incorrecto")}
                     </p>
                 </div>
             )}
+
+            {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
             {/* Retry button */}
             {showResult && !isCorrect && (
