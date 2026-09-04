@@ -37,6 +37,7 @@ import PublicRoute from "./components/PublicRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import Feedback from "./pages/Feedback";
 import Profile from "./pages/Profile";
+import Certificate from "./pages/Certificate";
 
 const queryClient = new QueryClient();
 
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/feedback" element={<Feedback />} />
+              <Route path="/certificates/:verificationCode" element={<Certificate />} />
             </Route>
 
             {/* Protected Routes */}

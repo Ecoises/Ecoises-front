@@ -137,6 +137,25 @@ const Profile = () => {
           </div>
         </div>
       </section>
+
+      {dashboard.certificates.length > 0 && (
+        <section>
+          <p className="text-sm font-medium text-lime-700">Reconocimientos verificables</p>
+          <h2 className="mb-4 text-2xl font-bold text-forest-950">Mis certificados</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {dashboard.certificates.map(certificate => (
+              <Link
+                key={certificate.verification_code}
+                to={`/certificates/${certificate.verification_code}`}
+                className="flex items-center gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 transition hover:shadow-md"
+              >
+                <div className="rounded-full bg-amber-400 p-3 text-amber-950"><Award className="h-6 w-6" /></div>
+                <div><p className="font-semibold text-forest-950">{certificate.content_title}</p><p className="text-xs text-forest-700">Emitido el {new Date(certificate.issued_at).toLocaleDateString("es-CO")}</p></div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

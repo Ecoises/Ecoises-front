@@ -52,9 +52,31 @@ export interface LearningDashboardData {
     description?: string;
     created_at: string;
   }>;
+  certificates: Array<{
+    verification_code: string;
+    content_title: string;
+    final_score?: string;
+    issued_at: string;
+  }>;
 }
 
 export const getLearningDashboard = async (): Promise<LearningDashboardData> => {
   const response = await apiClient.get<LearningDashboardData>("/learning/dashboard");
+  return response.data;
+};
+
+export interface CertificateData {
+  verification_code: string;
+  is_valid: boolean;
+  learner_name: string;
+  content_title: string;
+  content_slug?: string;
+  final_score?: string;
+  issued_at: string;
+  revoked_at?: string;
+}
+
+export const getCertificate = async (verificationCode: string): Promise<CertificateData> => {
+  const response = await apiClient.get<CertificateData>(`/certificates/${verificationCode}`);
   return response.data;
 };
