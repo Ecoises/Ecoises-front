@@ -36,6 +36,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import Feedback from "./pages/Feedback";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -117,6 +118,7 @@ const App = () => (
               <Route path="/educator" element={<EducatorDashboard />} />
               <Route path="/educator/new" element={<LessonEditor />} />
               <Route path="/educator/edit/:id" element={<LessonEditor />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
