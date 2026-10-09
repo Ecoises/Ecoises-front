@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/axios';
+import apiClient from '@/api/apiClient';
 import { ExploreResponse } from '@/types/api';
 
 interface UseSpeciesParams {
@@ -36,10 +36,10 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
       // Si hay búsqueda, usar búsqueda global
       // Si no, usar exploración nacional
       const endpoint = cleanParams.lat && cleanParams.lng
-        ? '/api/explorer/nearby'
-        : '/api/explorer/national';
+        ? '/explorer/nearby'
+        : '/explorer/national';
 
-      const { data } = await api.get<ExploreResponse>(endpoint, {
+      const { data } = await apiClient.get<ExploreResponse>(endpoint, {
         params: { ...cleanParams, enrich: 0 }, // Optimize load time by skipping heavy details
       });
 
@@ -50,6 +50,12 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
     gcTime: isRandom ? 0 : 5 * 60 * 1000,
     retry: 1,
     refetchOnMount: isRandom ? 'always' : true,
+    // Mientras el backend completa fotos en segundo plano (cola species-sync),
+    // volvemos a pedir la página unas pocas veces para mostrar las tarjetas completas.
+    refetchInterval: (query) =>
+      (query.state.data as ExploreResponse | undefined)?.meta?.enriching_count && query.state.dataUpdateCount < 6
+        ? 8000
+        : false,
   });
 };
 
@@ -57,14 +63,13 @@ export const useSpeciesDetail = (id: string, options?: { enabled?: boolean }) =>
   return useQuery({
     queryKey: ['species', id],
     queryFn: async () => {
-      const { data } = await api.get<{ data: any }>(`/api/taxa/${id}`, {
+      const { data } = await apiClient.get<{ data: any }>(`/taxa/${id}`, {
         params: { enrich: 1 } // Request enriched data, sending 1 to pass strict boolean validation
       });
       return data.data;
     },
     enabled: options?.enabled !== false && !!id,
-    staleTime: 5 * 1000, // 5 seconds
-    refetchOnMount: 'always',
+    staleTime: 5 * 60 * 1000,
   });
 };
 
@@ -72,7 +77,7 @@ export const useRelatedSpecies = (id: string, options?: { enabled?: boolean }) =
   return useQuery({
     queryKey: ['related-species', id],
     queryFn: async () => {
-      const { data } = await api.get<{ data: any[] }>(`/api/taxa/${id}/related`);
+      const { data } = await apiClient.get<{ data: any[] }>(`/taxa/${id}/related`);
       return data.data;
     },
     enabled: options?.enabled !== false && !!id,

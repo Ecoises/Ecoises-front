@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import type { LaravelValidationError } from "@/types/api";
@@ -10,12 +11,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft, MapPin, Camera, Search, Loader2, CheckCircle2,
-  X, Calendar, Upload, Leaf, Star, Sparkles
+  X, Calendar, Upload, Leaf, Star, Sparkles, Trophy
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { taxonService, Taxon } from "@/api/services/TaxonService";
 import { observationService } from "@/api/services/ObservationService";
 import LocationMapModal from "@/components/observations/LocationMapModal";
+import { useChallenge } from "@/hooks/useChallenges";
+import { taxonPhotoUrl } from "@/lib/taxon";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -83,7 +86,13 @@ const PhotoPreview = ({
 export const ObservationCreate = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reto al que se envía la evidencia (/observations/create?reto=ID)
+  const [searchParams] = useSearchParams();
+  const challengeId = searchParams.get("reto");
+  const { data: challenge } = useChallenge(challengeId);
 
   // Búsqueda de especie
   const [speciesQuery, setSpeciesQuery] = useState("");
@@ -105,7 +114,21 @@ export const ObservationCreate = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [mapModalOpen, setMapModalOpen] = useState(false);
-  const [pointsEarned, setPointsEarned] = useState(50);
+  const [resultMessage, setResultMessage] = useState("");
+  const [pointsEarned, setPointsEarned] = useState(0);
+
+  // La especie de un reto viene fijada por el propio reto.
+  useEffect(() => {
+    if (!challenge?.taxon) return;
+    const t = challenge.taxon;
+    setSelectedTaxon({
+      id: t.id,
+      scientific_name: t.scientific_name,
+      common_name: t.common_name,
+      default_photo: t.default_photo ? { url: taxonPhotoUrl(t.default_photo) ?? undefined } : undefined,
+    } as Taxon);
+    setSpeciesQuery(t.common_name || t.scientific_name);
+  }, [challenge]);
 
   // ── Búsqueda de especie con debounce ────────────────────────────────────
   useEffect(() => {
@@ -178,9 +201,19 @@ export const ObservationCreate = () => {
       return;
     }
 
+    if (challenge?.requires_photo && photos.length === 0) {
+      toast({
+        title: "Falta la foto",
+        description: "Este reto necesita al menos una foto como evidencia.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const response = await observationService.create({
+        challenge_id: challenge?.id ?? null,
         taxon_id: selectedTaxon?.id ?? null,
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
@@ -193,9 +226,13 @@ export const ObservationCreate = () => {
       });
 
       if (response.success) {
-        setPointsEarned(response.data?.points_awarded || 50);
+        setResultMessage(response.message);
+        setPointsEarned(response.challenge_progress?.points ?? 0);
         setSubmitted(true);
-        setTimeout(() => navigate("/sightings"), 3000);
+        queryClient.invalidateQueries({ queryKey: ["challenges"] });
+        queryClient.invalidateQueries({ queryKey: ["challenge"] });
+        queryClient.invalidateQueries({ queryKey: ["recent-observations"] });
+        setTimeout(() => navigate(challenge ? `/retos/${challenge.id}` : "/retos"), 3000);
       } else {
         throw new Error(response.message || "Fallo al guardar.");
       }
@@ -221,12 +258,14 @@ export const ObservationCreate = () => {
         >
           <CheckCircle2 className="h-24 w-24 text-lime-500" />
         </motion.div>
-        <h2 className="text-2xl font-bold text-forest-900">¡Avistamiento registrado!</h2>
-        <p className="text-forest-600 flex items-center gap-1.5 bg-lime-50 border border-lime-150 px-4 py-2 rounded-full font-medium">
-          <Sparkles className="h-4 w-4 text-lime-600 fill-current" />
-          Has ganado <span className="font-bold text-lime-650">{pointsEarned} puntos</span> 🎉
-        </p>
-        <p className="text-sm text-forest-500">Redirigiendo a tus avistamientos...</p>
+        <h2 className="text-2xl font-bold text-forest-900 text-center">{resultMessage || "¡Avistamiento registrado!"}</h2>
+        {pointsEarned > 0 && (
+          <p className="text-forest-600 flex items-center gap-1.5 bg-lime-50 border border-lime-150 px-4 py-2 rounded-full font-medium">
+            <Sparkles className="h-4 w-4 text-lime-600 fill-current" />
+            Has ganado <span className="font-bold text-lime-650">{pointsEarned} puntos</span> 🎉
+          </p>
+        )}
+        <p className="text-sm text-forest-500">{challenge ? "Volviendo al reto..." : "Volviendo a los retos..."}</p>
       </div>
     );
   }
@@ -235,16 +274,26 @@ export const ObservationCreate = () => {
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in pb-12">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link to="/sightings">
+        <Link to={challenge ? `/retos/${challenge.id}` : "/retos"}>
           <Button variant="ghost" size="icon" className="rounded-full hover:bg-lime-50">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-forest-950 font-heading">Nuevo Avistamiento</h1>
-          <p className="text-sm text-forest-600">Registra una especie que observaste en el campus</p>
+          <h1 className="text-2xl font-bold text-forest-950 font-heading">{challenge ? "Evidencia del reto" : "Nuevo avistamiento"}</h1>
+          <p className="text-sm text-forest-600">{challenge ? challenge.title : "Registra una especie que observaste"}</p>
         </div>
       </div>
+
+      {challenge && (
+        <Card className="p-4 flex items-center gap-3 border-amber-200 bg-amber-50">
+          <Trophy className="h-6 w-6 text-amber-500 shrink-0" />
+          <p className="text-sm text-forest-800">
+            Completa el reto con {challenge.target} avistamiento{challenge.target === 1 ? "" : "s"} y gana{" "}
+            <strong>{challenge.reward_points} puntos</strong>. Llevas {Math.min(challenge.my_progress?.progress ?? 0, challenge.target)}.
+          </p>
+        </Card>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Especie */}
@@ -252,7 +301,7 @@ export const ObservationCreate = () => {
           <div className="flex items-center gap-2 mb-1">
             <Leaf className="h-4 w-4 text-lime-600" />
             <h2 className="font-semibold text-forest-900">Especie observada</h2>
-            <Badge variant="outline" className="ml-auto text-xs bg-lime-50/50">Opcional</Badge>
+            <Badge variant="outline" className="ml-auto text-xs bg-lime-50/50">{challenge?.taxon ? "Del reto" : "Opcional"}</Badge>
           </div>
 
           {selectedTaxon ? (
@@ -270,9 +319,11 @@ export const ObservationCreate = () => {
                 </p>
                 <p className="text-xs text-forest-600 italic truncate">{selectedTaxon.scientific_name}</p>
               </div>
-              <Button type="button" variant="ghost" size="icon" onClick={handleClearTaxon} className="shrink-0">
-                <X className="h-4 w-4" />
-              </Button>
+              {!challenge?.taxon && (
+                <Button type="button" variant="ghost" size="icon" onClick={handleClearTaxon} className="shrink-0">
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           ) : (
             <div className="relative">
@@ -502,7 +553,7 @@ export const ObservationCreate = () => {
           ) : (
             <>
               <CheckCircle2 className="h-5 w-5" />
-              Registrar Avistamiento (+50 pts)
+              {challenge ? "Enviar evidencia" : "Registrar avistamiento"}
             </>
           )}
         </Button>

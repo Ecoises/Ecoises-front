@@ -108,7 +108,7 @@ export const ObservationEdit = () => {
             description: "No se pudo recuperar los detalles de este avistamiento.",
             variant: "destructive",
           });
-          navigate("/sightings");
+          navigate("/retos");
           return;
         }
 
@@ -137,7 +137,6 @@ export const ObservationEdit = () => {
         if (obs.taxon) {
           setSelectedTaxon({
             id: obs.taxon.id,
-            name: obs.taxon.common_name || obs.taxon.scientific_name,
             scientific_name: obs.taxon.scientific_name,
             common_name: obs.taxon.common_name,
           });
@@ -149,7 +148,7 @@ export const ObservationEdit = () => {
           description: "Ocurrió un problema de conexión al cargar la información.",
           variant: "destructive",
         });
-        navigate("/sightings");
+        navigate("/retos");
       } finally {
         setLoadingObs(false);
       }

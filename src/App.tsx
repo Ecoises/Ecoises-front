@@ -1,45 +1,63 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import LandingPage from "./pages/LandingPage";
-import Explorer from "./pages/species/Explorer";
-import Identify from "./pages/tools/Identify";
-import SpeciesDetail from "./pages/species/SpeciesDetail";
-import Map from "./pages/tools/Map";
-import Species from "./pages/species/Species";
-import Sightings from "./pages/sightings/Sightings";
-import NewSighting from "./pages/sightings/NewSighting";
-import NotFound from "./pages/NotFound";
-import Layout from "./components/Layout";
-import Login from "./pages/auth/Login";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import ResetPassword from "./pages/auth/ResetPassword";
-import About from "./pages/About";
-import ObservationDetail from "./pages/observations/ObservationDetail";
-import ObservationCreate from "./pages/observations/ObservationCreate";
-import ObservationEdit from "./pages/observations/ObservationEdit";
-import Learn from "./pages/learn/Learn";
-import CourseDetail from "./pages/learn/CourseDetail";
-import ArticleDetail from "./pages/learn/ArticleDetail";
-import ResourceDetail from "./pages/learn/ResourceDetail";
-import AnnouncementDetail from "./pages/AnnouncementDetail";
-import LessonPlayer from "./pages/learn/LessonPlayer";
-import EducatorDashboard from "./pages/educator/EducatorDashboard";
-import LessonEditor from "./pages/educator/LessonEditor";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import TermsOfService from "./pages/legal/TermsOfService";
-import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import ScrollToTop from "./components/ScrollToTop";
-import Feedback from "./pages/Feedback";
-import Profile from "./pages/Profile";
-import Certificate from "./pages/Certificate";
 
-const queryClient = new QueryClient();
+// Cada página se descarga solo cuando se visita (code splitting).
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const About = lazy(() => import("./pages/About"));
+const AnnouncementDetail = lazy(() => import("./pages/AnnouncementDetail"));
+const Certificate = lazy(() => import("./pages/Certificate"));
+const Feedback = lazy(() => import("./pages/Feedback"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Profile = lazy(() => import("./pages/Profile"));
+// Autenticación
+const Login = lazy(() => import("./pages/auth/Login"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+// Biodiversidad
+const Explorer = lazy(() => import("./pages/species/Explorer"));
+const Species = lazy(() => import("./pages/species/Species"));
+const SpeciesDetail = lazy(() => import("./pages/species/SpeciesDetail"));
+// Retos de campo y avistamientos
+const Challenges = lazy(() => import("./pages/challenges/Challenges"));
+const ChallengeDetail = lazy(() => import("./pages/challenges/ChallengeDetail"));
+const ObservationCreate = lazy(() => import("./pages/observations/ObservationCreate"));
+const ObservationDetail = lazy(() => import("./pages/observations/ObservationDetail"));
+const ObservationEdit = lazy(() => import("./pages/observations/ObservationEdit"));
+// Aprendizaje
+const Learn = lazy(() => import("./pages/learn/Learn"));
+const CourseDetail = lazy(() => import("./pages/learn/CourseDetail"));
+const ArticleDetail = lazy(() => import("./pages/learn/ArticleDetail"));
+const ResourceDetail = lazy(() => import("./pages/learn/ResourceDetail"));
+const LessonPlayer = lazy(() => import("./pages/learn/LessonPlayer"));
+// Legal
+const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Evita repetir peticiones al cambiar de pestaña o volver a una página reciente.
+      staleTime: 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[50vh]">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-600" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -47,84 +65,56 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ScrollToTop />
-          <Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Acceso (solo sin sesión) */}
+              <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+              <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+              <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
 
-            <Route path="/login" element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            } />
-            <Route path="/forgot-password" element={
-              <PublicRoute>
-                <ForgotPassword />
-              </PublicRoute>
-            } />
-            <Route path="/reset-password" element={
-              <PublicRoute>
-                <ResetPassword />
-              </PublicRoute>
-            } />
+              {/* Páginas públicas */}
+              <Route element={<Layout />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/home" element={<Navigate to="/" replace />} />
+                <Route path="/announcements/:slug" element={<AnnouncementDetail />} />
 
-            {/* Public Routes with Layout */}
-            <Route element={<Layout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/home" element={<Dashboard />} />
-              <Route path="/announcements/:slug" element={<AnnouncementDetail />} />
+                <Route path="/explorer" element={<Explorer />} />
+                <Route path="/taxa" element={<Species />} />
+                <Route path="/taxa/:id" element={<SpeciesDetail />} />
 
-              <Route path="/explorer" element={<Explorer />} />
-              <Route path="/taxa" element={<Species />} />
-              <Route path="/taxa/:id" element={<SpeciesDetail />} />
+                <Route path="/retos" element={<Challenges />} />
+                <Route path="/retos/:id" element={<ChallengeDetail />} />
+                <Route path="/observations/:id" element={<ObservationDetail />} />
 
-               <Route path="/identify" element={<Identify />} />
-               
+                <Route path="/learn" element={<Learn />} />
+                <Route path="/learn/course/:slug" element={<CourseDetail />} />
+                <Route path="/learn/article/:slug" element={<ArticleDetail />} />
+                <Route path="/learn/resource/:slug" element={<ResourceDetail />} />
+                <Route path="/certificates/:verificationCode" element={<Certificate />} />
 
-              
+                <Route path="/about" element={<About />} />
+                <Route path="/feedback" element={<Feedback />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
 
-              <Route path="/identify" element={<Identify />} />
-              <Route path="/map" element={<Map />} />
-              <Route path="/sightings" element={<Sightings />} />
-              <Route path="/observations/:id" element={<ObservationDetail />} />
-              <Route path="/about" element={<About />} />
+                {/* Rutas antiguas de la versión tipo iNaturalist */}
+                <Route path="/sightings" element={<Navigate to="/retos" replace />} />
+                <Route path="/sightings/new" element={<Navigate to="/observations/create" replace />} />
+              </Route>
 
-              <Route path="/learn" element={<Learn />} />
-              <Route path="/learn/course/:slug" element={<CourseDetail />} />
-              <Route path="/learn/article/:slug" element={<ArticleDetail />} />
-              <Route path="/learn/resource/:slug" element={<ResourceDetail />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/feedback" element={<Feedback />} />
-              <Route path="/certificates/:verificationCode" element={<Certificate />} />
-            </Route>
+              {/* Páginas que requieren sesión */}
+              <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                <Route path="/learn/course/:courseSlug/lesson/:lessonSlug" element={<LessonPlayer />} />
+                <Route path="/observations/create" element={<ObservationCreate />} />
+                <Route path="/observations/edit/:id" element={<ObservationEdit />} />
+                <Route path="/profile" element={<Profile />} />
+              </Route>
 
-            {/* Protected Routes */}
-            <Route element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              {/* Learning Progress - Protected */}
-              <Route path="/learn/course/:courseSlug/lesson/:lessonSlug" element={<LessonPlayer />} />
-
-              {/* Registrar / Editar avistamiento - requiere auth */}
-              <Route path="/sightings/new" element={<NewSighting />} />
-              <Route path="/observations/create" element={<ObservationCreate />} />
-              <Route path="/observations/edit/:id" element={<ObservationEdit />} />
-
-              {/* Educator Routes */}
-              <Route path="/educator" element={<EducatorDashboard />} />
-              <Route path="/educator/new" element={<LessonEditor />} />
-              <Route path="/educator/edit/:id" element={<LessonEditor />} />
-              <Route path="/profile" element={<Profile />} />
-            </Route>
-
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

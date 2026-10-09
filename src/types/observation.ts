@@ -34,6 +34,11 @@ export interface ApiObservation {
   notes: string | null;
   is_public: boolean;
   points_awarded: number;
+  /** Reto al que pertenece el avistamiento (si es evidencia de un reto). */
+  challenge_id?: number | null;
+  verification_status?: 'pending' | 'approved' | 'rejected' | null;
+  review_note?: string | null;
+  challenge?: { id: number; title: string; reward_points?: number; target_value?: number } | null;
   created_at: string;
   updated_at: string;
   // Relaciones eager-loaded

@@ -3,7 +3,7 @@ import { Sparkles, ChevronRight, RefreshCw, Leaf } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import api from "@/lib/axios";
+import apiClient from "@/api/apiClient";
 import { useQuery } from "@tanstack/react-query";
 
 interface DailySpecies {
@@ -20,7 +20,7 @@ const useDailySpecies = () => {
   return useQuery({
     queryKey: ['daily_recommendation'],
     queryFn: async () => {
-      const { data } = await api.get('/api/daily-recommendation');
+      const { data } = await apiClient.get('/daily-recommendation');
       return data;
     },
     staleTime: 60 * 60 * 1000,

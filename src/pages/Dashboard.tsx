@@ -1,15 +1,7 @@
 
-import { Link } from "react-router-dom";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import DashboardNavbar from "@/components/DashboardNavbar";
 import HeroSection from "@/components/home/HeroSection";
-import StatsSection from "@/components/home/StatsSection";
 import SpeciesRecommendation from "@/components/home/SpeciesRecommendation";
 import DailyFunFacts from "@/components/home/DailyFunFacts";
-import LeaderboardSection from "@/components/home/LeaderboardSection";
-import RecentSightingsSection from "@/components/home/RecentSightingsSection";
-import FeaturesSection from "@/components/home/FeaturesSection";
 import EcosystemGridGallery from "@/components/home/EcosystemGridGallery";
 import AnnouncementsSection from "@/components/home/AnnouncementsSection";
 
@@ -31,10 +23,6 @@ const Index = () => {
 
         <AnnouncementsSection />
 
-        {/* Stats 
-      <StatsSection />
-      */}
-
         {/* Species Recommendation */}
         <SpeciesRecommendation />
 
@@ -43,10 +31,6 @@ const Index = () => {
 
         {/* Ecosystem Grid Gallery */}
         <EcosystemGridGallery />
-
-        {/* Leaderboard Section */}
-        {/* <LeaderboardSection /> */}
-
 
       </div>
     </div>

@@ -85,15 +85,15 @@ const Profile = () => {
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          [BookOpen, "Iniciados", stats.enrolled],
-          [GraduationCap, "En progreso", stats.in_progress],
-          [CheckCircle2, "Completados", stats.completed],
-          [Clock3, "Minutos aprendiendo", stats.time_spent_minutes],
-        ].map(([Icon, label, value]) => (
-          <div key={label as string} className="rounded-2xl border border-lime-100 bg-white p-4 shadow-sm">
+          { icon: BookOpen, label: "Iniciados", value: stats.enrolled },
+          { icon: GraduationCap, label: "En progreso", value: stats.in_progress },
+          { icon: CheckCircle2, label: "Completados", value: stats.completed },
+          { icon: Clock3, label: "Minutos aprendiendo", value: stats.time_spent_minutes },
+        ].map(({ icon: Icon, label, value }) => (
+          <div key={label} className="rounded-2xl border border-lime-100 bg-white p-4 shadow-sm">
             <Icon className="mb-3 h-5 w-5 text-lime-700" />
-            <p className="text-2xl font-bold text-forest-950">{value as number}</p>
-            <p className="text-xs text-muted-foreground">{label as string}</p>
+            <p className="text-2xl font-bold text-forest-950">{value}</p>
+            <p className="text-xs text-muted-foreground">{label}</p>
           </div>
         ))}
       </section>

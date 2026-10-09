@@ -134,7 +134,7 @@ const ObservationDetail = () => {
           title: "Observación eliminada",
           description: "El avistamiento ha sido eliminado de la base de datos.",
         });
-        navigate("/sightings");
+        navigate("/retos");
       } else {
         throw new Error(response.message || "No se pudo eliminar.");
       }
@@ -260,7 +260,7 @@ const ObservationDetail = () => {
         <div className="bg-red-50 text-red-700 p-6 rounded-3xl border border-red-100 shadow-sm mb-6">
           <h2 className="text-xl font-bold mb-2">Error al cargar la observación</h2>
           <p className="text-sm text-red-650 mb-6">{error || "No pudimos encontrar este registro en la base de datos."}</p>
-          <Link to="/sightings">
+          <Link to="/retos">
             <Button className="bg-red-600 hover:bg-red-700 text-white rounded-full">
               Volver a Avistamientos
             </Button>
@@ -275,7 +275,7 @@ const ObservationDetail = () => {
       {/* Botón Volver */}
       <div className="mb-4">
         <Link 
-          to="/sightings" 
+          to="/retos" 
           className="text-forest-700 hover:text-forest-900 inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />

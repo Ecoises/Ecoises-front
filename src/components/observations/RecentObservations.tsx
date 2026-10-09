@@ -23,9 +23,11 @@ import ReportModal from "@/components/observations/ReportModal";
 interface RecentObservationsProps {
   taxonId?: number;
   speciesName?: string;
+  /** Oculta el enlace "Ver todas" (por ejemplo, dentro de la propia página de retos). */
+  showViewAll?: boolean;
 }
 
-export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: RecentObservationsProps) => {
+export const RecentObservations = ({ taxonId, speciesName = "esta especie", showViewAll = true }: RecentObservationsProps) => {
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -123,13 +125,15 @@ export const RecentObservations = ({ taxonId, speciesName = "esta especie" }: Re
     <div className="mt-12 mb-8 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-forest-950 font-heading">Observaciones Recientes</h2>
-        <Link 
-          to="/sightings" 
-          className="text-lime-600 hover:text-lime-700 text-sm font-semibold flex items-center gap-1 group transition-colors"
-        >
-          Ver todas
-          <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-        </Link>
+        {showViewAll && (
+          <Link
+            to="/retos"
+            className="text-lime-600 hover:text-lime-700 text-sm font-semibold flex items-center gap-1 group transition-colors"
+          >
+            Ver retos
+            <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+          </Link>
+        )}
       </div>
 
       {observations.length > 0 ? (

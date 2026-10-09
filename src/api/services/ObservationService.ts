@@ -16,13 +16,20 @@ export interface ObservationCreateResponse {
   success: boolean;
   message: string;
   data: ApiObservation;
+  /** Solo cuando el avistamiento es evidencia de un reto. */
+  challenge_progress?: {
+    progress: number;
+    target: number;
+    completed: boolean;
+    points: number;
+  } | null;
 }
 
 class ObservationService {
   private endpoint = 'observations';
 
   /** Listar observaciones públicas (opcionalmente filtradas por taxon_id o user_id) */
-  async getAll(params?: { taxon_id?: number; user_id?: number; per_page?: number; page?: number }): Promise<ObservationListResponse> {
+  async getAll(params?: { taxon_id?: number; user_id?: number; challenge_id?: number; per_page?: number; page?: number }): Promise<ObservationListResponse> {
     const response = await apiClient.get<ObservationListResponse>(`/${this.endpoint}`, { params });
     return response.data;
   }
@@ -51,9 +58,11 @@ class ObservationService {
     notes?: string;
     is_public?: boolean;
     photos?: File[];
+    challenge_id?: number | null;
   }): Promise<ObservationCreateResponse> {
     const form = new FormData();
 
+    if (payload.challenge_id != null) form.append('challenge_id', String(payload.challenge_id));
     if (payload.taxon_id != null) form.append('taxon_id', String(payload.taxon_id));
     if (payload.latitude != null) form.append('latitude', String(payload.latitude));
     if (payload.longitude != null) form.append('longitude', String(payload.longitude));

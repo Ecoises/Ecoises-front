@@ -41,8 +41,8 @@ const NavItem = ({ icon: Icon, label, to, active }: NavItemProps) => {
 
 export const navItems = [
   { icon: Home, label: "Inicio", to: "/" },
-  { icon: Search, label: "Exporar", to: "/explorer" },
-  { icon: Trophy, label: "Ranking", to: "/ranking" },
+  { icon: Search, label: "Explorar", to: "/explorer" },
+  { icon: Trophy, label: "Retos", to: "/retos" },
   { icon: GraduationCap, label: "Aprende", to: "/learn" },
 ];
 
@@ -50,7 +50,7 @@ export const mobileNavItems = [
   { icon: Home, label: "Inicio", to: "/" },
   { icon: Search, label: "Explorar", to: "/explorer" },
   { icon: GraduationCap, label: "Aprende", to: "/learn" },
-  { icon: Trophy, label: "Ranking", to: "/ranking" },
+  { icon: Trophy, label: "Retos", to: "/retos" },
   { icon: User, label: "Perfil", to: "/profile" },
 ];
 
