@@ -36,22 +36,25 @@ const AnnouncementDetail = () => {
       </Link>
 
       <header className="space-y-5">
-        <div className="flex items-center gap-2 text-sm font-semibold text-lime-700">
-          <Megaphone className="h-4 w-4" /> Novedad de Ecoises
+        <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider bg-lime-100/90 text-forest-800 border border-lime-200/70 w-fit">
+          <Megaphone className="h-3.5 w-3.5 text-forest-700 fill-lime-200" />
+          <span>{announcement.is_pinned ? "ANUNCIO ESPECIAL" : "NOVEDAD"} • {announcement.audience === "authenticated" ? "MIEMBROS" : "COMUNIDAD"}</span>
         </div>
-        <h1 className="text-3xl font-bold leading-tight text-forest-950 md:text-5xl">{announcement.title}</h1>
+        <h1 className="text-3xl font-extrabold leading-tight text-forest-950 md:text-5xl font-heading tracking-tight">{announcement.title}</h1>
         {announcement.summary && <p className="text-xl leading-relaxed text-forest-700">{announcement.summary}</p>}
-        {cover && <img src={cover} alt="" className="max-h-[520px] w-full rounded-2xl object-cover" />}
+        {cover && <img src={cover} alt={announcement.title} className="max-h-[520px] w-full rounded-3xl object-cover shadow-md" />}
       </header>
 
       {announcement.body && <LessonContent htmlContent={announcement.body} />}
 
       {announcement.cta_url && (
-        <a href={announcement.cta_url} target="_blank" rel="noreferrer">
-          <Button className="gap-2">
-            {announcement.cta_label || "Conocer más"} <ArrowUpRight className="h-4 w-4" />
-          </Button>
-        </a>
+        <div className="pt-4">
+          <a href={announcement.cta_url} target="_blank" rel="noreferrer">
+            <Button className="gap-2.5 rounded-full px-6 py-3.5 text-base font-semibold text-white bg-[#005c3b] hover:bg-[#00482e] shadow-md shadow-green-950/15 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all">
+              {announcement.cta_label || "Participar en la Expedición"} <ArrowUpRight className="h-4 w-4" />
+            </Button>
+          </a>
+        </div>
       )}
     </article>
   );

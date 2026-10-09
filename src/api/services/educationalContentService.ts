@@ -192,6 +192,7 @@ export interface Announcement {
     cover_image?: string;
     cta_label?: string;
     cta_url?: string;
+    audience?: string;
     is_pinned: boolean;
     published_at: string;
     starts_at?: string;
