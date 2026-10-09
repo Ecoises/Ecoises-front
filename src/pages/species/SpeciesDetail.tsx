@@ -13,6 +13,7 @@ import { useSpeciesDetail, useRelatedSpecies } from "@/hooks/useSpecies"
 import SpeciesDistributionMap from "@/components/maps/SpeciesDistributionMap"
 import { AnimatePresence, motion } from "framer-motion"
 import TaxonomyGame from "@/components/species/TaxonomyGame"
+import EcologicalImportanceCard from "@/components/species/EcologicalImportanceCard";
 import RecentObservations from "@/components/observations/RecentObservations"
 
 
@@ -323,7 +324,9 @@ const SpeciesDetail = () => {
               );
             })()}
 
-            {ecologicalHighlight && (
+            {species.ecological_importance ? (
+              <EcologicalImportanceCard data={species.ecological_importance} />
+            ) : ecologicalHighlight && (
               <Card className="mb-6 overflow-hidden border-lime-200 bg-gradient-to-br from-lime-50/90 to-emerald-50/70 shadow-sm">
                 <CardContent className="p-5">
                   <div className="flex items-start gap-3">
