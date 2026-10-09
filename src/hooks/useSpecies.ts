@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import apiClient from '@/api/apiClient';
 import { ExploreResponse } from '@/types/api';
 
@@ -50,6 +50,8 @@ export const useSpecies = (params: UseSpeciesParams = {}) => {
     gcTime: isRandom ? 0 : 5 * 60 * 1000,
     retry: 1,
     refetchOnMount: isRandom ? 'always' : true,
+    // Al cambiar filtros o página se conserva la lista anterior mientras llega la nueva.
+    placeholderData: keepPreviousData,
     // Mientras el backend completa fotos en segundo plano (cola species-sync),
     // volvemos a pedir la página unas pocas veces para mostrar las tarjetas completas.
     refetchInterval: (query) =>

@@ -366,7 +366,7 @@ export default function Explorer() {
 
   // DEBUG: console.log('📤 Params being sent to useSpecies:', { iconic_taxa: selectedGroup, selectedGroup });
 
-  const { data, isLoading, isError, error, isFetching } = useSpecies({
+  const { data, isLoading, isError, error, isFetching, isPlaceholderData } = useSpecies({
     page,
     per_page: ITEMS_PER_PAGE,
     q: debouncedSearch,
@@ -405,8 +405,9 @@ export default function Explorer() {
     return "Especies de Colombia";
   };
 
-  // Mostrar el estado de carga también al buscar, filtrar, paginar o cambiar ubicación.
-  const showLoading = isLoading || isFetching;
+  // Carga visible al buscar, filtrar, paginar o cambiar ubicación. Las recargas en
+  // segundo plano (fotos que llegan de la cola) actualizan la lista sin vaciarla.
+  const showLoading = isLoading || (isFetching && isPlaceholderData);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 min-h-screen">
