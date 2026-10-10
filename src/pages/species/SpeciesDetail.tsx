@@ -617,7 +617,11 @@ const SpeciesDetail = () => {
         <div>
           <h2 className="text-2xl font-bold text-forest-950 mb-4">Mapa de ocurrencias</h2>
           <div className="h-[400px] w-full relative">
-            <SpeciesDistributionMap gbifKey={species?.gbif_taxon_key} speciesName={displayCommonName} />
+            <SpeciesDistributionMap
+              gbifKey={species?.gbif_taxon_key}
+              inatId={species?.inaturalist_id || species?.inat_taxon_id}
+              speciesName={displayCommonName}
+            />
           </div>
         </div>
 
