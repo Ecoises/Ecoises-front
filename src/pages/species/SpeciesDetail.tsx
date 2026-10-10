@@ -615,23 +615,9 @@ const SpeciesDetail = () => {
       <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column: Distribution Map */}
         <div>
-          <h2 className="text-2xl font-bold text-forest-950 mb-4">Mapa de Distribución</h2>
+          <h2 className="text-2xl font-bold text-forest-950 mb-4">Mapa de ocurrencias</h2>
           <div className="h-[400px] w-full relative">
-            {/* Get external_id from api_references for iNaturalist */}
-            {(() => {
-              const externalId = species?.api_references?.find(
-                (ref: any) => ref.api_source === 'inaturalist'
-              )?.external_id || species?.inaturalist_id || species?.inat_taxon_id || species?.id;
-
-              return (
-                <SpeciesDistributionMap
-                  taxonId={externalId}
-                  speciesName={displayCommonName}
-                  center={[4.5709, -74.2973]} // Colombia center
-                  zoom={6}
-                />
-              );
-            })()}
+            <SpeciesDistributionMap gbifKey={species?.gbif_taxon_key} speciesName={displayCommonName} />
           </div>
         </div>
 
