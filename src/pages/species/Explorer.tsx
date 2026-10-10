@@ -1,664 +1,350 @@
-import { useState, useEffect } from "react";
-import { Link, useSearchParams, useLocation } from "react-router-dom";
-import { 
-  Search, Filter, X, ShieldAlert, Loader2, MapPin, Star, Sparkles, Shuffle, Navigation, Map, CornerRightDown, Leaf, ListOrdered, Globe,
-} from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Globe, Leaf, Loader2, Microscope, Navigation, Search, SlidersHorizontal, Users, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { useSpecies } from "@/hooks/useSpecies";
-import { useQueryClient } from "@tanstack/react-query";
-import { Taxon } from "@/types/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { LocationMapModal } from "@/components/observations/LocationMapModal";
+import { SpeciesCard, SpeciesCardSkeleton } from "@/components/explorer/SpeciesCard";
+import { ExplorerFilterOptions } from "@/components/explorer/ExplorerFilterOptions";
+import { ActiveFilterChips, countActiveFilters } from "@/components/explorer/ActiveFilterChips";
+import { useExplorerSpecies, useScientificRecords } from "@/hooks/useExplorer";
+import { useExplorerLocation } from "@/hooks/useExplorerLocation";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
+import type { ExplorerFilters } from "@/types/explorer";
 
+const RADIUS_OPTIONS = [10, 25, 50, 100];
+const SKELETONS = Array.from({ length: 12 });
+const GRID = "grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-5";
 
-const LOCATION_STORAGE_KEY = 'ecoises.explorer.location.v1';
-const LOCATION_TTL_MS = 24 * 60 * 60 * 1000;
+type Source = "ciudadana" | "cientifica";
 
-type StoredLocation = {
-  coords: { lat: number; lng: number };
-  name: string;
-  savedAt: number;
+/** Lee los filtros de la URL (acepta los nombres antiguos iconic_taxa y order_by). */
+const readFilters = (params: URLSearchParams): Omit<ExplorerFilters, "lat" | "lng"> => {
+  const radius = Number(params.get("radius") || 25);
+  return {
+    q: params.get("q") || undefined,
+    group: params.get("group") || params.get("iconic_taxa") || undefined,
+    native: params.get("native") === "1",
+    endemic: params.get("endemic") === "1",
+    threatened: params.get("threatened") === "1",
+    order: params.get("order") === "random" || params.get("order_by") === "random" ? "random" : "popular",
+    seed: params.get("seed") || undefined,
+    radius: RADIUS_OPTIONS.includes(radius) ? radius : 25,
+  };
 };
 
-const readStoredLocation = (): StoredLocation | null => {
-  try {
-    const value = localStorage.getItem(LOCATION_STORAGE_KEY);
-    if (!value) return null;
-    const parsed = JSON.parse(value) as StoredLocation;
-    const validCoords = Number.isFinite(parsed?.coords?.lat) && Number.isFinite(parsed?.coords?.lng);
-    if (!validCoords || Date.now() - parsed.savedAt > LOCATION_TTL_MS) {
-      localStorage.removeItem(LOCATION_STORAGE_KEY);
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
+const writeFilters = (filters: Partial<ExplorerFilters>, source: Source) => {
+  const params = new URLSearchParams();
+  if (filters.q) params.set("q", filters.q);
+  if (filters.group) params.set("group", filters.group);
+  if (filters.native) params.set("native", "1");
+  if (filters.endemic) params.set("endemic", "1");
+  if (filters.threatened) params.set("threatened", "1");
+  if (filters.order === "random") params.set("order", "random");
+  if (filters.order === "random" && filters.seed) params.set("seed", filters.seed);
+  if (filters.radius && filters.radius !== 25) params.set("radius", String(filters.radius));
+  if (source === "cientifica") params.set("fuente", "cientifica");
+  return params;
 };
-
-const persistLocation = (coords: { lat: number; lng: number }, name: string) => {
-  localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify({ coords, name, savedAt: Date.now() }));
-};
-const groups = [
-  { label: "Todas", value: "" },
-  { label: "Aves", value: "Aves" },
-  { label: "Mamíferos", value: "Mammalia" },
-  { label: "Reptiles", value: "Reptilia" },
-  { label: "Anfibios", value: "Amphibia" },
-  { label: "Insectos", value: "Insecta" },
-  { label: "Arañas", value: "Arachnida" },
-  { label: "Moluscos", value: "Mollusca" },
-  { label: "Peces", value: "Actinopterygii" },
-  { label: "Plantas", value: "Plantae" },
-  { label: "Hongos", value: "Fungi" },
-];
-
-// Helpes for badges
-const getConservationBadge = (statusData?: any) => {
-  if (!statusData) return null;
-
-  // Extract status code (VU, EN, etc)
-  let code = '';
-  if (typeof statusData === 'object') {
-    code = statusData.status || statusData.status_name || '';
-  } else {
-    code = String(statusData);
-  }
-
-  const s = code.toUpperCase();
-
-  if (s === 'NE') return null; // Hide Not Evaluated
-
-  switch (s) {
-    case 'EX': return { label: 'EX', className: 'bg-gray-900 text-white border-gray-700' };
-    case 'EW': return { label: 'EW', className: 'bg-purple-100 text-purple-800 border-purple-200' };
-    case 'CR': return { label: 'CR', className: 'bg-red-100 text-red-800 border-red-200' };
-    case 'EN': return { label: 'EN', className: 'bg-orange-100 text-orange-800 border-orange-200' };
-    case 'VU': return { label: 'VU', className: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
-    case 'NT': return { label: 'NT', className: 'bg-lime-100 text-lime-800 border-lime-200' };
-    case 'LC': return { label: 'LC', className: 'bg-green-100 text-green-800 border-green-200' };
-    case 'DD': return { label: 'DD', className: 'bg-gray-100 text-gray-800 border-gray-200' };
-    default: return null;
-  }
-};
-
-const getEstablishmentBadge = (species: Taxon) => {
-  // 1. Check strict booleans first
-  if (species.endemic) {
-    return {
-      icon: <Sparkles className="h-3 w-3" />,
-      className: "bg-lime-800 text-white border-lime-900",
-      label: "Endémica"
-    };
-  }
-
-  // 2. Check string status (handling Spanish/English variations from Backend)
-  const status = String(species.establishment_status_colombia || "").toLowerCase();
-
-  if (status === "endemic" || status === "endémica" || status === "endemica") {
-    return {
-      icon: <Sparkles className="h-3 w-3" />,
-      className: "bg-lime-800 text-white border-lime-900",
-      label: "Endémica"
-    };
-  }
-
-  if (species.native || status === "native" || status === "nativa") {
-    return {
-      icon: <Star className="h-3 w-3" />,
-      className: "bg-lime-300 text-forest-900 border-lime-400",
-      label: "Nativa"
-    };
-  }
-
-  if (status === 'introduced' || status === 'introducida') {
-    return {
-      icon: <CornerRightDown className="h-3 w-3" />,
-      className: "bg-pink-100 text-pink-800 border-pink-200",
-      label: "Introducida"
-    };
-  }
-  return null;
-};
-
-const SpeciesCard = ({ species }: { species: Taxon }) => {
-  const location = useLocation();
-  const conservation = getConservationBadge(species.conservation_status);
-  const establishment = getEstablishmentBadge(species);
-
-  return (
-    <Link
-      to={`/taxa/${species.id}`}
-      state={{ from: location, explorerCommonName: species.common_name }}
-      className="w-full block h-full"
-    >
-      <Card className="w-full overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full cursor-pointer flex flex-col group border-lime-100/60 bg-white">
-        <div className="relative h-52 min-[430px]:h-48 bg-gray-100 overflow-hidden">
-          {species.default_photo ? (
-            <img
-              src={
-                species.default_photo.medium_url ||
-                species.default_photo.square_url ||
-                species.default_photo.url?.replace("square", "medium") ||
-                species.default_photo.url
-              }
-              alt={species.common_name || species.scientific_name}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              loading="lazy"
-              onError={(e) => {
-                // Si medium_url falla, intentar con square_url o url original
-                const target = e.currentTarget;
-                const fallback = species.default_photo?.square_url || species.default_photo?.url;
-                if (fallback && target.src !== fallback) {
-                  target.src = fallback;
-                } else {
-                  target.style.display = 'none';
-                  target.parentElement?.classList.add('photo-error');
-                }
-              }}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-forest-300 bg-forest-50/50">
-              <Leaf className="h-8 w-8 mb-2 opacity-50" />
-              <span className="text-xs">Sin imagen</span>
-            </div>
-          )}
-
-          {/* Establishment Badge (Top Left) */}
-          {establishment && (
-            <div className={`absolute top-2 left-2 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-sm flex items-center gap-1 ${establishment.className}`}>
-              {establishment.icon}
-              {establishment.label}
-            </div>
-          )}
-
-          {/* Conservation Status Badge (Top Right) */}
-          {conservation && (
-            <div className={`absolute top-2 right-2 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold border shadow-sm ${conservation.className}`}>
-              {conservation.label}
-            </div>
-          )}
-        </div>
-
-        <div className="p-4 flex-grow flex flex-col">
-          <h3 className="font-bold text-forest-950 text-lg mb-1 line-clamp-2 leading-tight group-hover:text-lime-700 transition-colors">
-            {species.common_name || species.scientific_name}
-          </h3>
-          {/* Changed typography: removed font-serif, kept italic */}
-          <p className="text-forest-600/80 text-sm italic mb-3 line-clamp-1">{species.scientific_name}</p>
-
-          <div className="flex-grow"></div>
-          {typeof species.occurrence_count === 'number' && (
-            <p className="mt-3 text-xs font-medium text-forest-600">
-              {species.occurrence_count.toLocaleString('es-CO')} {species.occurrence_count === 1 ? 'registro' : 'registros'} en GBIF
-            </p>
-          )}
-        </div>
-      </Card>
-    </Link>
-  );
-};
-
-// Update SkeletonCard
-const SkeletonCard = () => (
-  <Card className="overflow-hidden h-full border-lime-100/50 bg-white">
-    <div className="h-52 min-[430px]:h-48 bg-gray-200 animate-pulse"></div>
-    <div className="p-4 space-y-3">
-      <div className="h-5 bg-gray-200 rounded w-3/4 animate-pulse"></div>
-      <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-      <div className="pt-2">
-        <div className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"></div>
-      </div>
-    </div>
-  </Card>
-);
 
 export default function Explorer() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filtersVisible, setFiltersVisible] = useState(false);
-  const queryClient = useQueryClient();
+  const location = useExplorerLocation();
+  const isMobile = useIsMobile();
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false);
 
-  // La ubicación se conserva por 24 horas y puede eliminarse desde la interfaz.
-  const [storedLocation] = useState(readStoredLocation);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(storedLocation?.coords ?? null);
-  const [locationName, setLocationName] = useState<string | null>(storedLocation?.name ?? null);
-  const [locationError, setLocationError] = useState<string | null>(null);
-  const [isLocating, setIsLocating] = useState(false);
+  const source: Source = searchParams.get("fuente") === "cientifica" ? "cientifica" : "ciudadana";
+  const urlFilters = useMemo(() => readFilters(searchParams), [searchParams]);
+  const filters: ExplorerFilters = useMemo(
+    () => ({ ...urlFilters, lat: location.coords?.lat, lng: location.coords?.lng }),
+    [urlFilters, location.coords]
+  );
 
-  // Derive state from URL
-  const paramPage = parseInt(searchParams.get("page") || "1");
-  const page = isNaN(paramPage) || paramPage < 1 ? 1 : paramPage;
-  const currentPage = page;
-  const q = searchParams.get("q") || "";
-  const selectedGroup = searchParams.get("iconic_taxa") || "";
-  // DEBUG: console.log('🔍 DEBUG selectedGroup:', selectedGroup, 'from URL param:', searchParams.get("iconic_taxa"));
-  const selectedConservationStatus = searchParams.get("threatened") === "true" ? "threatened" : "Todos";
-  const nativeFilter = searchParams.get("native") === "true" ? "native" : (searchParams.get("endemic") === "true" ? "endemic" : "all");
-  const sortBy = searchParams.get("order_by") || (userLocation ? "occurrence_count" : "random");
-  const radiusOptions = [10, 25, 50, 100];
-  const requestedRadius = Number(searchParams.get("radius") || 25);
-  const radius = radiusOptions.includes(requestedRadius) ? requestedRadius : 25;
-  const randomSeed = searchParams.get("random_seed") || (!userLocation ? `national-${new Date().toISOString().slice(0, 10)}` : undefined);
-
-  // Local search input
-  const [searchTerm, setSearchTerm] = useState(q);
-  const [debouncedSearch, setDebouncedSearch] = useState(q);
-
+  // La navegación se aplica en una transición de React, así que la URL renderizada
+  // puede ir un paso atrás. Se guarda la última escrita para que dos cambios
+  // seguidos (p. ej. grupo y luego endémicas) no se pisen.
+  const latestParams = useRef(searchParams);
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-      if (searchTerm !== q) {
-        const nextParams = new URLSearchParams(searchParams);
-        if (searchTerm.trim()) nextParams.set("q", searchTerm.trim());
-        else nextParams.delete("q");
-        nextParams.set("page", "1");
-        setSearchParams(nextParams);
-      }
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [q, searchParams, searchTerm, setSearchParams]);
+    latestParams.current = searchParams;
+  }, [searchParams]);
 
-  const updateParams = (newParams: Record<string, any>) => {
-    const current = Object.fromEntries(searchParams.entries());
-    const merged = { ...current, ...newParams };
+  const update = useCallback(
+    (changes: Partial<ExplorerFilters>, nextSource?: Source) => {
+      if ("lat" in changes && changes.lat === undefined) location.clear();
+      const previous = latestParams.current;
+      const previousSource: Source = previous.get("fuente") === "cientifica" ? "cientifica" : "ciudadana";
+      const next = writeFilters({ ...readFilters(previous), ...changes }, nextSource ?? previousSource);
+      latestParams.current = next;
+      setSearchParams(next);
+    },
+    [location, setSearchParams]
+  );
 
-    // Clear dependent filters
-    if (newParams.native === 'all') { delete merged.native; delete merged.endemic; }
-    if (newParams.native === 'native') { merged.native = 'true'; delete merged.endemic; }
-    if (newParams.native === 'endemic') { merged.endemic = 'true'; delete merged.native; }
-    if (newParams.threatened === 'Todos') { delete merged.threatened; }
-    if (newParams.threatened === 'threatened') { merged.threatened = 'true'; }
+  // Buscador con espera de 500 ms antes de consultar.
+  const [searchTerm, setSearchTerm] = useState(urlFilters.q ?? "");
+  useEffect(() => setSearchTerm(urlFilters.q ?? ""), [urlFilters.q]);
+  useEffect(() => {
+    const term = searchTerm.trim();
+    if (term === (urlFilters.q ?? "")) return;
+    const timer = setTimeout(() => update({ q: term || undefined }), 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, update, urlFilters.q]);
 
-    // Handle taxon_id clearing
-    if (newParams.taxon_id === undefined || newParams.taxon_id === null) {
-      delete merged.taxon_id;
-    }
+  const citizen = useExplorerSpecies(filters);
+  const scientific = useScientificRecords(filters, true);
+  const active = source === "ciudadana" ? citizen : scientific;
 
-    // Clean up old params if they exist
-    // delete merged.iconic_taxa;  // REMOVED: This was preventing radio buttons from working
-    // delete merged.rank;
-
-    Object.keys(merged).forEach(key => {
-      if (merged[key] === '' || merged[key] === undefined || merged[key] === null) delete merged[key];
-    });
-
-    setSearchParams(merged);
+  const species = active.data?.pages.flatMap((page) => page.data) ?? [];
+  const scientificBuilding = scientific.data?.pages[0]?.status === "building";
+  const totals = {
+    ciudadana: citizen.data?.pages[0]?.meta.pagination.total,
+    cientifica: scientificBuilding ? undefined : scientific.data?.pages[0]?.meta.pagination.total,
   };
+  const showSkeleton = active.isLoading || (active.isFetching && active.isPlaceholderData) || (source === "cientifica" && scientificBuilding);
 
-  const requestLocation = () => {
-    setIsLocating(true);
-    setLocationError(null);
-    if (!navigator.geolocation) {
-      setLocationError("Tu navegador no soporta geolocalización.");
-      setIsLocating(false);
-      return;
-    }
+  const loadMore = useCallback(() => {
+    if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
+  }, [active]);
+  const sentinelRef = useInfiniteScroll(loadMore, !!active.hasNextPage && !showSkeleton);
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        const locationData = { lat: latitude, lng: longitude };
-        setUserLocation(locationData);
-        persistLocation(locationData, 'Tu ubicación');
+  const activeCount = countActiveFilters(filters);
+  const hasLocation = !!location.coords;
+  const title = hasLocation ? `Especies cerca de ${location.name || "ti"}` : "Especies de Colombia";
 
-        try {
-          // Reverse geocoding to get place name
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`);
-          const data = await response.json();
-          const address = data.address;
-          // Prioritize: city -> town -> village -> county -> state
-          const name = address.city || address.town || address.village || address.municipality || address.county || address.state || "Tu ubicación";
-          setLocationName(name);
-          persistLocation(locationData, name);
-        } catch (error) {
-          console.error("Error getting location name:", error);
-          setLocationName("Tu ubicación");
-          persistLocation(locationData, "Tu ubicación");
-        }
-
-        setIsLocating(false);
-        // Force update to use new location
-        updateParams({ page: 1 });
-      },
-      (error) => {
-        console.error(error);
-        setLocationError("No se pudo obtener tu ubicación. Verifica los permisos.");
-        setIsLocating(false);
-        // Do not clear userLocation here, maybe strict permissions caused failure but user wanted to keep old one? 
-        // Better to not clear unless explicit.
-      }
-    );
-  };
-
-  const clearLocation = () => {
-    setUserLocation(null);
-    setLocationName(null);
-    localStorage.removeItem(LOCATION_STORAGE_KEY);
-    setLocationError(null);
-  };
-
-  const [mapModalOpen, setMapModalOpen] = useState(false);
-
-  const handleMapConfirm = (coords: { lat: number; lng: number; address?: string }) => {
-    const locationData = { lat: coords.lat, lng: coords.lng };
-    setUserLocation(locationData);
-
-    const name = coords.address ? coords.address.split(',').slice(0, 2).join(',') : 'Ubicación seleccionada';
-    setLocationName(name);
-    persistLocation(locationData, name);
-    setLocationError(null);
-
-    updateParams({ page: 1 });
-  };
-
-  const ITEMS_PER_PAGE = 25;
-
-  // DEBUG: console.log('📤 Params being sent to useSpecies:', { iconic_taxa: selectedGroup, selectedGroup });
-
-  const { data, isLoading, isError, error, isFetching, isPlaceholderData } = useSpecies({
-    page,
-    per_page: ITEMS_PER_PAGE,
-    q: debouncedSearch,
-    iconic_taxa: selectedGroup || undefined,
-    native: nativeFilter === 'native',
-    endemic: nativeFilter === 'endemic',
-    threatened: selectedConservationStatus === 'threatened',
-    order_by: sortBy,
-    random_seed: randomSeed,
-    lat: userLocation?.lat,
-    lng: userLocation?.lng,
-    radius
-  });
-
-  const speciesList = data?.data || [];
-  const pagination = data?.meta?.pagination || data?.pagination || { total: 0, last_page: 1, current_page: 1 };
-  const totalPages = pagination.last_page;
-  const errorMessage = error instanceof Error ? error.message : "No fue posible consultar las especies. Intenta nuevamente.";
-
-  const toggleFilters = () => setFiltersVisible(!filtersVisible);
-
-  const clearAllFilters = () => {
-    setSearchTerm("");
-    clearLocation();
-    setSearchParams({});
-  };
-
-  const handlePageChange = (newPage: number) => {
-    updateParams({ page: newPage });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Header Title Logic
-  const getHeaderTitle = () => {
-    if (userLocation) return "Especies observadas cerca de ti";
-    return "Especies de Colombia";
-  };
-
-  // Carga visible al buscar, filtrar, paginar o cambiar ubicación. Las recargas en
-  // segundo plano (fotos que llegan de la cola) actualizan la lista sin vaciarla.
-  const showLoading = isLoading || (isFetching && isPlaceholderData);
+  const filterOptions = <ExplorerFilterOptions filters={filters} onChange={(changes) => update(changes)} />;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 min-h-screen">
+    <div className="mx-auto min-h-screen max-w-7xl space-y-4 animate-fade-in">
+      {/* Título y alcance en una sola línea */}
+      <header className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h1 className="font-heading text-2xl font-bold leading-tight text-forest-950 md:text-4xl">{title}</h1>
+        <Badge variant="outline" className="border-lime-500 bg-lime-50 text-lime-700">
+          {hasLocation ? `Radio de ${filters.radius} km` : "Catálogo nacional"}
+        </Badge>
+      </header>
 
-      {/* Header & Location Control */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] items-end gap-4 min-w-0">
-        <div className="min-w-0">
-          <Badge variant="outline" className="mb-2 max-w-full border-lime-500 text-lime-700 bg-lime-50">
-            {userLocation ? (
-              <span className="flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0" /> {locationName || "Área seleccionada"} · {radius} km</span>
-            ) : "Catálogo Nacional"}
-          </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-forest-950 mb-2 leading-tight">
-            {userLocation ? "Biodiversidad documentada cerca de ti" : getHeaderTitle()}
-          </h1>
-          <p className="text-forest-700/80 text-base md:text-lg max-w-3xl">
-            {userLocation
-              ? `Descubre las especies registradas alrededor de ${locationName || "la ubicación seleccionada"}.`
-              : "Explora y conoce la biodiversidad de Colombia."}
-          </p>
-        </div>
-
-        <div className="flex flex-col items-start lg:items-end gap-2 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            {!userLocation ? (
-              <Button size="sm" onClick={requestLocation} disabled={isLocating} className="bg-lime-600 hover:bg-lime-700 text-white gap-2 shadow-sm">
-                {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
-                Mi ubicación
-              </Button>
-            ) : (
-              <Button size="sm" variant="outline" onClick={clearLocation} className="text-red-600 border-red-200 hover:bg-red-50 gap-2">
-                <X className="h-4 w-4" /> Quitar ubicación
-              </Button>
-            )}
-            <Button size="sm" variant="outline" onClick={() => setMapModalOpen(true)} className="border-lime-300 text-lime-700 hover:bg-lime-50 gap-2">
-              <Globe className="h-4 w-4" />
-              Cambiar en el mapa
-            </Button>
-            {userLocation && (
-              <label className="flex items-center gap-2 rounded-md border border-lime-200 bg-white px-3 h-9 text-sm text-forest-700">
-                <span>Radio</span>
-                <select
-                  aria-label="Radio de búsqueda"
-                  value={radius}
-                  onChange={(event) => updateParams({ radius: Number(event.target.value), page: 1 })}
-                  className="bg-transparent font-semibold text-lime-700 outline-none"
-                >
-                  {radiusOptions.map((option) => <option key={option} value={option}>{option} km</option>)}
-                </select>
-              </label>
-            )}
-          </div>
-          {locationError && <span className="text-xs text-red-500">{locationError}</span>}
-        </div>
-      </div>
-
-      {/* Main Controls */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md py-4 -mx-4 px-4 border-b border-lime-100 flex flex-col gap-4">
-        {/* Search row - with filter button inline */}
-        <div className="flex gap-3 items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-forest-400 h-4 w-4" />
+      {/* Barra fija: buscador, ubicación, mapa y filtros */}
+      <div className="sticky top-16 z-20 -mx-4 space-y-3 border-b border-lime-100 bg-white/85 px-4 py-3 backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <label htmlFor="explorer-search" className="relative min-w-0 flex-1">
+            <span className="sr-only">Buscar especie</span>
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-forest-400" aria-hidden="true" />
             <Input
-              type="text"
+              id="explorer-search"
+              type="search"
               placeholder="Buscar especie..."
-              className="pl-10 bg-white/50 border-lime-200 focus:border-lime-500 rounded-xl"
+              className="h-11 rounded-xl border-lime-200 bg-white pl-10 pr-9 text-base focus-visible:ring-lime-500 md:text-sm"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(event) => setSearchTerm(event.target.value)}
             />
             {searchTerm && (
               <button
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 hover:bg-gray-100 rounded-full p-1"
+                type="button"
                 onClick={() => setSearchTerm("")}
+                className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full hover:bg-lime-50"
+                aria-label="Borrar búsqueda"
               >
-                <X className="h-3 w-3 text-forest-400" />
+                <X className="h-4 w-4 text-forest-500" aria-hidden="true" />
               </button>
             )}
-          </div>
+          </label>
 
-          {/* Filter Button - Inline with search */}
+          {hasLocation ? (
+            <Button
+              variant="outline"
+              onClick={() => update({ lat: undefined, lng: undefined })}
+              className="h-11 shrink-0 gap-2 rounded-xl border-red-200 px-3 text-red-600 hover:bg-red-50"
+              aria-label="Quitar ubicación"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden md:inline">Quitar ubicación</span>
+            </Button>
+          ) : (
+            <Button
+              onClick={location.locate}
+              disabled={location.isLocating}
+              className="h-11 shrink-0 gap-2 rounded-xl bg-lime-600 px-3 text-white shadow-sm hover:bg-lime-700"
+              aria-label="Usar mi ubicación"
+            >
+              {location.isLocating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Navigation className="h-4 w-4" aria-hidden="true" />}
+              <span className="hidden md:inline">Mi ubicación</span>
+            </Button>
+          )}
+
           <Button
             variant="outline"
-            size="icon"
-            className={`border-lime-200 rounded-xl h-10 w-10 flex-shrink-0 ${filtersVisible ? 'bg-lime-50 text-lime-700 border-lime-500' : ''}`}
-            onClick={toggleFilters}
-            aria-label="Filtros"
+            onClick={() => setMapOpen(true)}
+            className="h-11 shrink-0 gap-2 rounded-xl border-lime-300 px-3 text-lime-700 hover:bg-lime-50"
+            aria-label="Elegir zona en el mapa"
           >
-            <Filter className="h-4 w-4" />
+            <Globe className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden md:inline">Mapa</span>
+          </Button>
+
+          {hasLocation && (
+            <label className="hidden h-11 shrink-0 items-center gap-1 rounded-xl border border-lime-200 bg-white px-3 text-sm text-forest-700 md:flex">
+              <span>Radio</span>
+              <select
+                aria-label="Radio de búsqueda"
+                value={filters.radius}
+                onChange={(event) => update({ radius: Number(event.target.value) })}
+                className="cursor-pointer bg-transparent font-semibold text-lime-700 outline-none"
+              >
+                {RADIUS_OPTIONS.map((option) => <option key={option} value={option}>{option} km</option>)}
+              </select>
+            </label>
+          )}
+
+          <Button
+            variant="outline"
+            onClick={() => setFiltersOpen((open) => !open)}
+            className={cn(
+              "relative h-11 shrink-0 gap-2 rounded-xl border-lime-200 px-3",
+              filtersOpen && "border-lime-500 bg-lime-50 text-lime-700"
+            )}
+            aria-label="Filtros"
+            aria-expanded={filtersOpen}
+          >
+            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden md:inline">Filtros</span>
+            {activeCount > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-[11px] font-bold text-white md:static md:bg-lime-600">
+                {activeCount}
+              </span>
+            )}
           </Button>
         </div>
 
-        {/* Expanded Filters - With Close Button */}
-        {filtersVisible && (
-          <div className="relative p-4 bg-lime-50/50 rounded-xl border border-lime-100 animate-in slide-in-from-top-2">
-            {/* Close button - positioned top right */}
-            <button
-              onClick={() => setFiltersVisible(false)}
-              className="absolute top-2 right-2 p-1.5 hover:bg-lime-200/50 rounded-lg transition-colors"
-              aria-label="Cerrar filtros"
-            >
-              <X className="h-5 w-5 text-lime-700" />
-            </button>
+        {location.error && <p className="text-xs text-red-600" role="alert">{location.error}</p>}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-2">
-              <div>
-                <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Grupo</h4>
-                <div className="flex flex-col gap-1">
-                  {groups.map(group => (
-                    <label key={group.value || 'all'} className="flex items-center gap-2 text-sm text-forest-700 cursor-pointer hover:text-forest-900">
-                      <input
-                        type="radio"
-                        name="group"
-                        checked={selectedGroup === group.value}
-                        onChange={() => updateParams({ iconic_taxa: group.value || undefined, page: 1 })}
-                        className="accent-lime-600"
-                      />
-                      {group.label}
-                    </label>
-                  ))}
-                </div>
-              </div>
+        <ActiveFilterChips
+          filters={filters}
+          total={totals[source]}
+          locationName={location.name}
+          onClear={(changes) => update(changes)}
+        />
 
-              <div>
-                <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Estado</h4>
-                <div className="flex flex-col gap-2">
-                  <Button
-                    variant={selectedConservationStatus === 'threatened' ? 'destructive' : 'outline'}
-                    size="sm"
-                    className="justify-start"
-                    onClick={() => updateParams({ threatened: selectedConservationStatus === 'threatened' ? 'Todos' : 'threatened', page: 1 })}
-                  >
-                    <ShieldAlert className="h-3 w-3 mr-2" />
-                    Solo Amenazadas
-                  </Button>
-                  <Button
-                    variant={nativeFilter === 'endemic' ? 'default' : 'outline'}
-                    size="sm"
-                    className="justify-start"
-                    onClick={() => updateParams({ native: nativeFilter === 'endemic' ? 'all' : 'endemic', page: 1 })}
-                  >
-                    <Sparkles className="h-3 w-3 mr-2" />
-                    Solo Endémicas
-                  </Button>
-                  <Button
-                    variant={nativeFilter === 'native' ? 'default' : 'outline'}
-                    size="sm"
-                    className="justify-start"
-                    onClick={() => updateParams({ native: nativeFilter === 'native' ? 'all' : 'native', page: 1 })}
-                  >
-                    <Star className="h-3 w-3 mr-2" />
-                    Solo Nativas
-                  </Button>
-                </div>
-              </div>
+        {/* Panel de filtros en escritorio */}
+        {filtersOpen && !isMobile && (
+          <div className="rounded-xl border border-lime-100 bg-lime-50/60 p-4 animate-fade-in">
+            {filterOptions}
+          </div>
+        )}
+      </div>
 
-              {/* Sort buttons moved inside filters */}
-              <div className="lg:col-span-2">
-                <h4 className="text-xs font-bold text-forest-900 uppercase tracking-widest mb-3">Ordenar por</h4>
-                <div className="flex gap-2">
-                  <div className="flex bg-gray-100 p-1 rounded-lg">
-                    <button
-                      className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition-all whitespace-nowrap ${sortBy !== 'random' ? 'bg-white shadow text-lime-700' : 'text-gray-500 hover:text-gray-900'}`}
-                      onClick={() => updateParams({ order_by: 'observed_on', page: 1 })}
-                    >
-                      <ListOrdered className="h-3.5 w-3.5" /> Predeterminada
-                    </button>
-                    <button
-                      onClick={() => {
-                        queryClient.invalidateQueries({ queryKey: ['species'] });
-                        updateParams({ order_by: 'random', random_seed: String(Date.now()), page: 1 });
-                      }}
-                      className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition-all whitespace-nowrap ${sortBy === 'random' ? 'bg-white shadow text-purple-700' : 'text-gray-500 hover:text-gray-900'}`}
-                    >
-                      <Shuffle className="h-3.5 w-3.5" /> Aleatorio
-                    </button>
-                  </div>
-                </div>
-              </div>
+      {/* Panel de filtros en el celular, desde abajo */}
+      <Sheet open={filtersOpen && isMobile} onOpenChange={setFiltersOpen}>
+        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-2xl">
+          <SheetHeader className="mb-4 text-left">
+            <SheetTitle className="font-heading text-forest-950">Filtros</SheetTitle>
+            <SheetDescription>Elige qué especies quieres ver.</SheetDescription>
+          </SheetHeader>
+          {filterOptions}
+          {hasLocation && (
+            <label className="mt-5 flex items-center justify-between rounded-xl border border-lime-200 px-3 py-2 text-sm text-forest-800">
+              Radio de búsqueda
+              <select
+                value={filters.radius}
+                onChange={(event) => update({ radius: Number(event.target.value) })}
+                className="cursor-pointer bg-transparent font-semibold text-lime-700 outline-none"
+              >
+                {RADIUS_OPTIONS.map((option) => <option key={option} value={option}>{option} km</option>)}
+              </select>
+            </label>
+          )}
+          <Button className="mt-6 h-12 w-full rounded-xl bg-lime-600 text-white hover:bg-lime-700" onClick={() => setFiltersOpen(false)}>
+            Ver {totals[source]?.toLocaleString("es-CO") ?? ""} especies
+          </Button>
+        </SheetContent>
+      </Sheet>
 
-              <div className="col-span-full flex justify-center pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    clearAllFilters();
-                    setFiltersVisible(false);
-                  }}
-                  className="border-red-200 text-red-600 hover:bg-red-50"
-                >
-                  Limpiar filtros
+      {/* Fuente de los datos */}
+      <div role="tablist" aria-label="Fuente de los datos" className="flex gap-2">
+        {([
+          ["ciudadana", "Ciencia ciudadana", "Ciudadana", Users, "bg-lime-500"],
+          ["cientifica", "Registros científicos", "Científicos", Microscope, "bg-teal-500"],
+        ] as const).map(([value, label, shortLabel, Icon, dot]) => (
+          <button
+            key={value}
+            role="tab"
+            type="button"
+            aria-selected={source === value}
+            onClick={() => update({}, value)}
+            className={cn(
+              "inline-flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors duration-200 md:flex-none md:px-4",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
+              source === value ? "border-forest-900 bg-forest-950 text-white" : "border-lime-200 bg-white text-forest-800 hover:bg-lime-50"
+            )}
+          >
+            <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden="true" />
+            <Icon className="hidden h-4 w-4 md:block" aria-hidden="true" />
+            <span className="md:hidden">{shortLabel}</span>
+            <span className="hidden md:inline">{label}</span>
+            {value === "cientifica" && scientificBuilding ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Calculando" />
+            ) : (
+              typeof totals[value] === "number" && <span className="tabular-nums opacity-70">{totals[value]!.toLocaleString("es-CO")}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {source === "cientifica" && (
+        <p className="text-sm text-forest-700">
+          Especies con registros de museos, colecciones y monitoreos (GBIF) que no aparecen en ciencia ciudadana para esta zona.
+          {scientificBuilding && " Estamos reuniendo los registros de esta zona por primera vez; tarda unos segundos."}
+        </p>
+      )}
+
+      {/* Lista */}
+      {active.isError ? (
+        <Alert variant="destructive">
+          <AlertTitle>No pudimos cargar las especies</AlertTitle>
+          <AlertDescription>Revisa tu conexión e intenta de nuevo.</AlertDescription>
+        </Alert>
+      ) : showSkeleton ? (
+        <div className={GRID}>{SKELETONS.map((_, i) => <SpeciesCardSkeleton key={i} />)}</div>
+      ) : species.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-lime-200 bg-lime-50/40 px-4 py-16 text-center">
+          <Leaf className="mx-auto mb-3 h-8 w-8 text-lime-500" aria-hidden="true" />
+          <p className="text-forest-700">No encontramos especies con estos filtros.</p>
+          <Button variant="link" className="text-lime-700" onClick={() => update({ q: undefined, group: undefined, native: false, endemic: false, threatened: false })}>
+            Limpiar filtros
+          </Button>
+        </div>
+      ) : (
+        <>
+          <div className={GRID}>
+            {species.map((item) => <SpeciesCard key={`${item.source}-${item.id}`} species={item} />)}
+          </div>
+          <div ref={sentinelRef} className="flex justify-center py-6" aria-live="polite">
+            {active.isFetchingNextPage ? (
+              <Loader2 className="h-6 w-6 animate-spin text-lime-600" aria-label="Cargando más especies" />
+            ) : (
+              // Respaldo del scroll infinito para teclado y lectores de pantalla.
+              active.hasNextPage && (
+                <Button variant="outline" onClick={loadMore} className="rounded-full border-lime-300 text-lime-700 hover:bg-lime-50">
+                  Ver más especies
                 </Button>
-              </div>
-            </div>
+              )
+            )}
           </div>
-        )}
-      </div>
-
-      {/* Grid */}
-      <div>
-        {showLoading ? (
-          <div className="grid grid-cols-1 min-[430px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-        ) : isError ? (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        ) : speciesList.length === 0 ? (
-          <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-            <p className="text-gray-500">No se encontraron especies con estos filtros.</p>
-            <Button variant="link" onClick={clearAllFilters}>Limpiar filtros</Button>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 min-[430px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {speciesList.map((species: Taxon, index: number) => (
-                <SpeciesCard key={`${species.id}-${index}`} species={species} />
-              ))}
-            </div>
-
-            {/* Pagination - Simple Reverted */}
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                    className={currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-                <span className="text-sm text-gray-500 px-2 sm:px-4 whitespace-nowrap">
-                  Página {currentPage} de {totalPages}
-                </span>
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    className={currentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
-      </div>
+        </>
+      )}
 
       <LocationMapModal
-        open={mapModalOpen}
-        onOpenChange={setMapModalOpen}
-        initialLat={userLocation?.lat}
-        initialLng={userLocation?.lng}
-        initialLocationName={locationName || ''}
-        onConfirm={handleMapConfirm}
+        open={mapOpen}
+        onOpenChange={setMapOpen}
+        initialLat={location.coords?.lat}
+        initialLng={location.coords?.lng}
+        initialLocationName={location.name || ""}
+        onConfirm={location.choose}
       />
     </div>
   );

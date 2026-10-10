@@ -32,7 +32,7 @@ src/
 ├── hooks/                Hooks de datos con TanStack Query (useSpecies, useChallenges…)
 ├── contexts/             Sesión del usuario (AuthContext)
 ├── pages/                Una carpeta por módulo
-│   ├── species/          Explorador geográfico, catálogo y ficha de especie
+│   ├── species/          Explorador y ficha de especie (componentes en components/explorer)
 │   ├── challenges/       Retos de campo
 │   ├── observations/     Subir, ver y editar avistamientos (evidencia de retos)
 │   ├── learn/            Cursos, artículos, recursos y reproductor de lecciones
@@ -54,7 +54,7 @@ Reglas para mantenerlo ordenado:
 | Ruta | Página |
 |---|---|
 | `/` | Inicio: anuncios, especie del día, curiosidades y ecosistemas |
-| `/explorer` | Catálogo geográfico (nacional o cerca de ti) |
+| `/explorer` | Explorador: pestañas "Ciencia ciudadana" (iNaturalist) y "Registros científicos" (GBIF), filtros en la URL y scroll infinito |
 | `/taxa/:id` | Ficha de especie |
 | `/retos` · `/retos/:id` | Retos de campo y progreso del usuario |
 | `/observations/create?reto=ID` | Subir la evidencia de un reto |

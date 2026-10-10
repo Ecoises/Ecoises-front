@@ -80,7 +80,7 @@ const SpeciesRecommendation = () => {
             <p className="text-sm text-forest-600">Una nueva maravilla natural cada día</p>
           </div>
         </div>
-        <Link to="/explorer?order_by=random">
+        <Link to="/explorer?order=random">
           <Button variant="ghost" className="text-lime-600 hover:text-lime-700 hover:bg-lime-50 gap-1">
             Explorar más
             <ChevronRight className="h-4 w-4" />

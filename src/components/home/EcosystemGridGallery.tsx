@@ -59,7 +59,7 @@ const ecosystemData = [
 const EcosystemCard = ({ item, index }: { item: any; index: number }) => {
   const location = useLocation();
   const searchParams = new URLSearchParams();
-  if (item.taxon) searchParams.set("iconic_taxa", item.taxon);
+  if (item.taxon) searchParams.set("group", item.taxon);
 
   return (
     <Link

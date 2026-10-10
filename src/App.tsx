@@ -24,7 +24,6 @@ const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 // Biodiversidad
 const Explorer = lazy(() => import("./pages/species/Explorer"));
-const Species = lazy(() => import("./pages/species/Species"));
 const SpeciesDetail = lazy(() => import("./pages/species/SpeciesDetail"));
 // Retos de campo y avistamientos
 const Challenges = lazy(() => import("./pages/challenges/Challenges"));
@@ -81,7 +80,7 @@ const App = () => (
                 <Route path="/announcements/:slug" element={<AnnouncementDetail />} />
 
                 <Route path="/explorer" element={<Explorer />} />
-                <Route path="/taxa" element={<Species />} />
+                <Route path="/taxa" element={<Navigate to="/explorer" replace />} />
                 <Route path="/taxa/:id" element={<SpeciesDetail />} />
 
                 <Route path="/retos" element={<Challenges />} />

@@ -77,15 +77,12 @@ const Sidebar = ({ sidebarOpen, toggleSidebar }: SidebarProps) => {
         <nav className="flex-1 space-y-1">
           {navItems.map((item) => {
             const isSpeciesDetail = item.to === '/explorer' && location.pathname.startsWith('/taxa/');
-            const isSpeciesGuideSimple = item.to === '/taxa' && location.pathname === '/taxa';
             // Special case overrides
             let isActive = false;
 
             if (item.to === '/') {
               // Home: active on root path or /home
               isActive = location.pathname === '/' || location.pathname === '/home';
-            } else if (item.to === '/taxa') {
-              isActive = isSpeciesGuideSimple;
             } else if (item.to === '/explorer') {
               isActive = location.pathname === item.to || isSpeciesDetail;
             } else {
