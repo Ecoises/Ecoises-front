@@ -12,6 +12,10 @@ export const useSpeciesDetail = (id: string, options?: { enabled?: boolean }) =>
     },
     enabled: options?.enabled !== false && !!id,
     staleTime: 5 * 60 * 1000,
+    // Primera visita a una especie: su texto ecológico se redacta en segundo
+    // plano. Se vuelve a pedir la ficha un par de veces para mostrarlo.
+    refetchInterval: (query) =>
+      query.state.data && !query.state.data.ecology_text && query.state.dataUpdateCount < 4 ? 15000 : false,
   });
 };
 

@@ -324,8 +324,8 @@ const SpeciesDetail = () => {
               );
             })()}
 
-            {species.ecological_importance ? (
-              <EcologicalImportanceCard data={species.ecological_importance} />
+            {species.ecological_importance || species.ecology_text ? (
+              <EcologicalImportanceCard data={species.ecological_importance} text={species.ecology_text} />
             ) : ecologicalHighlight && (
               <Card className="mb-6 overflow-hidden border-lime-200 bg-gradient-to-br from-lime-50/90 to-emerald-50/70 shadow-sm">
                 <CardContent className="p-5">
