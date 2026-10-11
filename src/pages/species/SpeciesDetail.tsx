@@ -368,6 +368,9 @@ const SpeciesDetail = () => {
             <TabsContent value="info" className="animate-fade-in mt-4">
               <Card className="border-lime-200 p-4">
                 <TaxonomyGame species={species} />
+                {species.taxonomy_source && (
+                  <p className="mt-3 text-xs text-forest-600">Clasificación según {species.taxonomy_source}</p>
+                )}
               </Card>
             </TabsContent>
 
