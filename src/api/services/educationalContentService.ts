@@ -140,6 +140,8 @@ export interface EducationalContent {
     };
     rating_average: number;
     view_count: number;
+    lessons_count?: number;
+    is_featured?: boolean;
 
     // Detailed fields
     lessons?: Lesson[];
@@ -155,8 +157,33 @@ export interface EducationalContent {
     activity_progress?: ActivityProgress[];
 }
 
-export const getEducationalContents = async (params?: { search?: string; category?: string }) => {
-    const response = await apiClient.get<EducationalContent[]>('/educational-contents', { params });
+export interface LearnFilters {
+    q?: string;
+    type?: 'course' | 'article' | 'resource';
+    level?: 'principiante' | 'intermedio' | 'avanzado';
+    category?: string;
+}
+
+/** Conteos del catálogo publicado, para mostrar solo filtros con resultados. */
+export interface LearnFacets {
+    total: number;
+    types: Partial<Record<'course' | 'article' | 'resource', number>>;
+    levels: Partial<Record<'principiante' | 'intermedio' | 'avanzado', number>>;
+    categories: Array<{ id: number; name: string; slug: string; total: number }>;
+}
+
+export interface EducationalContentPage {
+    data: EducationalContent[];
+    meta: {
+        pagination: { total: number; per_page: number; current_page: number; last_page: number };
+        facets: LearnFacets;
+    };
+}
+
+export const getEducationalContents = async (filters: LearnFilters = {}, page = 1) => {
+    const response = await apiClient.get<EducationalContentPage>('/educational-contents', {
+        params: { ...filters, page, per_page: 24 },
+    });
     return response.data;
 };
 
