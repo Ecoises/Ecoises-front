@@ -7,8 +7,11 @@ export interface ExplorerSpecies {
   is_native: boolean;
   is_endemic: boolean;
   is_introduced: boolean;
+  is_near_endemic?: boolean;
   is_threatened: boolean;
   conservation_status: string | null;
+  /** Colombia = Res. 0126 de 2024 · Global = Lista Roja de la UICN */
+  conservation_scope?: "Colombia" | "Global";
   group: string | null;
   observation_count?: number;
   occurrence_count?: number;

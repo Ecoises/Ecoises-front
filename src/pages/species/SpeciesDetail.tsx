@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, Calendar, ArrowLeft, Utensils, Star, Eye, Info, TreePine, Sparkles, CornerRightDown, Loader2, X, Maximize2, User, BookOpen, Database } from "lucide-react"
+import { MapPin, Calendar, ArrowLeft, Utensils, Eye, Info, TreePine, Sparkles, Loader2, X, Maximize2, User, BookOpen, Database } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -14,6 +14,7 @@ import SpeciesDistributionMap from "@/components/maps/SpeciesDistributionMap"
 import { AnimatePresence, motion } from "framer-motion"
 import TaxonomyGame from "@/components/species/TaxonomyGame"
 import EcologicalImportanceCard from "@/components/species/EcologicalImportanceCard";
+import ConservationBadges from "@/components/species/ConservationBadges";
 import RecentObservations from "@/components/observations/RecentObservations"
 
 
@@ -213,89 +214,7 @@ const SpeciesDetail = () => {
             <h1 className="text-3xl font-bold text-forest-950 mb-1 capitalize">{displayCommonName}</h1>
             <p className="text-forest-700 italic mb-4">{species.scientific_name}</p>
 
-            <div className="flex flex-wrap gap-2 mb-4">
-              {species.establishment_status_colombia && species.establishment_status_colombia !== "unknown" && (() => {
-                const status = String(species.establishment_status_colombia).toLowerCase();
-                const getStatusConfig = () => {
-                  if (status === "native" || status === "nativa") {
-                    return {
-                      icon: <Star className="h-3.5 w-3.5" />,
-                      className: "bg-lime-300 text-forest-900",
-                      label: "Nativa"
-                    };
-                  }
-                  if (status === "endemic" || status === "edemica" || status === "endémica" || status === "endemica") {
-                    return {
-                      icon: <Sparkles className="h-3.5 w-3.5" />,
-                      className: "bg-lime-800 text-white",
-                      label: "Endémica de Colombia"
-                    };
-                  }
-                  if (status === "introduced" || status === "introducida") {
-                    return {
-                      icon: <CornerRightDown className="h-3.5 w-3.5" />,
-                      className: "bg-pink-100 text-pink-800",
-                      label: "Introducida"
-                    };
-                  }
-                  return {
-                    icon: null,
-                    className: "bg-lime-100 text-lime-800",
-                    label: species.establishment_status_colombia
-                  };
-                };
-                const config = getStatusConfig();
-                return (
-                  <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-1.5 ${config.className}`}>
-                    {config.icon}
-                    {config.label}
-                  </span>
-                );
-              })()}
-
-              {(() => {
-                // Try to get status from root, or fallback to api_references
-                let statusData = species.conservation_status;
-
-                // If root status is NE or missing, check api_references
-                if ((!statusData || statusData === 'NE' || (typeof statusData === 'object' && statusData.status === 'NE')) &&
-                  species.api_references?.[0]?.data?.conservation_status) {
-                  statusData = species.api_references[0].data.conservation_status;
-                }
-
-                if (!statusData) return null;
-
-                const statusObj = typeof statusData === 'object' ? statusData : { status: statusData };
-                const status = (statusObj.status || 'NE').toUpperCase();
-
-                const getConservationConfig = (s: string) => {
-                  switch (s) {
-                    case 'EX': return { label: 'Extinto (EX)', className: 'bg-gray-900 text-white' }; // Mantenerlo fuerte (casi negro)
-                    case 'EW': return { label: 'Extinto en Estado Silvestre (EW)', className: 'bg-purple-100 text-purple-800' };
-                    case 'CR': return { label: 'En Peligro Crítico (CR)', className: 'bg-red-100 text-red-800' };
-                    case 'EN': return { label: 'En Peligro (EN)', className: 'bg-orange-100 text-orange-800' };
-                    case 'VU': return { label: 'Vulnerable (VU)', className: 'bg-yellow-100 text-yellow-800' };
-                    case 'NT': return { label: 'Casi Amenazado (NT)', className: 'bg-lime-100 text-lime-800' };
-                    case 'LC': return { label: 'Preocupación Menor (LC)', className: 'bg-green-100 text-green-800' };
-                    case 'DD': return { label: 'Datos Insuficientes (DD)', className: 'bg-gray-100 text-gray-800' };
-                    case 'NE': return { label: 'No Evaluado (NE)', className: 'bg-gray-100 text-gray-800' };
-                    default: return { label: s, className: 'bg-gray-100 text-gray-800' };
-                  }
-                };
-                const config = getConservationConfig(status);
-                const scope = species.conservation_status_scope || statusObj.scope;
-                const scopeLabel = scope === 'colombia' ? 'Colombia' : scope === 'global' ? 'Global' : null;
-                const authority = species.conservation_status_authority || statusObj.authority;
-
-                return (
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${config.className}`}
-                    title={authority ? `Fuente: ${authority}` : undefined}
-                  >
-                    {config.label}{scopeLabel ? ` · ${scopeLabel}` : ''}
-                  </span>
-                );              })()}
-            </div>
+            <ConservationBadges labels={species.labels} />
 
             {(() => {
               if (summary && summary.trim() !== '') {

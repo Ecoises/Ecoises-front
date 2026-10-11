@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { CornerRightDown, Sparkles, Star } from "lucide-react";
+import { CornerRightDown, MapPin, Sparkles, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { ExplorerSpecies } from "@/types/explorer";
 import { groupIcon } from "./groups";
@@ -13,6 +13,7 @@ const conservationBadge: Record<string, string> = {
 
 const establishment = (species: ExplorerSpecies) => {
   if (species.is_endemic) return { label: "Endémica", icon: Sparkles, className: "bg-lime-800 text-white border-lime-900" };
+  if (species.is_near_endemic) return { label: "Casi endémica", icon: MapPin, className: "bg-lime-600 text-white border-lime-700" };
   if (species.is_native) return { label: "Nativa", icon: Star, className: "bg-lime-300 text-forest-900 border-lime-400" };
   if (species.is_introduced) return { label: "Introducida", icon: CornerRightDown, className: "bg-pink-100 text-pink-800 border-pink-200" };
   return null;
@@ -64,7 +65,7 @@ export const SpeciesCard = ({ species }: { species: ExplorerSpecies }) => {
           {statusClass && (
             <span
               className={`absolute right-2 top-2 rounded-full border px-2 py-0.5 text-[10px] font-bold shadow-sm ${statusClass}`}
-              title="Categoría de amenaza"
+              title={species.conservation_scope === "Colombia" ? "Amenaza en Colombia (Res. 0126 de 2024)" : "Lista Roja de la UICN (global)"}
             >
               {status}
             </span>
