@@ -13,7 +13,7 @@ import { useSpeciesDetail, useRelatedSpecies } from "@/hooks/useSpecies"
 import SpeciesDistributionMap from "@/components/maps/SpeciesDistributionMap"
 import { AnimatePresence, motion } from "framer-motion"
 import TaxonomyGame from "@/components/species/TaxonomyGame"
-import EcologicalImportanceCard from "@/components/species/EcologicalImportanceCard";
+import EcologicalImportanceCard, { type EcologyDetail } from "@/components/species/EcologicalImportanceCard";
 import ConservationBadges from "@/components/species/ConservationBadges";
 import { useIsDesktop } from "@/hooks/use-mobile"
 
@@ -119,9 +119,17 @@ const SpeciesDetail = () => {
     if (normalizedFirst === normalizedSecond) return true;
 
     const minimumLength = Math.min(normalizedFirst.length, normalizedSecond.length);
-    return minimumLength >= 120 && (
-      normalizedFirst.includes(normalizedSecond) || normalizedSecond.includes(normalizedFirst)
-    );
+    if (minimumLength >= 120 && (normalizedFirst.includes(normalizedSecond) || normalizedSecond.includes(normalizedFirst))) {
+      return true;
+    }
+
+    // Casi el mismo texto (p. ej. el mismo párrafo de Wikipedia con un nombre común
+    // más): 70 % o más de las palabras del texto corto aparecen en el otro.
+    const words = (text: string) => new Set(text.split(/[^\p{L}\p{N}]+/u).filter((word) => word.length > 3));
+    const [shorter, longer] = [words(normalizedFirst), words(normalizedSecond)].sort((x, y) => x.size - y.size);
+    if (shorter.size < 8) return false;
+    const shared = [...shorter].filter((word) => longer.has(word)).length;
+    return shared / shorter.size >= 0.7;
   };
   const naturalHistoryCandidate = ecologyProfile?.natural_history || null;
   const naturalHistory = naturalHistoryCandidate && !isDuplicateText(naturalHistoryCandidate.text, summary)
@@ -129,6 +137,17 @@ const SpeciesDetail = () => {
     : null;
 
   const ecologicalHighlight = ecologicalRole;
+
+  // Hábitat, dieta y comportamiento van dentro de "Importancia ecológica"
+  // (antes en una pestaña aparte), sin repetir lo que ya dice el resumen.
+  const ecologyDetails = [
+    habitat && { key: 'habitat', label: 'Hábitat', text: habitat.text, icon: TreePine },
+    diet && { key: 'diet', label: 'Dieta', text: diet.text, icon: Utensils },
+    naturalHistory && { key: 'natural_history', label: 'Historia natural', text: naturalHistory.text, icon: BookOpen },
+    ecology && { key: 'ecology', label: 'Ecología y comportamiento', text: ecology.text, icon: BookOpen },
+  ].filter((detail): detail is EcologyDetail =>
+    !!detail && !!detail.text && !isDuplicateText(detail.text, summary) && !isDuplicateText(detail.text, species.ecology_text?.text)
+  );
 
   // Determinar la foto activa para mostrar su atribución correcta
   const activePhotoData = gallery.find(img => getHighResUrl(img.url || img.medium_url) === activeImage) || defaultPhoto;
@@ -325,8 +344,8 @@ const SpeciesDetail = () => {
 
             {!isDesktop && <div className="mb-6">{mapSection}</div>}
 
-            {species.ecological_importance || species.ecology_text ? (
-              <EcologicalImportanceCard data={species.ecological_importance} text={species.ecology_text} />
+            {species.ecological_importance || species.ecology_text || ecologyDetails.length > 0 ? (
+              <EcologicalImportanceCard data={species.ecological_importance} text={species.ecology_text} details={ecologyDetails} />
             ) : ecologicalHighlight && (
               <Card className="mb-6 overflow-hidden border-lime-200 bg-gradient-to-br from-lime-50/90 to-emerald-50/70 shadow-sm">
                 <CardContent className="p-5">
@@ -354,12 +373,9 @@ const SpeciesDetail = () => {
           </div>
 
           <Tabs defaultValue="info" className="w-full">
-            <TabsList className="bg-lime-50 p-1 rounded-xl w-full grid grid-cols-3">
+            <TabsList className="bg-lime-50 p-1 rounded-xl w-full grid grid-cols-2">
               <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-white font-medium">
                 Taxonomía
-              </TabsTrigger>
-              <TabsTrigger value="habitat" className="rounded-lg data-[state=active]:bg-white font-medium flex items-center justify-center gap-1.5">
-                Historia Natural
               </TabsTrigger>
               <TabsTrigger value="atribution" className="rounded-lg data-[state=active]:bg-white font-medium">
                 Atribución
@@ -372,88 +388,6 @@ const SpeciesDetail = () => {
                 {species.taxonomy_source && (
                   <p className="mt-3 text-xs text-forest-600">Clasificación según {species.taxonomy_source}</p>
                 )}
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="habitat" className="animate-fade-in mt-4">
-              <Card className="border-lime-200 p-6">
-                <div className="grid grid-cols-1 gap-6">
-                  {/* Contenedor principal que adapta columnas según datos disponibles */}
-                  {(habitat || diet || naturalHistory) ? (
-                    <div className={`
-                      grid gap-6
-                      ${habitat && diet ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}
-                    `}>
-                      {/* Hábitat */}
-                      {habitat && (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 pb-2 border-b border-lime-100">
-                            <TreePine className="h-5 w-5 text-lime-600" />
-                            <h4 className="font-semibold text-forest-900 text-sm">Hábitat</h4>
-                            {habitat.language && habitat.language !== 'es' && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
-                                {habitat.language}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-forest-700 text-sm leading-relaxed">{habitat.text}</p>
-                        </div>
-                      )}
-
-                      {/* Dieta */}
-                      {diet && (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 pb-2 border-b border-lime-100">
-                            <Utensils className="h-5 w-5 text-lime-600" />
-                            <h4 className="font-semibold text-forest-900 text-sm">Dieta</h4>
-                            {diet.language && diet.language !== 'es' && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
-                                {diet.language}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-forest-700 text-sm leading-relaxed">{diet.text}</p>
-                        </div>
-                      )}
-
-                      {/* Historia Natural */}
-                      {naturalHistory && (
-                        <div className="col-span-full space-y-2">
-                          <div className="flex items-center gap-2 pb-2 border-b border-lime-100">
-                            <BookOpen className="h-5 w-5 text-lime-600" />
-                            <h4 className="font-semibold text-forest-900 text-sm">Historia Natural</h4>
-                            {naturalHistory.language && naturalHistory.language !== 'es' && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
-                                {naturalHistory.language}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-forest-700 text-sm leading-relaxed">{naturalHistory.text}</p>
-                        </div>
-                      )}
-
-                      {/* Ecología y comportamiento */}
-                      {ecology && !isDuplicateText(ecology.text, summary) && !isDuplicateText(ecology.text, naturalHistory?.text) && (
-                        <div className="col-span-full space-y-2">
-                          <div className="flex items-center gap-2 pb-2 border-b border-lime-100">
-                            <BookOpen className="h-5 w-5 text-lime-600" />
-                            <h4 className="font-semibold text-forest-900 text-sm">Ecología y comportamiento</h4>
-                            {ecology.language && ecology.language !== 'es' && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 uppercase font-medium">
-                                {ecology.language}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-forest-700 text-sm leading-relaxed">{ecology.text}</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-forest-600 text-sm">
-                      Aún no hay información ecológica verificable para esta especie.
-                    </p>
-                  )}
-                </div>
               </Card>
             </TabsContent>
 

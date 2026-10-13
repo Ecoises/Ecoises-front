@@ -21,6 +21,14 @@ export interface EcologicalImportance {
   source: { name: string; url: string; synced_at: string | null };
 }
 
+/** Texto corto de hábitat, dieta o comportamiento (Encyclopedia of Life). */
+export interface EcologyDetail {
+  key: string;
+  label: string;
+  text: string;
+  icon: LucideIcon;
+}
+
 export interface EcologyText {
   text: string;
   sources: string[];
@@ -52,9 +60,17 @@ const scopeNote = (data: EcologicalImportance) =>
  *  2. Roles según GloBI (de la especie o, si no hay, de su grupo) como una fila de
  *     botones con su número; al tocar uno se ven las especies de ese rol.
  */
-const EcologicalImportanceCard = ({ data, text }: { data?: EcologicalImportance | null; text?: EcologyText | null }) => {
+const EcologicalImportanceCard = ({
+  data,
+  text,
+  details = [],
+}: {
+  data?: EcologicalImportance | null;
+  text?: EcologyText | null;
+  details?: EcologyDetail[];
+}) => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  if (!data && !text) return null;
+  if (!data && !text && details.length === 0) return null;
 
   const roles = data?.roles ?? [];
   const selected = roles.find((role) => role.key === selectedKey) ?? roles[0];
@@ -91,6 +107,20 @@ const EcologicalImportanceCard = ({ data, text }: { data?: EcologicalImportance 
             )}
           </div>
         </div>
+
+        {details.length > 0 && (
+          <dl className="space-y-3 rounded-xl bg-white/80 p-3 ring-1 ring-lime-100">
+            {details.map((detail) => (
+              <div key={detail.key}>
+                <dt className="flex items-center gap-1.5 text-sm font-semibold text-forest-900">
+                  <detail.icon className="h-4 w-4 text-lime-700" aria-hidden="true" />
+                  {detail.label}
+                </dt>
+                <dd className="mt-1 text-sm leading-relaxed text-forest-700">{detail.text}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
 
         {data && (
           <>
