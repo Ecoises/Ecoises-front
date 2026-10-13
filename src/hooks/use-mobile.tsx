@@ -28,3 +28,19 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+
+/** true en pantallas de escritorio (Tailwind `lg`, 1024 px o más). */
+export function useIsDesktop() {
+  const query = "(min-width: 1024px)"
+  const [isDesktop, setIsDesktop] = React.useState(() => typeof window !== "undefined" && window.matchMedia(query).matches)
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(query)
+    const onChange = () => setIsDesktop(mql.matches)
+    mql.addEventListener("change", onChange)
+    onChange()
+    return () => mql.removeEventListener("change", onChange)
+  }, [])
+
+  return isDesktop
+}

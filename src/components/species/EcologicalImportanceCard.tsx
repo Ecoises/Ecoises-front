@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BadgeCheck, Bug, Flower2, Leaf, Network, Sparkles, Sprout, Target, TreePine, Utensils, type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,20 +39,26 @@ const roleIcons: Record<string, LucideIcon> = {
   food_source: Network,
 };
 
-const scopeTitle = (data: EcologicalImportance) =>
+const scopeNote = (data: EcologicalImportance) =>
   data.scope === "genus"
-    ? `Interacciones registradas para su género, ${data.scope_name}`
+    ? `Datos de su género, ${data.scope_name}`
     : data.scope === "family"
-      ? `Interacciones registradas para su familia, ${data.scope_name}`
-      : "Interacciones registradas";
+      ? `Datos de su familia, ${data.scope_name}`
+      : null;
 
 /**
  * "Importancia ecológica" de la ficha:
  *  1. Párrafo de la especie (redactado con IA a partir de datos verificados, o revisado por una persona).
- *  2. Roles y especies con las que interactúa según GloBI (de la especie o, si no hay, de su grupo).
+ *  2. Roles según GloBI (de la especie o, si no hay, de su grupo) como una fila de
+ *     botones con su número; al tocar uno se ven las especies de ese rol.
  */
 const EcologicalImportanceCard = ({ data, text }: { data?: EcologicalImportance | null; text?: EcologyText | null }) => {
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
   if (!data && !text) return null;
+
+  const roles = data?.roles ?? [];
+  const selected = roles.find((role) => role.key === selectedKey) ?? roles[0];
+  const note = data ? scopeNote(data) : null;
 
   return (
     <Card className="mb-6 overflow-hidden border-lime-200 bg-gradient-to-br from-lime-50/90 to-emerald-50/70 shadow-sm">
@@ -87,42 +94,54 @@ const EcologicalImportanceCard = ({ data, text }: { data?: EcologicalImportance 
 
         {data && (
           <>
-            <p className="text-xs font-bold uppercase tracking-widest text-forest-700">{scopeTitle(data)}</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {data.roles.map((role) => {
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+              <p className="text-xs font-bold uppercase tracking-widest text-forest-700">Con quién se relaciona</p>
+              {note && <p className="text-xs text-forest-600">{note}</p>}
+            </div>
+
+            <div role="tablist" aria-label="Interacciones" className="flex flex-wrap gap-2">
+              {roles.map((role) => {
                 const Icon = roleIcons[role.key] ?? Leaf;
+                const active = role.key === selected?.key;
                 return (
-                  <div key={role.key} className="rounded-xl bg-white/80 p-3 ring-1 ring-lime-100">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-lime-700" aria-hidden="true" />
-                      <span className="text-sm font-semibold text-forest-900">{role.label}</span>
-                      <span className="ml-auto text-xs text-forest-600">
-                        {role.partner_count} especie{role.partner_count === 1 ? "" : "s"}
-                      </span>
-                    </div>
-                    {role.examples.length > 0 && (
-                      <ul className="mt-2 flex flex-wrap gap-1.5">
-                        {role.examples.map((example) => {
-                          const label = example.common_name || example.scientific_name;
-                          const className = "rounded-full bg-lime-100/80 px-2 py-0.5 text-xs text-forest-800";
-                          return (
-                            <li key={example.scientific_name} title={example.scientific_name}>
-                              {example.taxon_id ? (
-                                <Link to={`/taxa/${example.taxon_id}`} className={`${className} underline-offset-2 hover:bg-lime-200 hover:underline`}>
-                                  {label}
-                                </Link>
-                              ) : (
-                                <span className={`${className} ${example.common_name ? "" : "italic"}`}>{label}</span>
-                              )}
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </div>
+                  <button
+                    key={role.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    aria-controls="ecology-role-panel"
+                    onClick={() => setSelectedKey(role.key)}
+                    className={`inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 ${
+                      active ? "border-lime-600 bg-lime-600 text-white" : "border-lime-200 bg-white/80 text-forest-800 hover:bg-lime-50"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                    {role.label}
+                    <span className={`tabular-nums ${active ? "text-white/80" : "text-forest-500"}`}>{role.partner_count}</span>
+                  </button>
                 );
               })}
             </div>
+
+            {selected && selected.examples.length > 0 && (
+              <ul id="ecology-role-panel" role="tabpanel" aria-label={selected.label} className="flex flex-wrap gap-1.5 rounded-xl bg-white/80 p-3 ring-1 ring-lime-100 animate-fade-in">
+                {selected.examples.map((example) => {
+                  const label = example.common_name || example.scientific_name;
+                  const className = "rounded-full bg-lime-100/80 px-2 py-0.5 text-xs text-forest-800";
+                  return (
+                    <li key={example.scientific_name} title={example.scientific_name}>
+                      {example.taxon_id ? (
+                        <Link to={`/taxa/${example.taxon_id}`} className={`${className} underline-offset-2 hover:bg-lime-200 hover:underline`}>
+                          {label}
+                        </Link>
+                      ) : (
+                        <span className={`${className} ${example.common_name ? "" : "italic"}`}>{label}</span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
             <p className="text-xs text-forest-600">
               Basado en {data.records_total.toLocaleString("es-CO")} interacciones con otras especies registradas en estudios y observaciones publicadas.
               Fuente:{" "}

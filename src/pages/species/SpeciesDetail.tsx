@@ -15,7 +15,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import TaxonomyGame from "@/components/species/TaxonomyGame"
 import EcologicalImportanceCard from "@/components/species/EcologicalImportanceCard";
 import ConservationBadges from "@/components/species/ConservationBadges";
-import RecentObservations from "@/components/observations/RecentObservations"
+import { useIsDesktop } from "@/hooks/use-mobile"
 
 
 const SpeciesDetail = () => {
@@ -27,6 +27,7 @@ const SpeciesDetail = () => {
   const [activeImage, setActiveImage] = useState("")
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+  const isDesktop = useIsDesktop();
 
   // Cerrar con tecla escape
   useEffect(() => {
@@ -142,6 +143,73 @@ const SpeciesDetail = () => {
     }
   };
 
+  // Mapa y especies similares: en escritorio van bajo la foto; en el celular,
+  // el mapa va después del resumen y las similares al final.
+  const mapSection = (
+    <section aria-labelledby="species-map-title">
+      <h2 id="species-map-title" className="text-2xl font-bold text-forest-950 mb-4">Mapa de ocurrencias</h2>
+      <div className="h-[360px] w-full relative">
+        <SpeciesDistributionMap
+          gbifKey={species?.gbif_taxon_key}
+          inatId={species?.inaturalist_id || species?.inat_taxon_id}
+          speciesName={displayCommonName}
+        />
+      </div>
+    </section>
+  );
+
+  const similarSection = (
+    <section aria-labelledby="species-similar-title">
+      <h2 id="species-similar-title" className="text-2xl font-bold text-forest-950 mb-4">Especies Similares</h2>
+      <div className="space-y-4">
+        {isLoadingRelated ? (
+          <div className="flex justify-center items-center h-32">
+            <Loader2 className="h-6 w-6 animate-spin text-lime-600" />
+          </div>
+        ) : relatedSpecies && relatedSpecies.length > 0 ? (
+          relatedSpecies.map((similar: any, index: number) => {
+            const similarPhoto = similar.default_photo?.url || similar.default_photo?.medium_url;
+            return (
+              <Link key={index} to={`/taxa/${similar.id}`}>
+                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group mb-1">
+                  <div className="flex gap-4">
+                    <div className="w-32 h-32 flex-shrink-0 overflow-hidden bg-gray-100">
+                      {similarPhoto ? (
+                        <img
+                          src={similarPhoto}
+                          alt={similar.common_name || similar.scientific_name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <TreePine className="h-12 w-12" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 py-3 pr-4 flex flex-col justify-center">
+                      <h3 className="font-semibold text-forest-950 text-lg mb-1 group-hover:text-lime-600 transition-colors">
+                        {similar.common_name || similar.scientific_name}
+                      </h3>
+                      <p className="text-forest-700 italic text-sm">
+                        {similar.scientific_name}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            );
+          })
+        ) : (
+          <p className="text-forest-700 italic text-center py-8">
+            No se encontraron especies similares
+          </p>
+        )}
+      </div>
+    </section>
+  );
+
+  const taxonomyPath = [species.kingdom, species.phylum, species.class, species.order_name, species.family].filter(Boolean);
+
   return (
     <div className="animate-fade-in">
       <div className="mb-4">
@@ -156,7 +224,7 @@ const SpeciesDetail = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left Column: Images */}
+        {/* Columna izquierda: lo visual (foto, mapa y similares) */}
         <div className="lg:col-span-1 space-y-4">
           <Card
             className="relative overflow-hidden border rounded-xl shadow-md cursor-zoom-in group"
@@ -206,13 +274,25 @@ const SpeciesDetail = () => {
               })}
             </div>
           )}
+
+          {isDesktop && <div className="space-y-8 pt-4">{mapSection}{similarSection}</div>}
         </div>
 
-        {/* Right Column: Details */}
+        {/* Columna derecha: lo que se lee */}
         <div className="lg:col-span-1 space-y-6">
           <div>
             <h1 className="text-3xl font-bold text-forest-950 mb-1 capitalize">{displayCommonName}</h1>
-            <p className="text-forest-700 italic mb-4">{species.scientific_name}</p>
+            <p className="text-forest-700 italic mb-2">{species.scientific_name}</p>
+            {taxonomyPath.length > 0 && (
+              <nav aria-label="Clasificación" className="mb-4 flex flex-wrap items-center gap-x-1 text-xs text-forest-600">
+                {taxonomyPath.map((rank, index) => (
+                  <span key={rank} className="inline-flex items-center gap-1">
+                    {index > 0 && <span aria-hidden="true" className="text-forest-400">›</span>}
+                    {rank}
+                  </span>
+                ))}
+              </nav>
+            )}
 
             <ConservationBadges labels={species.labels} />
 
@@ -222,7 +302,7 @@ const SpeciesDetail = () => {
                   <div className="mb-6">
                     <div
                       className={`text-forest-800 text-justify prose prose-sm max-w-none prose-lime ${
-                        isSummaryExpanded ? '' : 'line-clamp-4'
+                        isSummaryExpanded ? '' : 'line-clamp-3'
                       }`}
                       dangerouslySetInnerHTML={{ __html: summary }}
                     />
@@ -242,6 +322,8 @@ const SpeciesDetail = () => {
                 </p>
               );
             })()}
+
+            {!isDesktop && <div className="mb-6">{mapSection}</div>}
 
             {species.ecological_importance || species.ecology_text ? (
               <EcologicalImportanceCard data={species.ecological_importance} text={species.ecology_text} />
@@ -530,75 +612,10 @@ const SpeciesDetail = () => {
             </TabsContent>
 
           </Tabs>
+
+          {!isDesktop && similarSection}
         </div>
       </div>
-
-      {/* Two-column layout: Map and Similar Species */}
-      <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left Column: Distribution Map */}
-        <div>
-          <h2 className="text-2xl font-bold text-forest-950 mb-4">Mapa de ocurrencias</h2>
-          <div className="h-[400px] w-full relative">
-            <SpeciesDistributionMap
-              gbifKey={species?.gbif_taxon_key}
-              inatId={species?.inaturalist_id || species?.inat_taxon_id}
-              speciesName={displayCommonName}
-            />
-          </div>
-        </div>
-
-        {/* Right Column: Similar Species */}
-        <div>
-          <h2 className="text-2xl font-bold text-forest-950 mb-4">Especies Similares</h2>
-          <div className="space-y-4">
-            {isLoadingRelated ? (
-              <div className="flex justify-center items-center h-32">
-                <Loader2 className="h-6 w-6 animate-spin text-lime-600" />
-              </div>
-            ) : relatedSpecies && relatedSpecies.length > 0 ? (
-              relatedSpecies.map((similar: any, index: number) => {
-                const similarPhoto = similar.default_photo?.url || similar.default_photo?.medium_url;
-                return (
-                  <Link key={index} to={`/taxa/${similar.id}`}>
-                    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group mb-1">
-                      <div className="flex gap-4">
-                        <div className="w-32 h-32 flex-shrink-0 overflow-hidden bg-gray-100">
-                          {similarPhoto ? (
-                            <img
-                              src={similarPhoto}
-                              alt={similar.common_name || similar.scientific_name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              <TreePine className="h-12 w-12" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 py-3 pr-4 flex flex-col justify-center">
-                          <h3 className="font-semibold text-forest-950 text-lg mb-1 group-hover:text-lime-600 transition-colors">
-                            {similar.common_name || similar.scientific_name}
-                          </h3>
-                          <p className="text-forest-700 italic text-sm">
-                            {similar.scientific_name}
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
-                );
-              })
-            ) : (
-              <p className="text-forest-700 italic text-center py-8">
-                No se encontraron especies similares
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Observations */}
-      <RecentObservations taxonId={Number(id)} speciesName={displayCommonName} />
 
       {/* Fullscreen Image Viewer */}
       <AnimatePresence>
