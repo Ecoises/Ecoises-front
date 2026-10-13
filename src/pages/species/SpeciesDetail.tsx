@@ -16,6 +16,8 @@ import TaxonomyGame from "@/components/species/TaxonomyGame"
 import EcologicalImportanceCard, { type EcologyDetail } from "@/components/species/EcologicalImportanceCard";
 import ConservationBadges from "@/components/species/ConservationBadges";
 import { useIsDesktop } from "@/hooks/use-mobile"
+import SpeciesAttribution from "@/components/species/SpeciesAttribution"
+import { providerName } from "@/lib/sources"
 
 
 const SpeciesDetail = () => {
@@ -102,6 +104,14 @@ const SpeciesDetail = () => {
   const diet = ecologyProfile?.diet || null;
   const ecology = ecologyProfile?.ecology || null;
   const eolSummary = ecologyProfile?.natural_history || null;
+  const inatSummary = species.api_references?.find((ref: any) => ref.api_source === 'inaturalist')?.data?.wikipedia_summary;
+  const summarySource = inatSummary
+    ? 'Wikipedia, vía iNaturalist'
+    : species.wikipedia_summary
+      ? 'Wikipedia'
+      : eolSummary?.text
+        ? providerName(eolSummary.provider || 'Encyclopedia of Life')
+        : null;
   const summary = species.api_references?.find((ref: any) => ref.api_source === 'inaturalist')?.data?.wikipedia_summary
     || species.wikipedia_summary
     || eolSummary?.text
@@ -227,8 +237,6 @@ const SpeciesDetail = () => {
     </section>
   );
 
-  const taxonomyPath = [species.kingdom, species.phylum, species.class, species.order_name, species.family].filter(Boolean);
-
   return (
     <div className="animate-fade-in">
       <div className="mb-4">
@@ -301,17 +309,7 @@ const SpeciesDetail = () => {
         <div className="lg:col-span-1 space-y-6">
           <div>
             <h1 className="text-3xl font-bold text-forest-950 mb-1 capitalize">{displayCommonName}</h1>
-            <p className="text-forest-700 italic mb-2">{species.scientific_name}</p>
-            {taxonomyPath.length > 0 && (
-              <nav aria-label="Clasificación" className="mb-4 flex flex-wrap items-center gap-x-1 text-xs text-forest-600">
-                {taxonomyPath.map((rank, index) => (
-                  <span key={rank} className="inline-flex items-center gap-1">
-                    {index > 0 && <span aria-hidden="true" className="text-forest-400">›</span>}
-                    {rank}
-                  </span>
-                ))}
-              </nav>
-            )}
+            <p className="text-forest-700 italic mb-4">{species.scientific_name}</p>
 
             <ConservationBadges labels={species.labels} />
 
@@ -392,157 +390,31 @@ const SpeciesDetail = () => {
             </TabsContent>
 
             <TabsContent value="atribution" className="animate-fade-in mt-4">
-              <Card className="border-lime-200 p-6">
-                <div className="space-y-6">
-
-                  {/* Créditos de información ecológica (EOL) */}
-                  {ecologyProfile && (
-                    <div>
-                      <h3 className="font-semibold text-forest-900 mb-3 flex items-center gap-2">
-                        <span className="inline-block w-2 h-2 rounded-full bg-lime-500" />
-                        Créditos de información ecológica (Encyclopedia of Life)
-                      </h3>
-                      <div className="bg-lime-50/70 border border-lime-200/80 rounded-xl p-4 space-y-3">
-                        {ecologicalRole && (
-                          <div className="text-xs text-forest-800">
-                            <span className="font-semibold text-forest-900">Rol ecológico: </span>
-                            {ecologicalRole.provider || 'Encyclopedia of Life'}
-                            {ecologicalRole.license && (
-                              <span className="text-forest-600 ml-1">({ecologicalRole.license})</span>
-                            )}
-                          </div>
-                        )}
-                        {habitat?.provider && (
-                          <div className="text-xs text-forest-800">
-                            <span className="font-semibold text-forest-900">Datos de hábitat: </span>
-                            {habitat.provider}
-                            {habitat.rights_holder && ` · ${habitat.rights_holder}`}
-                            {habitat.license && <span className="text-forest-600 ml-1">({habitat.license})</span>}
-                          </div>
-                        )}
-                        {diet?.provider && (
-                          <div className="text-xs text-forest-800">
-                            <span className="font-semibold text-forest-900">Datos de dieta: </span>
-                            {diet.provider}
-                            {diet.rights_holder && ` · ${diet.rights_holder}`}
-                            {diet.license && <span className="text-forest-600 ml-1">({diet.license})</span>}
-                          </div>
-                        )}
-                        {naturalHistory?.provider && (
-                          <div className="text-xs text-forest-800">
-                            <span className="font-semibold text-forest-900">Historia natural: </span>
-                            {naturalHistory.provider}
-                            {naturalHistory.rights_holder && ` · ${naturalHistory.rights_holder}`}
-                            {naturalHistory.license && <span className="text-forest-600 ml-1">({naturalHistory.license})</span>}
-                          </div>
-                        )}
-                        {ecologyProfile.eol_url && (
-                          <div className="pt-1">
-                            <a
-                              href={ecologyProfile.eol_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs font-medium text-lime-700 hover:text-lime-900 underline inline-flex items-center gap-1"
-                            >
-                              Ver ficha completa en Encyclopedia of Life (EOL)
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Cita bibliográfica / Inventario local */}
-                  {(species.attribution || species.taxon_author || species.inventory_author || (species.local_records_count != null && species.local_records_count > 0)) && (
-                    <div>
-                      <h3 className="font-semibold text-forest-900 mb-3 flex items-center gap-2">
-                        <span className="inline-block w-2 h-2 rounded-full bg-forest-500" />
-                        Inventario y registro local
-                      </h3>
-                      <div className="bg-forest-50/50 border border-forest-100 rounded-xl p-4 space-y-3">
-                        {species.attribution && (
-                          <blockquote className="border-l-3 border-lime-500 pl-3 py-1">
-                            <p className="text-forest-800 text-xs italic leading-relaxed">
-                              {species.attribution}
-                            </p>
-                          </blockquote>
-                        )}
-                        {species.taxon_author && (
-                          <div className="text-xs text-forest-800">
-                            <span className="font-semibold text-forest-900">Autor de la descripción: </span>
-                            {species.taxon_author}
-                          </div>
-                        )}
-                        {species.inventory_author && (
-                          <div className="text-xs text-forest-800">
-                            <span className="font-semibold text-forest-900">Registrado por: </span>
-                            {species.inventory_author}
-                          </div>
-                        )}
-                        {species.local_records_count != null && species.local_records_count > 0 && (
-                          <div className="text-xs text-forest-800">
-                            <span className="font-semibold text-forest-900">Registros en campus: </span>
-                            {species.local_records_count} {species.local_records_count === 1 ? 'registro documentado' : 'registros documentados'}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <hr className="border-lime-100" />
-
-                  {/* Fuentes externas */}
-                  <div>
-                    <h3 className="font-semibold text-forest-900 mb-3 flex items-center gap-2">
-                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
-                      Consultar en fuentes externas
-                    </h3>
-                    <div className="flex flex-wrap gap-3">
-                      {/* Enlace a iNaturalist */}
-                      <a
-                        href={species.inaturalist_id 
-                          ? `https://www.inaturalist.org/taxa/${species.inaturalist_id}` 
-                          : `https://www.inaturalist.org/taxa/search?q=${encodeURIComponent(species.scientific_name)}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm"
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
-                        </svg>
-                        Ver en iNaturalist
-                      </a>
-
-                      {/* Wikipedia si disponible */}
-                      {species.wikipedia_url && (
-                        <a
-                          href={species.wikipedia_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-forest-700 text-sm font-medium hover:bg-gray-50 transition-colors"
-                        >
-                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
-                          </svg>
-                          Wikipedia
-                        </a>
-                      )}
-
-                      <a
-                        href={ecologyProfile?.eol_url || `https://eol.org/search?q=${encodeURIComponent(species.scientific_name)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-lime-300 text-forest-700 text-sm font-medium hover:bg-lime-50 transition-colors shadow-sm"
-                      >
-                        <TreePine className="h-4 w-4 text-lime-600" />
-                        Encyclopedia of Life
-                      </a>
-                    </div>
-                  </div>
-
-                </div>
-              </Card>
+              <SpeciesAttribution
+                scientificName={species.scientific_name}
+                labels={species.labels}
+                ecologyText={species.ecology_text}
+                ecologicalImportance={species.ecological_importance}
+                summarySource={summarySource}
+                ecologyTexts={[
+                  { label: 'Hábitat', data: habitat },
+                  { label: 'Dieta', data: diet },
+                  { label: 'Historia natural', data: naturalHistory },
+                  { label: 'Ecología y comportamiento', data: ecology },
+                ].filter(({ label }) => ecologyDetails.some((detail) => detail.label === label))}
+                taxonomySource={species.taxonomy_source}
+                hasPhotos={gallery.length > 0 || !!defaultPhoto}
+                gbifKey={species.gbif_taxon_key}
+                inatId={species.inaturalist_id || species.inat_taxon_id}
+                wikipediaUrl={species.wikipedia_url}
+                eolUrl={ecologyProfile?.eol_url}
+                local={{
+                  attribution: species.attribution,
+                  taxonAuthor: species.taxon_author,
+                  inventoryAuthor: species.inventory_author,
+                  records: species.local_records_count,
+                }}
+              />
             </TabsContent>
 
           </Tabs>

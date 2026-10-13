@@ -59,16 +59,15 @@ const CategoryBadge = ({ category }: { category: Category }) => {
 /**
  * Etiquetas oficiales de la especie: origen (endémica, nativa, introducida),
  * amenaza en Colombia (Res. 0126 de 2024) y amenaza global (UICN).
- * Cada etiqueta muestra su fuente al pasar el cursor y en la línea inferior.
+ * Cada etiqueta muestra su fuente al pasar el cursor; el detalle está en la pestaña Atribución.
  */
 const ConservationBadges = ({ labels }: { labels?: SpeciesLabels | null }) => {
   if (!labels || (!labels.origin && !labels.national && !labels.global)) return null;
 
-  const sources = [labels.origin?.source, labels.national?.source, labels.global?.source].filter(Boolean);
   const OriginIcon = labels.origin ? originStyle[labels.origin.status].icon : null;
 
   return (
-    <div className="mb-4 space-y-2">
+    <div className="mb-4">
       <div className="flex flex-wrap gap-2">
         {labels.origin && OriginIcon && (
           <span
@@ -82,7 +81,6 @@ const ConservationBadges = ({ labels }: { labels?: SpeciesLabels | null }) => {
         {labels.national && <CategoryBadge category={labels.national} />}
         {labels.global && <CategoryBadge category={labels.global} />}
       </div>
-      <p className="text-xs text-forest-600">Fuentes: {[...new Set(sources)].join(" · ")}</p>
     </div>
   );
 };
