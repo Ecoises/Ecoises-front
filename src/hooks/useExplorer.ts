@@ -1,6 +1,6 @@
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import apiClient from "@/api/apiClient";
-import type { ExplorerFilters, ExplorerPage } from "@/types/explorer";
+import type { ExplorerFilters, ExplorerPage, ExplorerSpecies } from "@/types/explorer";
 
 const PER_PAGE = 24;
 
@@ -58,3 +58,66 @@ export const useScientificRecords = (filters: ExplorerFilters, enabled: boolean)
     refetchInterval: (query) =>
       query.state.data?.pages[0]?.status === "building" && query.state.dataUpdateCount < 20 ? 4000 : false,
   });
+
+/** Género y especie en minúsculas, sin autor ni año, para no repetir una especie de las dos fuentes. */
+const speciesKey = (name: string) => name.toLowerCase().split(/\s+/).slice(0, 2).join(" ");
+
+/**
+ * Lista única del explorador: mezcla iNaturalist y GBIF página por página
+ * (una de cada fuente, alternadas) y quita las especies repetidas.
+ */
+export const useCombinedExplorer = (filters: ExplorerFilters) => {
+  const citizen = useExplorerSpecies(filters);
+  const scientific = useScientificRecords(filters, true);
+
+  const citizenPages = citizen.data?.pages ?? [];
+  const scientificPages = scientific.data?.pages.filter((page) => page.status !== "building") ?? [];
+
+  const species: ExplorerSpecies[] = [];
+  const seen = new Set<string>();
+  const add = (item?: ExplorerSpecies) => {
+    if (!item) return;
+    const key = speciesKey(item.scientific_name);
+    if (seen.has(key)) return;
+    seen.add(key);
+    species.push(item);
+  };
+
+  for (let page = 0; page < Math.max(citizenPages.length, scientificPages.length); page++) {
+    const a = citizenPages[page]?.data ?? [];
+    const b = scientificPages[page]?.data ?? [];
+    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+      add(a[i]);
+      add(b[i]);
+    }
+  }
+
+  const citizenTotal = citizen.data?.pages[0]?.meta.pagination.total;
+  const scientificTotal = scientificPages[0]?.meta.pagination.total;
+  // Muchas especies están en las dos fuentes; el total es al menos el mayor de los dos.
+  const total = citizenTotal == null && scientificTotal == null ? undefined : Math.max(citizenTotal ?? 0, scientificTotal ?? 0);
+
+  const hasNextPage = !!citizen.hasNextPage || !!scientific.hasNextPage;
+  const isFetchingNextPage = citizen.isFetchingNextPage || scientific.isFetchingNextPage;
+
+  const fetchNextPage = () => {
+    if (citizen.hasNextPage && !citizen.isFetchingNextPage) citizen.fetchNextPage();
+    if (scientific.hasNextPage && !scientific.isFetchingNextPage) scientific.fetchNextPage();
+  };
+
+  return {
+    species,
+    total,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    // Mientras iNaturalist carga la primera página se muestran los esqueletos;
+    // GBIF se suma en cuanto llega, sin bloquear la lista.
+    isLoading:
+      citizen.isLoading ||
+      (citizen.isFetching && citizen.isPlaceholderData) ||
+      // Si iNaturalist no trae nada, se espera a GBIF antes de decir que no hay especies.
+      (species.length === 0 && (scientific.isLoading || scientific.data?.pages[0]?.status === "building")),
+    isError: citizen.isError && scientific.isError,
+  };
+};

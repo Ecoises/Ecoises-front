@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Globe, Leaf, Loader2, Microscope, Navigation, Search, SlidersHorizontal, Users, X } from "lucide-react";
+import { Globe, Leaf, Loader2, Navigation, Search, SlidersHorizontal, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { LocationMapModal } from "@/components/observations/LocationMapModal";
 import { SpeciesCard, SpeciesCardSkeleton } from "@/components/explorer/SpeciesCard";
 import { ExplorerFilterOptions } from "@/components/explorer/ExplorerFilterOptions";
 import { ActiveFilterChips, countActiveFilters } from "@/components/explorer/ActiveFilterChips";
-import { useExplorerSpecies, useScientificRecords } from "@/hooks/useExplorer";
+import { useCombinedExplorer } from "@/hooks/useExplorer";
 import { useExplorerLocation } from "@/hooks/useExplorerLocation";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -22,8 +22,6 @@ const SKELETONS = Array.from({ length: 12 });
 /** Esqueletos que se muestran al final de la lista mientras llega la siguiente página. */
 const NEXT_PAGE_SKELETONS = Array.from({ length: 5 });
 const GRID = "grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 md:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5";
-
-type Source = "ciudadana" | "cientifica";
 
 /** Lee los filtros de la URL (acepta los nombres antiguos iconic_taxa y order_by). */
 const readFilters = (params: URLSearchParams): Omit<ExplorerFilters, "lat" | "lng"> => {
@@ -40,7 +38,7 @@ const readFilters = (params: URLSearchParams): Omit<ExplorerFilters, "lat" | "ln
   };
 };
 
-const writeFilters = (filters: Partial<ExplorerFilters>, source: Source) => {
+const writeFilters = (filters: Partial<ExplorerFilters>) => {
   const params = new URLSearchParams();
   if (filters.q) params.set("q", filters.q);
   if (filters.group) params.set("group", filters.group);
@@ -50,7 +48,6 @@ const writeFilters = (filters: Partial<ExplorerFilters>, source: Source) => {
   if (filters.order === "random") params.set("order", "random");
   if (filters.order === "random" && filters.seed) params.set("seed", filters.seed);
   if (filters.radius && filters.radius !== 25) params.set("radius", String(filters.radius));
-  if (source === "cientifica") params.set("fuente", "cientifica");
   return params;
 };
 
@@ -61,7 +58,6 @@ export default function Explorer() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
 
-  const source: Source = searchParams.get("fuente") === "cientifica" ? "cientifica" : "ciudadana";
   const urlFilters = useMemo(() => readFilters(searchParams), [searchParams]);
   const filters: ExplorerFilters = useMemo(
     () => ({ ...urlFilters, lat: location.coords?.lat, lng: location.coords?.lng }),
@@ -77,11 +73,9 @@ export default function Explorer() {
   }, [searchParams]);
 
   const update = useCallback(
-    (changes: Partial<ExplorerFilters>, nextSource?: Source) => {
+    (changes: Partial<ExplorerFilters>) => {
       if ("lat" in changes && changes.lat === undefined) location.clear();
-      const previous = latestParams.current;
-      const previousSource: Source = previous.get("fuente") === "cientifica" ? "cientifica" : "ciudadana";
-      const next = writeFilters({ ...readFilters(previous), ...changes }, nextSource ?? previousSource);
+      const next = writeFilters({ ...readFilters(latestParams.current), ...changes });
       latestParams.current = next;
       setSearchParams(next);
     },
@@ -98,22 +92,16 @@ export default function Explorer() {
     return () => clearTimeout(timer);
   }, [searchTerm, update, urlFilters.q]);
 
-  const citizen = useExplorerSpecies(filters);
-  const scientific = useScientificRecords(filters, true);
-  const active = source === "ciudadana" ? citizen : scientific;
-
-  const species = active.data?.pages.flatMap((page) => page.data) ?? [];
-  const scientificBuilding = scientific.data?.pages[0]?.status === "building";
-  const totals = {
-    ciudadana: citizen.data?.pages[0]?.meta.pagination.total,
-    cientifica: scientificBuilding ? undefined : scientific.data?.pages[0]?.meta.pagination.total,
-  };
-  const showSkeleton = active.isLoading || (active.isFetching && active.isPlaceholderData) || (source === "cientifica" && scientificBuilding);
+  // Una sola lista con las especies de iNaturalist y de GBIF.
+  const active = useCombinedExplorer(filters);
+  const { species, total } = active;
+  const showSkeleton = active.isLoading;
 
   const loadMore = useCallback(() => {
     if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
   }, [active]);
-  const sentinelRef = useInfiniteScroll(loadMore, !!active.hasNextPage && !showSkeleton);
+  // Se vuelve a observar al terminar cada página: si el final sigue a la vista, se pide la siguiente.
+  const sentinelRef = useInfiniteScroll(loadMore, active.hasNextPage && !showSkeleton && !active.isFetchingNextPage);
 
   const activeCount = countActiveFilters(filters);
   const hasLocation = !!location.coords;
@@ -227,7 +215,7 @@ export default function Explorer() {
 
         <ActiveFilterChips
           filters={filters}
-          total={totals[source]}
+          total={total}
           locationName={location.name}
           onClear={(changes) => update(changes)}
         />
@@ -261,48 +249,10 @@ export default function Explorer() {
             </label>
           )}
           <Button className="mt-6 h-12 w-full rounded-xl bg-lime-600 text-white hover:bg-lime-700" onClick={() => setFiltersOpen(false)}>
-            Ver {totals[source]?.toLocaleString("es-CO") ?? ""} especies
+            Ver {total?.toLocaleString("es-CO") ?? ""} especies
           </Button>
         </SheetContent>
       </Sheet>
-
-      {/* Fuente de los datos */}
-      <div role="tablist" aria-label="Fuente de los datos" className="flex gap-2">
-        {([
-          ["ciudadana", "Ciencia ciudadana", "Ciudadana", Users, "bg-lime-500"],
-          ["cientifica", "Registros científicos", "Científicos", Microscope, "bg-teal-500"],
-        ] as const).map(([value, label, shortLabel, Icon, dot]) => (
-          <button
-            key={value}
-            role="tab"
-            type="button"
-            aria-selected={source === value}
-            onClick={() => update({}, value)}
-            className={cn(
-              "inline-flex min-h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors duration-200 md:flex-none md:px-4",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500",
-              source === value ? "border-forest-900 bg-forest-950 text-white" : "border-lime-200 bg-white text-forest-800 hover:bg-lime-50"
-            )}
-          >
-            <span className={`h-2 w-2 rounded-full ${dot}`} aria-hidden="true" />
-            <Icon className="hidden h-4 w-4 md:block" aria-hidden="true" />
-            <span className="md:hidden">{shortLabel}</span>
-            <span className="hidden md:inline">{label}</span>
-            {value === "cientifica" && scientificBuilding ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-label="Calculando" />
-            ) : (
-              typeof totals[value] === "number" && <span className="tabular-nums opacity-70">{totals[value]!.toLocaleString("es-CO")}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {source === "cientifica" && (
-        <p className="text-sm text-forest-700">
-          Todas las especies con registros en GBIF para esta zona: museos, colecciones, monitoreos y ciencia ciudadana.
-          {scientificBuilding && " Estamos reuniendo los registros de esta zona por primera vez; tarda unos segundos."}
-        </p>
-      )}
 
       {/* Lista */}
       {active.isError ? (
