@@ -40,7 +40,7 @@ export const useExplorerSpecies = (filters: ExplorerFilters) =>
   });
 
 /**
- * Registros científicos (GBIF) que no están en la lista principal. La primera
+ * Registros científicos (todas las especies de GBIF en la zona). La primera
  * vez que se pide una zona el backend responde "building"; se vuelve a
  * preguntar cada pocos segundos solo esta sección, sin tocar la lista principal.
  */

@@ -19,7 +19,9 @@ import type { ExplorerFilters } from "@/types/explorer";
 
 const RADIUS_OPTIONS = [10, 25, 50, 100];
 const SKELETONS = Array.from({ length: 12 });
-const GRID = "grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4 xl:grid-cols-5";
+/** Esqueletos que se muestran al final de la lista mientras llega la siguiente página. */
+const NEXT_PAGE_SKELETONS = Array.from({ length: 5 });
+const GRID = "grid grid-cols-1 gap-4 min-[430px]:grid-cols-2 md:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5";
 
 type Source = "ciudadana" | "cientifica";
 
@@ -297,7 +299,7 @@ export default function Explorer() {
 
       {source === "cientifica" && (
         <p className="text-sm text-forest-700">
-          Especies con registros de museos, colecciones y monitoreos (GBIF) que no aparecen en ciencia ciudadana para esta zona.
+          Todas las especies con registros en GBIF para esta zona: museos, colecciones, monitoreos y ciencia ciudadana.
           {scientificBuilding && " Estamos reuniendo los registros de esta zona por primera vez; tarda unos segundos."}
         </p>
       )}
@@ -322,10 +324,11 @@ export default function Explorer() {
         <>
           <div className={GRID}>
             {species.map((item) => <SpeciesCard key={`${item.source}-${item.id}`} species={item} />)}
+            {active.isFetchingNextPage && NEXT_PAGE_SKELETONS.map((_, i) => <SpeciesCardSkeleton key={`next-${i}`} />)}
           </div>
           <div ref={sentinelRef} className="flex justify-center py-6" aria-live="polite">
             {active.isFetchingNextPage ? (
-              <Loader2 className="h-6 w-6 animate-spin text-lime-600" aria-label="Cargando más especies" />
+              <span className="sr-only">Cargando más especies</span>
             ) : (
               // Respaldo del scroll infinito para teclado y lectores de pantalla.
               active.hasNextPage && (

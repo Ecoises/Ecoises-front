@@ -40,7 +40,7 @@ export const SpeciesCard = ({ species }: { species: ExplorerSpecies }) => {
       className="block h-full rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2"
     >
       <Card className="group flex h-full cursor-pointer flex-col overflow-hidden border-lime-100/60 bg-white transition-shadow duration-200 hover:shadow-lg">
-        <div className="relative aspect-[4/3] overflow-hidden bg-lime-50">
+        <div className="relative h-52 overflow-hidden bg-lime-50 min-[430px]:h-48">
           {species.default_photo?.url ? (
             <img
               src={species.default_photo.url}
@@ -72,11 +72,11 @@ export const SpeciesCard = ({ species }: { species: ExplorerSpecies }) => {
           )}
         </div>
 
-        <div className="flex flex-1 flex-col gap-0.5 p-3 md:p-4">
-          <h3 className="line-clamp-2 font-heading text-sm font-bold leading-tight text-forest-950 transition-colors group-hover:text-lime-700 md:text-base">
+        <div className="flex flex-1 flex-col gap-1 p-4">
+          <h3 className="line-clamp-2 font-heading text-lg font-bold leading-tight text-forest-950 transition-colors group-hover:text-lime-700">
             {name}
           </h3>
-          <p className="line-clamp-1 text-xs italic text-forest-600/80 md:text-sm">{species.scientific_name}</p>
+          <p className="line-clamp-1 text-sm italic text-forest-600/80">{species.scientific_name}</p>
           <span className="mt-auto flex items-center gap-1.5 pt-2 text-[11px] text-forest-600" title={source.label}>
             <span className={`h-2 w-2 shrink-0 rounded-full ${source.className}`} aria-hidden="true" />
             <span className="truncate">{species.source === "gbif" ? "Registro científico" : "Ciencia ciudadana"}</span>
@@ -88,11 +88,12 @@ export const SpeciesCard = ({ species }: { species: ExplorerSpecies }) => {
 };
 
 export const SpeciesCardSkeleton = () => (
-  <Card className="overflow-hidden border-lime-100/50 bg-white">
-    <div className="aspect-[4/3] animate-pulse bg-lime-50" />
-    <div className="space-y-2 p-3 md:p-4">
-      <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
+  <Card className="h-full overflow-hidden border-lime-100/50 bg-white" aria-hidden="true">
+    <div className="h-52 animate-pulse bg-lime-50 min-[430px]:h-48" />
+    <div className="space-y-3 p-4">
+      <div className="h-5 w-3/4 animate-pulse rounded bg-gray-200" />
       <div className="h-3 w-1/2 animate-pulse rounded bg-gray-200" />
+      <div className="h-3 w-1/3 animate-pulse rounded bg-gray-200" />
     </div>
   </Card>
 );
